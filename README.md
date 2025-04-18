@@ -1,2 +1,2 @@
 # PIBD-23_Coursework_Bank
-
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Comic+Sans+MS&weight=600&size=40&duration=3000&pause=500&color=F8FF00&multiline=true&height=150&lines=+%D0%91%D0%B0%D0%BD%D0%BA+%C2%AB%D0%92%D1%8B+%D0%B1%D0%B0%D0%BD%D0%BA%D1%80%D0%BE%D1%82%C2%BB;%D0%A0%D0%B0%D0%B1%D0%BE%D1%82%D0%BD%D0%B8%D0%BA;%D0%9A%D0%BB%D0%B0%D0%B4%D0%BE%D0%B2%D1%89%D0%B8%D0%BA)](https://git.io/typing-svg)
