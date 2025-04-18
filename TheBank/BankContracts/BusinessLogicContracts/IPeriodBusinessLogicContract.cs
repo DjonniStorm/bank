@@ -1,0 +1,23 @@
+﻿using BankContracts.DataModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BankContracts.BusinessLogicContracts;
+
+public interface IPeriodBusinessLogicContract
+{
+    List<PeriodDataModel> GetAllPeriods();
+
+    PeriodDataModel GetPeriodByData(string data);
+
+    List<PeriodDataModel> GetAllPeriodsByStartTime(DateTime fromDate, DateTime toDate);
+
+    List<PeriodDataModel> GetAllPeriodsByEndTime(DateTime fromDate, DateTime toDate);
+
+    void InsertPeriod(PeriodDataModel periodataModel);
+
+    void UpdatePeriod(PeriodDataModel periodataModel);
+}
