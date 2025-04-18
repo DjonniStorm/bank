@@ -1,5 +1,8 @@
 ﻿namespace BankContracts.Extensions;
 
+/// <summary>
+/// Класс расширение для string
+/// </summary>
 public static class StringExtension
 {
     public static bool IsEmpty(this string str)

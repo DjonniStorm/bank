@@ -62,11 +62,11 @@ public class ClerkDataModel(string id, string name, string surname, string middl
         }
         if (Password.IsEmpty())
         {
-            throw new ValidationException("Field Login is null or empty");
+            throw new ValidationException("Field Password is null or empty");
         }
         if (Email.IsEmpty())
         {
-            throw new ValidationException("Field Login is null or empty");
+            throw new ValidationException("Field Email is null or empty");
         }
         if (!Regex.IsMatch(Email, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"))
         {
@@ -74,7 +74,7 @@ public class ClerkDataModel(string id, string name, string surname, string middl
         }
         if (PhoneNumber.IsEmpty())
         {
-            throw new ValidationException("Field Login is null or empty");
+            throw new ValidationException("Field PhoneNumber is null or empty");
         }
         if (!Regex.IsMatch(PhoneNumber, @"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"))
         {

@@ -8,8 +8,8 @@ namespace BankContracts.DataModels;
 /// Дата модель срока
 /// </summary>
 /// <param name="id">уникальный Guid индентификатор</param>
-/// <param name="startDate"></param>
-/// <param name="endDate"></param>
+/// <param name="startDate">дата начала</param>
+/// <param name="endDate">дата окончания</param>
 /// <param name="storekeeperId">уникальный Guid индентификатор кладовщика</param>
 public class PeriodDataModel(string id, DateTime startDate, DateTime endDate, string storekeeperId) : IValidation
 {

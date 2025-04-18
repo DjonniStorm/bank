@@ -7,8 +7,8 @@ namespace BankContracts.DataModels;
 /// <summary>
 /// Дата модель клиент кредитная программа
 /// </summary>
-/// <param name="clientId"></param>
-/// <param name="creditProgramId"></param>
+/// <param name="clientId">уникальный Guid индентификатор клиента</param>
+/// <param name="creditProgramId">уникальный Guid индентификатор кредитной программы</param>
 public class ClientCreditProgramDataModel(string clientId, string creditProgramId) : IValidation
 {
     public string ClientId { get; private set; } = clientId;
