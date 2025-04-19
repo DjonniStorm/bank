@@ -11,7 +11,11 @@ public interface ICreditProgramBusinessLogicContract
 {
     List<CreditProgramDataModel> GetAllCreditPrograms();
 
-    CreditProgramDataModel GetCreditProgramByData(string data);
+    List<CreditProgramDataModel> GetCreditProgramByStorekeeper(string storekeeperId);
+
+    List<CreditProgramDataModel> GetCreditProgramByPeriod(string periodId);
+
+    CreditProgramDataModel GetCreditProgramByData(string data);  
 
     void InsertCreditProgram(CreditProgramDataModel creditProgramDataModel);
 
