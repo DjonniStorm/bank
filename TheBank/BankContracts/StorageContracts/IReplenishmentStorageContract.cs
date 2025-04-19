@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BankContracts.DataModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace BankContracts.StorageContracts;
 
-interface IReplenishmentStorageContract
+public interface IReplenishmentStorageContract
 {
+    List<ReplenishmentDataModel> GetList();
+
+    ReplenishmentDataModel? GetElementById(string id);
+
+    void AddElement(ReplenishmentDataModel replenishmentDataModel);
 }

@@ -1,12 +1,23 @@
-﻿using System;
+﻿using BankContracts.DataModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankContracts.StorageContracts
+namespace BankContracts.StorageContracts;
+
+public interface IClientStorageContract
 {
-    interface IClientStorageContract
-    {
-    }
+    List<ClientDataModel> GetList();
+
+    ClientDataModel? GetElementById(string id);
+
+    ClientDataModel? GetElementByName(string name);
+
+    ClientDataModel? GetElementBySurname(string surname);
+
+    void AddElement(ClientDataModel clientDataModel);
+
+    void UpdElement(ClientDataModel clientDataModel);
 }
