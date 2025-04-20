@@ -1,9 +1,4 @@
 ﻿using BankContracts.DataModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BankContracts.StorageContracts;
 
@@ -16,4 +11,6 @@ public interface IDepositStorageContract
     DepositDataModel? GetElementByName(string name);
 
     void AddElement(DepositDataModel depositDataModel);
+
+    void UpdElement(DepositDataModel depositDataModel);
 }

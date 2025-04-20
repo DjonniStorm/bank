@@ -1,10 +1,4 @@
 ﻿using BankContracts.DataModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace BankContracts.StorageContracts;
 
 public interface IStorekeeperStorageContract
@@ -15,9 +9,7 @@ public interface IStorekeeperStorageContract
 
     StorekeeperDataModel? GetElementByPhoneNumber(string phoneNumber);
 
-    StorekeeperDataModel? GetElementByName(string name);
-
-    StorekeeperDataModel? GetElementBySurname(string surname);
+    StorekeeperDataModel? GetElementByLogin(string login);
 
     void AddElement(StorekeeperDataModel storekeeperDataModel);
 
