@@ -4,7 +4,7 @@ namespace BankContracts.StorageContracts;
 
 public interface IDepositStorageContract
 {
-    List<DepositDataModel> GetList();
+    List<DepositDataModel> GetList(string? clerkId = null);
 
     DepositDataModel? GetElementById(string id);
 

@@ -4,7 +4,7 @@ namespace BankContracts.StorageContracts;
 
 public interface IClientStorageContract
 {
-    List<ClientDataModel> GetList();
+    List<ClientDataModel> GetList(string? clerkId = null);
 
     ClientDataModel? GetElementById(string id);
 

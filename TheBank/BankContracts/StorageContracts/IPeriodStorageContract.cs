@@ -4,7 +4,7 @@ namespace BankContracts.StorageContracts;
 
 public interface IPeriodStorageContract
 {
-    List<PeriodDataModel> GetList(DateTime startDate, DateTime endDate);
+    List<PeriodDataModel> GetList(DateTime? startDate = null, DateTime? endDate = null, string? storekeeperId = null);
 
     PeriodDataModel? GetElementById(string id);
 
