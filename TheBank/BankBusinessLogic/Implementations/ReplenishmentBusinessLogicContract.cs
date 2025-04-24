@@ -94,7 +94,7 @@ internal class ReplenishmentBusinessLogicContract(
     public void InsertReplenishment(ReplenishmentDataModel replenishmentataModel)
     {
         _logger.LogInformation(
-            "Insert period: {period}",
+            "Insert replenishment: {replenishment}",
             JsonSerializer.Serialize(replenishmentataModel)
         );
         ArgumentNullException.ThrowIfNull(replenishmentataModel);
@@ -104,7 +104,7 @@ internal class ReplenishmentBusinessLogicContract(
 
     public void UpdateReplenishment(ReplenishmentDataModel replenishmentataModel)
     {
-        _logger.LogInformation("Update period: {period}", replenishmentataModel);
+        _logger.LogInformation("Update replenishment: {replenishment}", replenishmentataModel);
         ArgumentNullException.ThrowIfNull(replenishmentataModel);
         replenishmentataModel.Validate();
         _replenishmentStorageContract.UpdElement(replenishmentataModel);

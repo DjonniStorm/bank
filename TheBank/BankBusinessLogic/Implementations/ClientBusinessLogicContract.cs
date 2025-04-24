@@ -26,7 +26,7 @@ internal class ClientBusinessLogicContract(
 
     public List<ClientDataModel> GetAllClients()
     {
-        _logger.LogInformation("get all clerks");
+        _logger.LogInformation("get all clients");
         return _clientStorageContract.GetList();
     }
 
@@ -49,7 +49,7 @@ internal class ClientBusinessLogicContract(
 
     public ClientDataModel GetClientByData(string data)
     {
-        _logger.LogInformation($"Get client by data: {data}");
+        _logger.LogInformation("Get client by data: {data}", data);
         if (data.IsEmpty())
         {
             throw new ArgumentNullException(nameof(data));
