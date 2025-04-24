@@ -104,7 +104,10 @@ internal class ReplenishmentBusinessLogicContract(
 
     public void UpdateReplenishment(ReplenishmentDataModel replenishmentataModel)
     {
-        _logger.LogInformation("Update replenishment: {replenishment}", replenishmentataModel);
+        _logger.LogInformation(
+            "Update replenishment: {replenishment}",
+            JsonSerializer.Serialize(replenishmentataModel)
+        );
         ArgumentNullException.ThrowIfNull(replenishmentataModel);
         replenishmentataModel.Validate();
         _replenishmentStorageContract.UpdElement(replenishmentataModel);

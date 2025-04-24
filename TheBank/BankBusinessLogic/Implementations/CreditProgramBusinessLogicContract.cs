@@ -94,7 +94,10 @@ internal class CreditProgramBusinessLogicContract(
 
     public void UpdateCreditProgram(CreditProgramDataModel creditProgramDataModel)
     {
-        _logger.LogInformation("Update credit program: {credit program}", creditProgramDataModel);
+        _logger.LogInformation(
+            "Update credit program: {credit program}",
+            JsonSerializer.Serialize(creditProgramDataModel)
+        );
         ArgumentNullException.ThrowIfNull(creditProgramDataModel);
         creditProgramDataModel.Validate();
         _creditProgramStorageContract.UpdElement(creditProgramDataModel);

@@ -90,7 +90,7 @@ internal class PeriodBusinessLogicContract(
 
     public void UpdatePeriod(PeriodDataModel periodataModel)
     {
-        _logger.LogInformation("Update period: {period}", periodataModel);
+        _logger.LogInformation("Update period: {period}", JsonSerializer.Serialize(periodataModel));
         ArgumentNullException.ThrowIfNull(periodataModel);
         periodataModel.Validate();
         _periodStorageContract.UpdElement(periodataModel);

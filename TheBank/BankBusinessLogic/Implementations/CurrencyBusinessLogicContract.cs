@@ -74,7 +74,10 @@ internal class CurrencyBusinessLogicContract(
 
     public void UpdateCurrency(CurrencyDataModel currencyDataModel)
     {
-        _logger.LogInformation("Update currency: {currency}", currencyDataModel);
+        _logger.LogInformation(
+            "Update currency: {currency}",
+            JsonSerializer.Serialize(currencyDataModel)
+        );
         ArgumentNullException.ThrowIfNull(currencyDataModel);
         currencyDataModel.Validate();
         _currencyStorageContract.UpdElement(currencyDataModel);

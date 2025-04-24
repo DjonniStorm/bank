@@ -51,7 +51,10 @@ internal class ClerkBusinessLogicContract(
 
     public void InsertClerk(ClerkDataModel clerkDataModel)
     {
-        _logger.LogInformation("Insert storekeeper: {storekeeper}", JsonSerializer.Serialize(clerkDataModel));
+        _logger.LogInformation(
+            "Insert storekeeper: {storekeeper}",
+            JsonSerializer.Serialize(clerkDataModel)
+        );
         ArgumentNullException.ThrowIfNull(clerkDataModel);
         clerkDataModel.Validate();
         _clerkStorageContract.AddElement(clerkDataModel);
@@ -59,7 +62,7 @@ internal class ClerkBusinessLogicContract(
 
     public void UpdateClerk(ClerkDataModel clerkDataModel)
     {
-        _logger.LogInformation("Update clerk: {clerk}", clerkDataModel);
+        _logger.LogInformation("Update clerk: {clerk}", JsonSerializer.Serialize(clerkDataModel));
         ArgumentNullException.ThrowIfNull(clerkDataModel);
         clerkDataModel.Validate();
         _clerkStorageContract.UpdElement(clerkDataModel);

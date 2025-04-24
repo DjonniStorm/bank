@@ -1,11 +1,11 @@
-﻿using BankContracts.BusinessLogicContracts;
+﻿using System.Text.Json;
+using System.Text.RegularExpressions;
+using BankContracts.BusinessLogicContracts;
 using BankContracts.DataModels;
 using BankContracts.Exceptions;
 using BankContracts.Extensions;
 using BankContracts.StorageContracts;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace BankBusinessLogic.Implementations;
 
@@ -14,9 +14,13 @@ namespace BankBusinessLogic.Implementations;
 /// </summary>
 /// <param name="storekeeperStorageContract">контракт кладовщика</param>
 /// <param name="logger">логгер</param>
-internal class StorekeeperBusinessLogicContract(IStorekeeperStorageContract storekeeperStorageContract, ILogger logger) : IStorekeeperBusinessLogicContract
+internal class StorekeeperBusinessLogicContract(
+    IStorekeeperStorageContract storekeeperStorageContract,
+    ILogger logger
+) : IStorekeeperBusinessLogicContract
 {
-    private readonly IStorekeeperStorageContract _storekeeperStorageContract = storekeeperStorageContract;
+    private readonly IStorekeeperStorageContract _storekeeperStorageContract =
+        storekeeperStorageContract;
 
     private readonly ILogger _logger = logger;
 
@@ -49,7 +53,10 @@ internal class StorekeeperBusinessLogicContract(IStorekeeperStorageContract stor
 
     public void InsertStorekeeper(StorekeeperDataModel storekeeperDataModel)
     {
-        _logger.LogInformation("Insert storekeeper: {storekeeper}", JsonSerializer.Serialize(storekeeperDataModel));
+        _logger.LogInformation(
+            "Insert storekeeper: {storekeeper}",
+            JsonSerializer.Serialize(storekeeperDataModel)
+        );
         ArgumentNullException.ThrowIfNull(storekeeperDataModel);
         storekeeperDataModel.Validate();
         _storekeeperStorageContract.AddElement(storekeeperDataModel);
@@ -57,7 +64,10 @@ internal class StorekeeperBusinessLogicContract(IStorekeeperStorageContract stor
 
     public void UpdateStorekeeper(StorekeeperDataModel storekeeperDataModel)
     {
-        _logger.LogInformation("Update storekeeper: {storekeeper}", storekeeperDataModel);
+        _logger.LogInformation(
+            "Update storekeeper: {storekeeper}",
+            JsonSerializer.Serialize(storekeeperDataModel)
+        );
         ArgumentNullException.ThrowIfNull(storekeeperDataModel);
         storekeeperDataModel.Validate();
         _storekeeperStorageContract.UpdElement(storekeeperDataModel);

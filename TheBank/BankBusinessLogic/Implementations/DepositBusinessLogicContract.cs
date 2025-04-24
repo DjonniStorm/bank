@@ -74,7 +74,10 @@ internal class DepositBusinessLogicContract(
 
     public void UpdateDeposit(DepositDataModel depositDataModel)
     {
-        _logger.LogInformation("Update credit program: {credit program}", depositDataModel);
+        _logger.LogInformation(
+            "Update credit program: {credit program}",
+            JsonSerializer.Serialize(depositDataModel)
+        );
         ArgumentNullException.ThrowIfNull(depositDataModel);
         depositDataModel.Validate();
         _depositStorageContract.UpdElement(depositDataModel);

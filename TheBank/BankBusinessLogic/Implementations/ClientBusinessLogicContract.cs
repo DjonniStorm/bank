@@ -75,7 +75,10 @@ internal class ClientBusinessLogicContract(
 
     public void UpdateClient(ClientDataModel clientDataModel)
     {
-        _logger.LogInformation("Update client: {client}", clientDataModel);
+        _logger.LogInformation(
+            "Update client: {client}",
+            JsonSerializer.Serialize(clientDataModel)
+        );
         ArgumentNullException.ThrowIfNull(clientDataModel);
         clientDataModel.Validate();
         _clientStorageContract.UpdElement(clientDataModel);
