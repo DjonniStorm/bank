@@ -22,7 +22,7 @@ public class ClientDataModel(string id, string name, string surname, decimal bal
 
     public decimal Balance { get; private set; } = balance;
 
-    public string Clerkid { get; private set; } = clerkId;
+    public string ClerkId { get; private set; } = clerkId;
 
     public void Validate()
     {
@@ -46,11 +46,11 @@ public class ClientDataModel(string id, string name, string surname, decimal bal
         {
             throw new ValidationException("Field Balance is less or equal to zero");
         }
-        if (Clerkid.IsEmpty())
+        if (ClerkId.IsEmpty())
         {
             throw new ValidationException("Field Clerkid is null or empty");
         }
-        if (!Clerkid.IsGuid())
+        if (!ClerkId.IsGuid())
         {
             throw new ValidationException("The value in the field Clerkid is not a unique identifier");
         }
