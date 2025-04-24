@@ -4,7 +4,7 @@ namespace BankContracts.StorageContracts;
 
 public interface IReplenishmentStorageContract
 {
-    List<ReplenishmentDataModel> GetList();
+    List<ReplenishmentDataModel> GetList(DateTime? fromDate = null, DateTime? toDate = null, string? clerkId = null, string? depositId = null);
 
     ReplenishmentDataModel? GetElementById(string id);
 

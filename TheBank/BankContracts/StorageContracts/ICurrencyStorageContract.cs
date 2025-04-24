@@ -4,7 +4,7 @@ namespace BankContracts.StorageContracts;
 
 public interface ICurrencyStorageContract
 {
-    List<CurrencyDataModel> GetList();
+    List<CurrencyDataModel> GetList(string? storekeeperId = null);
 
     CurrencyDataModel? GetElementById(string id);
 

@@ -4,7 +4,7 @@ namespace BankContracts.StorageContracts;
 
 public interface ICreditProgramStorageContract
 {
-    List<CreditProgramDataModel> GetList();
+    List<CreditProgramDataModel> GetList(string? storekeeperId = null, string? periodId = null);
 
     CreditProgramDataModel? GetElementById(string id);
 
