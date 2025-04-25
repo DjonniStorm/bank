@@ -13,7 +13,9 @@ namespace BankContracts.DataModels;
 /// <param name="maxCost">максимальная сумма</param>
 /// <param name="storekeeperId">уникальный Guid Индентификатор кладовщика</param>
 /// <param name="periodId">уникальный Guid Индентификатор срока</param>
-public class CreditProgramDataModel(string id, string name, decimal cost, decimal maxCost, string storekeeperId, string periodId) : IValidation
+/// <param name="currencyCreditPrograms">валюты кредитной программы</param>
+public class CreditProgramDataModel(string id, string name, decimal cost, decimal maxCost, string storekeeperId, string periodId,
+    List<CreditProgramCurrencyDataModel> currencyCreditPrograms) : IValidation
 {
     public string Id { get; private set; } = id;
 
@@ -26,6 +28,8 @@ public class CreditProgramDataModel(string id, string name, decimal cost, decima
     public string StorekeeperId { get; private set; } = storekeeperId;
 
     public string PeriodId { get; private set; } = periodId;
+
+    public List<CreditProgramCurrencyDataModel> Currencies { get; private set; } = currencyCreditPrograms;
 
     public void Validate()
     {
@@ -64,6 +68,10 @@ public class CreditProgramDataModel(string id, string name, decimal cost, decima
         if (!PeriodId.IsGuid())
         {
             throw new ValidationException("The value in the field PeriodId is not a unique identifier");
+        }
+        if ((Currencies?.Count ?? 0) == 0)
+        {
+            throw new ValidationException("The credit program must include currencies");
         }
     }
 }

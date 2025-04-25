@@ -12,7 +12,10 @@ namespace BankContracts.DataModels;
 /// <param name="surname">фамилия клиента</param>
 /// <param name="balance">баланс клиента</param>
 /// <param name="clerkId">уникальный Guid индентификатор клерка</param>
-public class ClientDataModel(string id, string name, string surname, decimal balance, string clerkId) : IValidation
+/// <param name="depositClients">вклады клиента</param>
+/// <param name="creditProgramClients">кредитные программы клиента</param>
+public class ClientDataModel(string id, string name, string surname, decimal balance, string clerkId,
+    List<DepositClientDataModel> depositClients, List<ClientCreditProgramDataModel> creditProgramClients) : IValidation
 {
     public string Id { get; private set; } = id;
 
@@ -23,6 +26,10 @@ public class ClientDataModel(string id, string name, string surname, decimal bal
     public decimal Balance { get; private set; } = balance;
 
     public string ClerkId { get; private set; } = clerkId;
+
+    public List<DepositClientDataModel> Deposits { get; private set; } = depositClients;
+
+    public List<ClientCreditProgramDataModel> CreditPrograms { get; private set; } = creditProgramClients;
 
     public void Validate()
     {
@@ -53,6 +60,14 @@ public class ClientDataModel(string id, string name, string surname, decimal bal
         if (!ClerkId.IsGuid())
         {
             throw new ValidationException("The value in the field Clerkid is not a unique identifier");
+        }
+        if ((Deposits?.Count ?? 0) == 0)
+        {
+            throw new ValidationException("The client must include deposits");
+        }
+        if ((CreditPrograms?.Count ?? 0) == 0)
+        {
+            throw new ValidationException("The client must include credit programs");
         }
     }
 }
