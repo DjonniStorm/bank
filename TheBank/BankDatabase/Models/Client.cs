@@ -16,4 +16,10 @@ class Client
 
     [ForeignKey("ClerkId")]
     public Clerk? Clerk { get; set; }
+
+    [ForeignKey("DepositId")]
+    public List<DepositClient>? Deposits { get; set; }
+
+    [ForeignKey("CreditProgramId")]
+    public List<ClientCreditProgram>? CreditPrograms { get; set; }
 }

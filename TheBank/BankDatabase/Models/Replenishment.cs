@@ -16,4 +16,7 @@ class Replenishment
 
     [ForeignKey("ClerkId")]
     public Clerk? Clerk { get; set; }
+
+    [ForeignKey("DepositId")]
+    public Deposit? Deposit { get; set; }
 }

@@ -16,4 +16,7 @@ class Deposit
 
     [ForeignKey("ClerkId")]
     public Clerk? Clerk { get; set; }
+
+    [ForeignKey("CurrencyId")]
+    public List<DepositCurrency>? Currencies { get; set; }
 }

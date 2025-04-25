@@ -1,4 +1,6 @@
-﻿namespace BankDatabase.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace BankDatabase.Models;
 
 class Period
 {
@@ -9,4 +11,7 @@ class Period
     public DateTime EndTime { get; set; }
 
     public required string StorekeeperId { get; set; }
+
+    [ForeignKey("StorekeeperId")]
+    public Storekeeper? Storekeeper { get; set; }
 }
