@@ -85,6 +85,11 @@ internal class ClerkStorageContract : IClerkStorageContract
             _dbContext.Clerks.Add(_mapper.Map<Clerk>(clerkDataModel));
             _dbContext.SaveChanges();
         }
+        catch (InvalidOperationException ex) when (ex.TargetSite?.Name == "ThrowIdentityConflict")
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw new ElementExistsException($"Id {clerkDataModel.Id}");
+        }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { ConstraintName: "IX_Clerks_Email" })
         {
             _dbContext.ChangeTracker.Clear();
