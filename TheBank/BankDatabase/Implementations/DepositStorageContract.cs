@@ -5,11 +5,6 @@ using BankContracts.StorageContracts;
 using BankDatabase.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BankDatabase.Implementations;
 
@@ -114,7 +109,7 @@ internal class DepositStorageContract : IDepositStorageContract
                         _dbContext.DepositCurrencies.RemoveRange(element.DepositCurrencies);
                     }
 
-                    element.Components = _mapper.Map<List<ShipComponents>>(shipDataModel.Components);
+                    element.DepositCurrencies = _mapper.Map<List<DepositCurrency>>(depositDataModel.Currencies);
                 }
                 _dbContext.SaveChanges();
                 transaction.Commit();
@@ -130,20 +125,15 @@ internal class DepositStorageContract : IDepositStorageContract
             _dbContext.ChangeTracker.Clear();
             throw;
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { ConstraintName: "IX_Ships_Name" })
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { ConstraintName: "IX_Deposits_InterestRate" })
         {
             _dbContext.ChangeTracker.Clear();
-            throw new ElementExistsException("Name", shipDataModel.Name);
-        }
-        catch (Exception ex) when (ex is ElementDeletedException || ex is ElementNotFoundException)
-        {
-            _dbContext.ChangeTracker.Clear();
-            throw;
+            throw new ElementExistsException($"InterestRate {depositDataModel.InterestRate}");
         }
         catch (Exception ex)
         {
             _dbContext.ChangeTracker.Clear();
-            throw new StorageException(ex);
+            throw new StorageException(ex.Message);
         }
     }
 

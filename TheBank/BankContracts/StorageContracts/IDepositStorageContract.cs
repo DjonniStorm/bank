@@ -8,7 +8,7 @@ public interface IDepositStorageContract
 
     DepositDataModel? GetElementById(string id);
 
-    DepositDataModel? GetElementByName(string name);
+    DepositDataModel? GetElementByInterestRate(float interestRate);
 
     void AddElement(DepositDataModel depositDataModel);
 

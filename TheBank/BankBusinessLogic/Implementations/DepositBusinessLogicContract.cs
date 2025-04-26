@@ -57,7 +57,7 @@ internal class DepositBusinessLogicContract(
             return _depositStorageContract.GetElementById(data)
                 ?? throw new ElementNotFoundException($"element not found: {data}");
         }
-        return _depositStorageContract.GetElementByName(data)
+        return _depositStorageContract.GetElementByInterestRate(data)
             ?? throw new ElementNotFoundException($"element not found: {data}");
     }
 
