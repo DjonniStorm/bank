@@ -16,13 +16,9 @@ namespace BankContracts.DataModels;
 /// <param name="password">пароль</param>
 /// <param name="email">адрес электронной почты</param>
 /// <param name="phoneNumber">номер телефона</param>
-/// <param name="currencies">валюты</param>
-/// <param name="periods">сроки</param>
-/// <param name="creditPrograms">кредитные программы</param>
 public class StorekeeperDataModel(
     string id, string name, string surname, string middleName,
-    string login, string password, string email, string phoneNumber, List<CurrencyDataModel> currencies,
-    List<PeriodDataModel> periods, List<CreditProgramDataModel> creditPrograms) : IValidation
+    string login, string password, string email, string phoneNumber) : IValidation
 {
     public string Id { get; private set; } = id;
 
@@ -39,12 +35,6 @@ public class StorekeeperDataModel(
     public string Email { get; private set; } = email;
 
     public string PhoneNumber { get; private set; } = phoneNumber;
-
-    public List<CurrencyDataModel> Currencies { get; private set; } = currencies;
-
-    public List<PeriodDataModel> Periods { get; private set; } = periods;
-
-    public List<CreditProgramDataModel> CreditPrograms { get; private set; } = creditPrograms;
 
     public void Validate()
     {
@@ -91,18 +81,6 @@ public class StorekeeperDataModel(
         if (!Regex.IsMatch(PhoneNumber, @"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"))
         {
             throw new ValidationException("Field PhoneNumber is not a phone number");
-        }
-        if (Currencies is null)
-        {
-            throw new ValidationException("Field Currencies is null");
-        }
-        if (Periods is null)
-        {
-            throw new ValidationException("Field Periods is null");
-        }
-        if (CreditPrograms is null)
-        {
-            throw new ValidationException("Field CreditPrograms is null");
         }
     }
 }

@@ -16,9 +16,6 @@ namespace BankContracts.DataModels;
 /// <param name="password">пароль</param>
 /// <param name="email">адрес электронной почты</param>
 /// <param name="phoneNumber">номер телефона</param>
-/// <param name="deposits">вклады</param>
-/// <param name="clients">клиенты</param>
-/// <param name="replenishments">пополнения</param>
 public class ClerkDataModel(
     string id,
     string name,
@@ -27,10 +24,7 @@ public class ClerkDataModel(
     string login,
     string password,
     string email,
-    string phoneNumber,
-    List<DepositDataModel> deposits,
-    List<ClientDataModel> clients,
-    List<ReplenishmentDataModel> replenishments
+    string phoneNumber
 ) : IValidation
 {
     public string Id { get; private set; } = id;
@@ -48,12 +42,6 @@ public class ClerkDataModel(
     public string Email { get; private set; } = email;
 
     public string PhoneNumber { get; private set; } = phoneNumber;
-
-    public List<DepositDataModel> Deposits { get; private set; } = deposits;
-
-    public List<ClientDataModel> Clients { get; private set; } = clients;
-
-    public List<ReplenishmentDataModel> Replenishments { get; private set; } = replenishments;
 
     public void Validate()
     {
@@ -100,18 +88,6 @@ public class ClerkDataModel(
         if (!Regex.IsMatch(PhoneNumber, @"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"))
         {
             throw new ValidationException("Field PhoneNumber is not a phone number");
-        }
-        if (Deposits is null)
-        {
-            throw new ValidationException("Field Deposits is null");
-        }
-        if (Clients is null)
-        {
-            throw new ValidationException("Field Clients is null");
-        }
-        if (Replenishments is null)
-        {
-            throw new ValidationException("Field Replenishments is null");
         }
     }
 }

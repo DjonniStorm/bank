@@ -69,9 +69,9 @@ public class CreditProgramDataModel(string id, string name, decimal cost, decima
         {
             throw new ValidationException("The value in the field PeriodId is not a unique identifier");
         }
-        if ((Currencies?.Count ?? 0) == 0)
+        if (Currencies is null)
         {
-            throw new ValidationException("The credit program must include currencies");
+            throw new ValidationException("Field Currencies is null");
         }
     }
 }

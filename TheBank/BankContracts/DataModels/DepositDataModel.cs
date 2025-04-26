@@ -58,9 +58,9 @@ public class DepositDataModel(string id, float interestRate, decimal cost, int p
         {
             throw new ValidationException("The value in the field ClerkId is not a unique identifier");
         }
-        if ((Currencies?.Count ?? 0) == 0)
+        if (Currencies is null)
         {
-            throw new ValidationException("The deposit must include currencies");
+            throw new ValidationException("Field Currencies is null");
         }
     }
 }

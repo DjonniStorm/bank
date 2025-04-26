@@ -61,13 +61,13 @@ public class ClientDataModel(string id, string name, string surname, decimal bal
         {
             throw new ValidationException("The value in the field Clerkid is not a unique identifier");
         }
-        if ((Deposits?.Count ?? 0) == 0)
+        if (Deposits is null)
         {
-            throw new ValidationException("The client must include deposits");
+            throw new ValidationException("Field Deposits is null");
         }
-        if ((CreditPrograms?.Count ?? 0) == 0)
+        if (CreditPrograms is null)
         {
-            throw new ValidationException("The client must include credit programs");
+            throw new ValidationException("Field CreditPrograms is null");
         }
     }
 }
