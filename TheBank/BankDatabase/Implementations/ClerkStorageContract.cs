@@ -43,7 +43,7 @@ internal class ClerkStorageContract : IClerkStorageContract
     {
         try
         {
-            return _mapper.Map<ClerkDataModel>(_dbContext.Clerks.FirstOrDefault(x => x.Id == id));
+            return _mapper.Map<ClerkDataModel>(GetClerkById(id));
         }
         catch (Exception ex)
         {

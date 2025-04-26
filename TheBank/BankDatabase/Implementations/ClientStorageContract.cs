@@ -5,12 +5,6 @@ using BankContracts.StorageContracts;
 using BankDatabase.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace BankDatabase.Implementations;
 
