@@ -67,6 +67,14 @@ internal class BankDbContext(IConfigurationDatabase configurationDatabase) : DbC
             .WithOne(x => x.Clerk)
             .HasForeignKey(x => x.ClerkId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DepositCurrency>().HasKey(x => new { x.DepositId, x.CurrencyId });
+
+        modelBuilder.Entity<ClientCreditProgram>().HasKey(x => new { x.ClientId, x.CreditProgramId });
+
+        modelBuilder.Entity<DepositClient>().HasKey(x => new { x.DepositId, x.ClientId });
+
+        modelBuilder.Entity<CreditProgramCurrency>().HasKey(x => new { x.CreditProgramId, x.CurrencyId });
     }
 
     public DbSet<Clerk> Clerks { get; set; }
@@ -84,4 +92,12 @@ internal class BankDbContext(IConfigurationDatabase configurationDatabase) : DbC
     public DbSet<Replenishment> Replenishments { get; set; }
     
     public DbSet<Storekeeper> Storekeepers { get; set; }
+
+    public DbSet<DepositCurrency> DepositCurrencies { get; set; }
+
+    public DbSet<ClientCreditProgram> CreditProgramClients { get; set; }
+
+    public DbSet<DepositClient> DepositClients { get; set; }
+
+    public DbSet<CreditProgramCurrency> CurrencyCreditPrograms { get; set; }
 }
