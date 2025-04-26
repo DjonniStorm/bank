@@ -14,9 +14,14 @@ class Deposit
 
     public required string ClerkId { get; set; }
 
-    [ForeignKey("ClerkId")]
     public Clerk? Clerk { get; set; }
 
-    [ForeignKey("CurrencyId")]
-    public List<DepositCurrency>? Currencies { get; set; }
+    [ForeignKey("DepositId")]
+    public List<DepositClient>? DepositClients { get; set; }
+
+    [ForeignKey("DepositId")]
+    public List<DepositCurrency>? DepositCurrencies { get; set; }
+
+    [ForeignKey("DepositId")]
+    public List<Replenishment>? Replenishments { get; set; }
 }

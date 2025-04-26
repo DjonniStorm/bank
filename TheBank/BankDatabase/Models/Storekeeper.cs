@@ -21,12 +21,12 @@ class Storekeeper
 
     public required string PhoneNumber { get; set; }
 
-    [ForeignKey("CurrencyId")]
-    public List<CurrencyDataModel>? Currencies { get; set; }
+    [ForeignKey("StorekeeperId")]
+    public List<Currency>? Currencies { get; set; }
 
-    [ForeignKey("PeriodId")]
-    public List<PeriodDataModel>? Periods { get; set; }
+    [ForeignKey("StorekeeperId")]
+    public List<Period>? Periods { get; set; }
 
-    [ForeignKey("CreditProgramId")]
-    public List<CreditProgramDataModel>? CreditPrograms { get; set; }
+    [ForeignKey("StorekeeperId")]
+    public List<CreditProgram>? CreditPrograms { get; set; }
 }

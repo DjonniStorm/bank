@@ -15,13 +15,14 @@ class CreditProgram
     public required string StorekeeperId { get; set; }
 
     public required string PeriodId { get; set; }
-    //надо???
-    [ForeignKey("StorekeeperId")]
+
     public Storekeeper? Storekeeper { get; set; }
-    //и это надо??
-    [ForeignKey("PeriodId")]
+
     public Period? Period { get; set; }
 
-    [ForeignKey("CurrencyId")]
-    public List<CreditProgram>? Currencies { get; set; }
+    [ForeignKey("CreditProgramId")]
+    public List<CreditProgramCurrency>? CurrencyCreditPrograms { get; set; }
+
+    [ForeignKey("CreditProgramId")]
+    public List<ClientCreditProgram>? CreditProgramClients { get; set; }
 }

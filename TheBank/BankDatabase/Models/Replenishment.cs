@@ -14,9 +14,7 @@ class Replenishment
 
     public required string ClerkId { get; set; }
 
-    [ForeignKey("ClerkId")]
     public Clerk? Clerk { get; set; }
 
-    [ForeignKey("DepositId")]
     public Deposit? Deposit { get; set; }
 }

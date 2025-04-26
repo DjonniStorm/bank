@@ -12,6 +12,8 @@ class Period
 
     public required string StorekeeperId { get; set; }
 
-    [ForeignKey("StorekeeperId")]
     public Storekeeper? Storekeeper { get; set; }
+
+    [ForeignKey("PeriodId")]
+    public List<CreditProgram>? CreditPrograms { get; set; }
 }

@@ -14,12 +14,11 @@ class Client
 
     public required string ClerkId { get; set; }
 
-    [ForeignKey("ClerkId")]
     public Clerk? Clerk { get; set; }
 
-    [ForeignKey("DepositId")]
-    public List<DepositClient>? Deposits { get; set; }
+    [ForeignKey("ClientId")]
+    public List<ClientCreditProgram>? CreditProgramClients { get; set; }
 
-    [ForeignKey("CreditProgramId")]
-    public List<ClientCreditProgram>? CreditPrograms { get; set; }
+    [ForeignKey("ClientId")]
+    public List<DepositClient>? DepositClients { get; set; }
 }

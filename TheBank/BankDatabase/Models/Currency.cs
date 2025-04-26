@@ -14,6 +14,11 @@ class Currency
 
     public required string StorekeeperId { get; set; }
 
-    [ForeignKey("StorekeeperId")]
     public Storekeeper? Storekeeper { get; set; }
+
+    [ForeignKey("CurrencyId")]
+    public List<CreditProgramCurrency>? CurrencyCreditPrograms { get; set; }
+
+    [ForeignKey("CurrencyId")]
+    public List<DepositCurrency>? DepositCurrencies { get; set; }
 }

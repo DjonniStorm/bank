@@ -21,12 +21,12 @@ class Clerk
 
     public required string PhoneNumber { get; set; }
 
-    [ForeignKey("ReplenishmentId")]
+    [ForeignKey("ClerkId")]
     public List<Replenishment>? Replenishments { get; set; }
 
-    [ForeignKey("DepositId")]
+    [ForeignKey("ClerkId")]
     public List<Deposit>? Deposits { get; set; }
 
-    [ForeignKey("ClientId")]
+    [ForeignKey("ClerkId")]
     public List<Client>? Clients { get; set; }
 }
