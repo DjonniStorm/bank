@@ -120,6 +120,11 @@ internal class ClerkStorageContract : IClerkStorageContract
             _dbContext.Clerks.Update(_mapper.Map(clerkDataModel, element));
             _dbContext.SaveChanges();
         }
+        catch (ElementNotFoundException)
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw;
+        }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { ConstraintName: "IX_Clerks_Email" })
         {
             _dbContext.ChangeTracker.Clear();

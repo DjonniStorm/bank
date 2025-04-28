@@ -31,7 +31,7 @@ internal class ClientStorageContract : IClientStorageContract
     {
         try
         {
-            var query = _dbContext.Deposits.Include(x => x.Clerk).AsQueryable();
+            var query = _dbContext.Clients.Include(x => x.Clerk).AsQueryable();
             if (clerkId is not null)
             {
                 query = query.Where(x => x.ClerkId == clerkId);
@@ -137,6 +137,7 @@ internal class ClientStorageContract : IClientStorageContract
                     element.DepositClients = _mapper.Map<List<DepositClient>>(clientDataModel.Deposits);
                     element.DepositClients = _mapper.Map<List<DepositClient>>(clientDataModel.CreditPrograms);
                 }
+                _mapper.Map(element, clientDataModel);
                 _dbContext.SaveChanges();
                 transaction.Commit();
             }

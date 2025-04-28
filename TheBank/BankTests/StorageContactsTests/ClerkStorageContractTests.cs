@@ -4,7 +4,6 @@ using BankContracts.StorageContracts;
 using BankDatabase.Implementations;
 using BankDatabase.Models;
 using BankTests.Infrastructure;
-using Microsoft.VisualStudio.CodeCoverage;
 
 namespace BankTests.StorageContactsTests;
 
@@ -49,8 +48,8 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
     [Test]
     public void Try_GetElementById_WhenHaveRecord_Test()
     {
-        var certificate = BankDbContext.InsertClerkToDatabaseAndReturn();
-        AssertElement(_storageContract.GetElementById(certificate.Id), certificate);
+        var clerk = BankDbContext.InsertClerkToDatabaseAndReturn();
+        AssertElement(_storageContract.GetElementById(clerk.Id), clerk);
     }
 
     [Test]
@@ -67,6 +66,37 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
         var clerk = CreateModel();
         BankDbContext.InsertClerkToDatabaseAndReturn(id: clerk.Id);
         Assert.That(() => _storageContract.AddElement(clerk), Throws.TypeOf<ElementExistsException>());
+    }
+
+    [Test]
+    public void Try_AddElement_WhenHaveRecordWithSameEmail_Test()
+    {
+        var clerk = CreateModel();
+        BankDbContext.InsertClerkToDatabaseAndReturn(email: clerk.Email);
+        Assert.That(() => _storageContract.AddElement(clerk), Throws.TypeOf<ElementExistsException>());
+    }
+
+    [Test]
+    public void Try_AddElement_WhenHaveRecordWithSameLogin_Test()
+    {
+        var clerk = CreateModel(login: "cheburek");
+        BankDbContext.InsertClerkToDatabaseAndReturn(email: "email@email.ru", login: "cheburek");
+        Assert.That(() => _storageContract.AddElement(clerk), Throws.TypeOf<ElementExistsException>());
+    }
+
+    [Test]
+    public void Try_UpdElement_Test()
+    {
+        var clerk = CreateModel();
+        BankDbContext.InsertClerkToDatabaseAndReturn(clerk.Id, name: "Женя");
+        _storageContract.UpdElement(clerk);
+        AssertElement(BankDbContext.GetClerkFromDatabase(clerk.Id), clerk);
+    }
+
+    [Test]
+    public void Try_UpdElement_WhenNoRecordWithThisId_Test()
+    {
+        Assert.That(() => _storageContract.UpdElement(CreateModel()), Throws.TypeOf<ElementNotFoundException>());
     }
 
     private static ClerkDataModel CreateModel(string? id = null, string? name = "vasya", string? surname = "petrov", string? middlename = "petrovich", string? login = "vasyapupkin", string? passwd = "*******", string? email = "email@email.com", string? phone = "+7-777-777-77-77")
