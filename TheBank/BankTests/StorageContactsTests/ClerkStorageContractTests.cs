@@ -25,7 +25,7 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
     }
 
     [Test]
-    public void TryGetListWhenHaveRecords_ShouldSucces_Test()
+    public void TryGetListWhenHaveRecords_ShouldSuccess_Test()
     {
         var clerk = BankDbContext.InsertClerkToDatabaseAndReturn();
         BankDbContext.InsertClerkToDatabaseAndReturn(login: "xomyak", email: "email1@email.com", phone: "+9-888-888-88-88");

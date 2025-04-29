@@ -89,6 +89,38 @@ internal static class BankDbContextExtension
         return period;
     }
 
+    public static Currency InsertCurrencyToDatabaseAndReturn(this BankDbContext dbContext, string? id = null, string? name = "pop", string? abbreviation = "rub", decimal cost = 10, string? storekeeperId = null)
+    {
+        var currency = new Currency()
+        {
+            Id = id ?? Guid.NewGuid().ToString(),
+            Name = name,
+            Abbreviation = abbreviation,
+            Cost = cost,
+            StorekeeperId = storekeeperId ?? Guid.NewGuid().ToString(),
+        };
+        dbContext.Currencies.Add(currency);
+        dbContext.SaveChanges();
+        return currency;
+    }
+
+    public static Deposit InsertDepositToDatabaseAndReturn(this BankDbContext dbContext, string? id = null, float interestRate = 1f, decimal cost = 10, int period = 1, string? clerkId = null)
+    {
+        var deposit = new Deposit()
+        {
+            Id = id ?? Guid.NewGuid().ToString(),
+            InterestRate = interestRate,
+            Cost = cost,
+            Period = period,
+            ClerkId = clerkId ?? Guid.NewGuid().ToString(),
+        };
+        dbContext.Deposits.Add(deposit);
+        dbContext.SaveChanges();
+        return deposit;
+    }
+
+    public static void RemoveCurrenciesFromDatabase(this BankDbContext dbContext) => dbContext.ExecuteSqlRaw("TRUNCATE \"Currencies\" CASCADE");
+
     public static void RemoveClientsFromDatabase(this BankDbContext dbContext) => dbContext.ExecuteSqlRaw("TRUNCATE \"Clients\" CASCADE");
 
     public static void RemoveStorekeepersFromDatabase(this BankDbContext dbContext) => dbContext.ExecuteSqlRaw("TRUNCATE \"Storekeepers\" CASCADE");
@@ -98,6 +130,8 @@ internal static class BankDbContextExtension
     public static void RemoveClerksFromDatabase(this BankDbContext dbContext) => dbContext.ExecuteSqlRaw("TRUNCATE \"Clerks\" CASCADE");
 
     public static void RemoveCreditProgramsFromDatabase(this BankDbContext dbContext) => dbContext.ExecuteSqlRaw("TRUNCATE \"CreditPrograms\" CASCADE");
+    
+    public static void RemoveDepositsFromDatabase(this BankDbContext dbContext) => dbContext.ExecuteSqlRaw("TRUNCATE \"Deposits\" CASCADE");
 
     public static Client? GetClientFromDatabase(this BankDbContext dbContext, string id) => dbContext.Clients.FirstOrDefault(x => x.Id == id);
 
@@ -105,5 +139,9 @@ internal static class BankDbContextExtension
 
     public static CreditProgram? GetCreditProgramFromDatabase(this BankDbContext dbContext, string id) => dbContext.CreditPrograms.FirstOrDefault(x => x.Id == id);
 
+    public static Currency? GetCurrencyFromDatabase(this BankDbContext dbContext, string id) => dbContext.Currencies.FirstOrDefault(x => x.Id == id);
+
+    public static Deposit? GetDepositFromDatabase(this BankDbContext dbContext, string id) => dbContext.Deposits.FirstOrDefault(x => x.Id == id);
+    
     private static void ExecuteSqlRaw(this BankDbContext dbContext, string command) => dbContext.Database.ExecuteSqlRaw(command);
 }

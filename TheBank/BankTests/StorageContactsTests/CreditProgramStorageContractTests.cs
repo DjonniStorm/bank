@@ -1,4 +1,5 @@
 ﻿using BankContracts.DataModels;
+using BankContracts.Exceptions;
 using BankContracts.StorageContracts;
 using BankDatabase.Implementations;
 using BankDatabase.Models;
@@ -66,6 +67,29 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
         var credit = CreateModel(name: "unique name", periodId: _periodId, storekeeperId: _storekeeperId);
         _storageContract.AddElement(credit);
         AssertElement(BankDbContext.GetCreditProgramFromDatabase(credit.Id), credit);
+    }
+
+    [Test]
+    public void Try_AddElement_WhenHaveRecordWithSameName_Test()
+    {
+        var credit = CreateModel(name: "1", storekeeperId: _storekeeperId, periodId: _periodId);
+        BankDbContext.InsertCreditProgramToDatabaseAndReturn(name: "1", periodId: _periodId, storeleeperId: _storekeeperId);
+        Assert.That(() => _storageContract.AddElement(credit), Throws.TypeOf<ElementExistsException>());
+    }
+
+    [Test]
+    public void Try_UpdElement_Test() 
+    {
+        var credit = CreateModel(name: "unique name", periodId: _periodId, storekeeperId: _storekeeperId);
+        BankDbContext.InsertCreditProgramToDatabaseAndReturn(credit.Id, periodId: _periodId, storeleeperId: _storekeeperId);
+        _storageContract.UpdElement(credit);
+        AssertElement(BankDbContext.GetCreditProgramFromDatabase(credit.Id), credit);
+    }
+
+    [Test]
+    public void Try_UpdElement_WhenNoRecordWithThisId_Test()
+    {
+        Assert.That(() => _storageContract.UpdElement(CreateModel(storekeeperId: _storekeeperId, periodId: _periodId)), Throws.TypeOf<ElementNotFoundException>());
     }
 
     private static CreditProgramDataModel CreateModel(string? id = null, string? name = "name", decimal cost = 1, decimal maxCost = 2, string? storekeeperId = null, string? periodId = null, List<CreditProgramCurrencyDataModel>? currency = null) 
