@@ -1,4 +1,4 @@
-﻿using BankContracts.DataModels;
+using BankContracts.DataModels;
 using BankContracts.Exceptions;
 using BankContracts.StorageContracts;
 using BankDatabase.Implementations;
@@ -8,32 +8,32 @@ using BankTests.Infrastructure;
 namespace BankTests.StorageContactsTests;
 
 [TestFixture]
-internal class ClerkStorageContractTests : BaseStorageContractTest
+internal class StorekeeperStorageContractTests : BaseStorageContractTest
 {
-    private IClerkStorageContract _storageContract;
-
+    private IStorekeeperStorageContract _storageContract;
+    
     [SetUp]
     public void SetUp()
     {
-        _storageContract = new ClerkStorageContract(BankDbContext);
+        _storageContract = new StorekeeperStorageContract(BankDbContext);
     }
 
     [TearDown]
     public void TearDown()
     {
-        BankDbContext.RemoveClerksFromDatabase();
+        BankDbContext.RemoveStorekeepersFromDatabase();
     }
 
     [Test]
     public void TryGetListWhenHaveRecords_ShouldSuccess_Test()
     {
-        var clerk = BankDbContext.InsertClerkToDatabaseAndReturn();
-        BankDbContext.InsertClerkToDatabaseAndReturn(
-            login: "xomyak",
+        var storekeeper = BankDbContext.InsertStorekeeperToDatabaseAndReturn();
+        BankDbContext.InsertStorekeeperToDatabaseAndReturn(
+            login: "xomyak2",
             email: "email1@email.com",
-            phone: "+9-888-888-88-88"
+            phone: "+9-888-888-88-68"
         );
-        BankDbContext.InsertClerkToDatabaseAndReturn(
+        BankDbContext.InsertStorekeeperToDatabaseAndReturn(
             login: "xomyak3",
             email: "email3@email.com",
             phone: "+9-888-888-88-78"
@@ -42,7 +42,7 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
         var list = _storageContract.GetList();
         Assert.That(list, Is.Not.Null);
         Assert.That(list, Has.Count.EqualTo(3));
-        AssertElement(list.First(x => x.Id == clerk.Id), clerk);
+        AssertElement(list.First(x => x.Id == storekeeper.Id), storekeeper);
     }
 
     [Test]
@@ -56,25 +56,25 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
     [Test]
     public void Try_GetElementById_WhenHaveRecord_Test()
     {
-        var clerk = BankDbContext.InsertClerkToDatabaseAndReturn();
-        AssertElement(_storageContract.GetElementById(clerk.Id), clerk);
+        var storekeeper = BankDbContext.InsertStorekeeperToDatabaseAndReturn();
+        AssertElement(_storageContract.GetElementById(storekeeper.Id), storekeeper);
     }
 
     [Test]
     public void Try_AddElement_Test()
     {
-        var clerk = CreateModel();
-        _storageContract.AddElement(clerk);
-        AssertElement(BankDbContext.GetClerkFromDatabase(clerk.Id), clerk);
+        var storekeeper = CreateModel();
+        _storageContract.AddElement(storekeeper);
+        AssertElement(BankDbContext.GetStorekeeperFromDatabase(storekeeper.Id), storekeeper);
     }
 
     [Test]
     public void Try_AddElement_WhenHaveRecordWithSameId_Test()
     {
-        var clerk = CreateModel();
-        BankDbContext.InsertClerkToDatabaseAndReturn(id: clerk.Id);
+        var storekeeper = CreateModel();
+        BankDbContext.InsertStorekeeperToDatabaseAndReturn(id: storekeeper.Id);
         Assert.That(
-            () => _storageContract.AddElement(clerk),
+            () => _storageContract.AddElement(storekeeper),
             Throws.TypeOf<ElementExistsException>()
         );
     }
@@ -82,10 +82,10 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
     [Test]
     public void Try_AddElement_WhenHaveRecordWithSameEmail_Test()
     {
-        var clerk = CreateModel();
-        BankDbContext.InsertClerkToDatabaseAndReturn(email: clerk.Email);
+        var storekeeper = CreateModel();
+        BankDbContext.InsertStorekeeperToDatabaseAndReturn(email: storekeeper.Email);
         Assert.That(
-            () => _storageContract.AddElement(clerk),
+            () => _storageContract.AddElement(storekeeper),
             Throws.TypeOf<ElementExistsException>()
         );
     }
@@ -93,10 +93,10 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
     [Test]
     public void Try_AddElement_WhenHaveRecordWithSameLogin_Test()
     {
-        var clerk = CreateModel(login: "cheburek");
-        BankDbContext.InsertClerkToDatabaseAndReturn(email: "email@email.ru", login: "cheburek");
+        var storekeeper = CreateModel(login: "cheburek");
+        BankDbContext.InsertStorekeeperToDatabaseAndReturn(email: "email@email.ru", login: "cheburek");
         Assert.That(
-            () => _storageContract.AddElement(clerk),
+            () => _storageContract.AddElement(storekeeper),
             Throws.TypeOf<ElementExistsException>()
         );
     }
@@ -104,10 +104,10 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
     [Test]
     public void Try_UpdElement_Test()
     {
-        var clerk = CreateModel();
-        BankDbContext.InsertClerkToDatabaseAndReturn(clerk.Id, name: "Женя");
-        _storageContract.UpdElement(clerk);
-        AssertElement(BankDbContext.GetClerkFromDatabase(clerk.Id), clerk);
+        var storekeeper = CreateModel();
+        BankDbContext.InsertStorekeeperToDatabaseAndReturn(storekeeper.Id, name: "Женя");
+        _storageContract.UpdElement(storekeeper);
+        AssertElement(BankDbContext.GetStorekeeperFromDatabase(storekeeper.Id), storekeeper);
     }
 
     [Test]
@@ -119,7 +119,7 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
         );
     }
 
-    private static ClerkDataModel CreateModel(
+    private static StorekeeperDataModel CreateModel(
         string? id = null,
         string? name = "vasya",
         string? surname = "petrov",
@@ -140,7 +140,7 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
             phone
         );
 
-    private static void AssertElement(ClerkDataModel actual, Clerk? expected)
+    private static void AssertElement(StorekeeperDataModel actual, Storekeeper? expected)
     {
         Assert.That(expected, Is.Not.Null);
         Assert.Multiple(() =>
@@ -155,7 +155,7 @@ internal class ClerkStorageContractTests : BaseStorageContractTest
         });
     }
 
-    private static void AssertElement(Clerk actual, ClerkDataModel? expected)
+    private static void AssertElement(Storekeeper actual, StorekeeperDataModel? expected)
     {
         Assert.That(expected, Is.Not.Null);
         Assert.Multiple(() =>

@@ -48,7 +48,7 @@ internal class DepositStorageContractTests : BaseStorageContractTest
         Assert.That(list, Is.Not.Null);
         Assert.That(list, Is.Empty);
     }
-    
+
     [Test]
     public void Try_GetElementById_WhenHaveRecord_Test()
     {
@@ -64,16 +64,17 @@ internal class DepositStorageContractTests : BaseStorageContractTest
         AssertElement(BankDbContext.GetDepositFromDatabase(deposit.Id), deposit);
     }
 
-    
     [Test]
     public void Try_AddElement_WhenHaveRecordWithSameId_Test()
     {
         var deposit = CreateModel(clerkId: _clerkId);
         BankDbContext.InsertDepositToDatabaseAndReturn(id: deposit.Id, clerkId: _clerkId);
-        Assert.That(() => _storageContract.AddElement(deposit), Throws.TypeOf<ElementExistsException>());
+        Assert.That(
+            () => _storageContract.AddElement(deposit),
+            Throws.TypeOf<ElementExistsException>()
+        );
     }
 
-    
     [Test]
     public void Try_UpdElement_Test()
     {
@@ -83,16 +84,31 @@ internal class DepositStorageContractTests : BaseStorageContractTest
         AssertElement(BankDbContext.GetDepositFromDatabase(deposit.Id), deposit);
     }
 
-    
     [Test]
     public void Try_UpdElement_WhenNoRecordWithThisId_Test()
     {
-        Assert.That(() => _storageContract.UpdElement(CreateModel(clerkId: _clerkId)), Throws.TypeOf<ElementNotFoundException>());
+        Assert.That(
+            () => _storageContract.UpdElement(CreateModel(clerkId: _clerkId)),
+            Throws.TypeOf<ElementNotFoundException>()
+        );
     }
 
-
-    private static DepositDataModel CreateModel(string? id = null, float interestRate = 10, decimal cost = 10, int period = 10, string? clerkId = null, List<DepositCurrencyDataModel>? deposits = null)
-        => new (id ?? Guid.NewGuid().ToString(), interestRate, cost, period, clerkId ?? Guid.NewGuid().ToString(), deposits ?? []);
+    private static DepositDataModel CreateModel(
+        string? id = null,
+        float interestRate = 10,
+        decimal cost = 10,
+        int period = 10,
+        string? clerkId = null,
+        List<DepositCurrencyDataModel>? deposits = null
+    ) =>
+        new(
+            id ?? Guid.NewGuid().ToString(),
+            interestRate,
+            cost,
+            period,
+            clerkId ?? Guid.NewGuid().ToString(),
+            deposits ?? []
+        );
 
     private static void AssertElement(DepositDataModel actual, Deposit? expected)
     {

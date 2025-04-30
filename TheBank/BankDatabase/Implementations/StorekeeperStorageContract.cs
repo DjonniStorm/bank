@@ -85,6 +85,11 @@ internal class StorekeeperStorageContract : IStorekeeperStorageContract
             _dbContext.Storekeepers.Add(_mapper.Map<Storekeeper>(storekeeperDataModel));
             _dbContext.SaveChanges();
         }
+        catch (InvalidOperationException ex) when (ex.TargetSite?.Name == "ThrowIdentityConflict")
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw new ElementExistsException($"Id {storekeeperDataModel.Id}");
+        }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { ConstraintName: "IX_Storekeepers_Email" })
         {
             _dbContext.ChangeTracker.Clear();
@@ -114,6 +119,11 @@ internal class StorekeeperStorageContract : IStorekeeperStorageContract
             var element = GetStorekeeperById(storekeeperDataModel.Id) ?? throw new ElementNotFoundException(storekeeperDataModel.Id);
             _dbContext.Storekeepers.Update(_mapper.Map(storekeeperDataModel, element));
             _dbContext.SaveChanges();
+        }
+        catch (ElementNotFoundException)
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw;
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { ConstraintName: "IX_Storekeepers_Email" })
         {

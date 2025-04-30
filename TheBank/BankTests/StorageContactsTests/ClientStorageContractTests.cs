@@ -52,7 +52,11 @@ internal class ClientStorageContractTests : BaseStorageContractTest
     [Test]
     public void TryGetList_ByClerk_WhenHaveRecords_Test()
     {
-        var clerk = BankDbContext.InsertClerkToDatabaseAndReturn(email: "slava@ilya.com", login: "login",phone: "+7-987-555-55-55");
+        var clerk = BankDbContext.InsertClerkToDatabaseAndReturn(
+            email: "slava@ilya.com",
+            login: "login",
+            phone: "+7-987-555-55-55"
+        );
 
         BankDbContext.InsertClientToDatabaseAndReturn(clerkId: clerk.Id);
         BankDbContext.InsertClientToDatabaseAndReturn(clerkId: clerk.Id);
@@ -91,11 +95,30 @@ internal class ClientStorageContractTests : BaseStorageContractTest
     [Test]
     public void Try_UpdElement_WhenNoRecordWithThisId_Test()
     {
-        Assert.That(() => _clientStorageContract.UpdElement(CreateModel(_clerkId)), Throws.TypeOf<ElementNotFoundException>());
+        Assert.That(
+            () => _clientStorageContract.UpdElement(CreateModel(_clerkId)),
+            Throws.TypeOf<ElementNotFoundException>()
+        );
     }
 
-    private static ClientDataModel CreateModel(string clerkid, string? id = null, string? name = "null", string? surname = "surname", decimal balance = 1, List<DepositClientDataModel>? depositClients = null, List<ClientCreditProgramDataModel>? clientCredits = null) 
-        => new(id ?? Guid.NewGuid().ToString(), name, surname, balance, clerkid, depositClients ?? [], clientCredits ?? []);
+    private static ClientDataModel CreateModel(
+        string clerkid,
+        string? id = null,
+        string? name = "null",
+        string? surname = "surname",
+        decimal balance = 1,
+        List<DepositClientDataModel>? depositClients = null,
+        List<ClientCreditProgramDataModel>? clientCredits = null
+    ) =>
+        new(
+            id ?? Guid.NewGuid().ToString(),
+            name,
+            surname,
+            balance,
+            clerkid,
+            depositClients ?? [],
+            clientCredits ?? []
+        );
 
     private static void AssertElement(ClientDataModel actual, Client? expected)
     {

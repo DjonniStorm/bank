@@ -1,10 +1,10 @@
-﻿using BankContracts.DataModels;
+﻿using System.Xml.Linq;
+using BankContracts.DataModels;
 using BankContracts.Exceptions;
 using BankContracts.StorageContracts;
 using BankDatabase.Implementations;
 using BankDatabase.Models;
 using BankTests.Infrastructure;
-using System.Xml.Linq;
 
 namespace BankTests.StorageContactsTests;
 
@@ -36,9 +36,20 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
     [Test]
     public void TryGetListWhenHaveRecords_ShouldSucces_Test()
     {
-        var clerk = BankDbContext.InsertCreditProgramToDatabaseAndReturn(storeleeperId: _storekeeperId, periodId: _periodId);
-        BankDbContext.InsertCreditProgramToDatabaseAndReturn(name: "bankrot2", storeleeperId: _storekeeperId, periodId: _periodId);
-        BankDbContext.InsertCreditProgramToDatabaseAndReturn(name: "bankrot3", storeleeperId: _storekeeperId, periodId: _periodId);
+        var clerk = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            storeleeperId: _storekeeperId,
+            periodId: _periodId
+        );
+        BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            name: "bankrot2",
+            storeleeperId: _storekeeperId,
+            periodId: _periodId
+        );
+        BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            name: "bankrot3",
+            storeleeperId: _storekeeperId,
+            periodId: _periodId
+        );
 
         var list = _storageContract.GetList();
         Assert.That(list, Is.Not.Null);
@@ -57,14 +68,21 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
     [Test]
     public void Try_GetElementById_WhenHaveRecord_Test()
     {
-        var creditProgram = BankDbContext.InsertCreditProgramToDatabaseAndReturn(storeleeperId: _storekeeperId, periodId: _periodId);
+        var creditProgram = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            storeleeperId: _storekeeperId,
+            periodId: _periodId
+        );
         AssertElement(_storageContract.GetElementById(creditProgram.Id), creditProgram);
     }
 
     [Test]
     public void Try_AddElement_Test()
     {
-        var credit = CreateModel(name: "unique name", periodId: _periodId, storekeeperId: _storekeeperId);
+        var credit = CreateModel(
+            name: "unique name",
+            periodId: _periodId,
+            storekeeperId: _storekeeperId
+        );
         _storageContract.AddElement(credit);
         AssertElement(BankDbContext.GetCreditProgramFromDatabase(credit.Id), credit);
     }
@@ -73,15 +91,30 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
     public void Try_AddElement_WhenHaveRecordWithSameName_Test()
     {
         var credit = CreateModel(name: "1", storekeeperId: _storekeeperId, periodId: _periodId);
-        BankDbContext.InsertCreditProgramToDatabaseAndReturn(name: "1", periodId: _periodId, storeleeperId: _storekeeperId);
-        Assert.That(() => _storageContract.AddElement(credit), Throws.TypeOf<ElementExistsException>());
+        BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            name: "1",
+            periodId: _periodId,
+            storeleeperId: _storekeeperId
+        );
+        Assert.That(
+            () => _storageContract.AddElement(credit),
+            Throws.TypeOf<ElementExistsException>()
+        );
     }
 
     [Test]
-    public void Try_UpdElement_Test() 
+    public void Try_UpdElement_Test()
     {
-        var credit = CreateModel(name: "unique name", periodId: _periodId, storekeeperId: _storekeeperId);
-        BankDbContext.InsertCreditProgramToDatabaseAndReturn(credit.Id, periodId: _periodId, storeleeperId: _storekeeperId);
+        var credit = CreateModel(
+            name: "unique name",
+            periodId: _periodId,
+            storekeeperId: _storekeeperId
+        );
+        BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            credit.Id,
+            periodId: _periodId,
+            storeleeperId: _storekeeperId
+        );
         _storageContract.UpdElement(credit);
         AssertElement(BankDbContext.GetCreditProgramFromDatabase(credit.Id), credit);
     }
@@ -89,11 +122,33 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
     [Test]
     public void Try_UpdElement_WhenNoRecordWithThisId_Test()
     {
-        Assert.That(() => _storageContract.UpdElement(CreateModel(storekeeperId: _storekeeperId, periodId: _periodId)), Throws.TypeOf<ElementNotFoundException>());
+        Assert.That(
+            () =>
+                _storageContract.UpdElement(
+                    CreateModel(storekeeperId: _storekeeperId, periodId: _periodId)
+                ),
+            Throws.TypeOf<ElementNotFoundException>()
+        );
     }
 
-    private static CreditProgramDataModel CreateModel(string? id = null, string? name = "name", decimal cost = 1, decimal maxCost = 2, string? storekeeperId = null, string? periodId = null, List<CreditProgramCurrencyDataModel>? currency = null) 
-        => new(id ?? Guid.NewGuid().ToString(), name, cost, maxCost, storekeeperId ?? Guid.NewGuid().ToString(), periodId ?? Guid.NewGuid().ToString(), currency ?? []);
+    private static CreditProgramDataModel CreateModel(
+        string? id = null,
+        string? name = "name",
+        decimal cost = 1,
+        decimal maxCost = 2,
+        string? storekeeperId = null,
+        string? periodId = null,
+        List<CreditProgramCurrencyDataModel>? currency = null
+    ) =>
+        new(
+            id ?? Guid.NewGuid().ToString(),
+            name,
+            cost,
+            maxCost,
+            storekeeperId ?? Guid.NewGuid().ToString(),
+            periodId ?? Guid.NewGuid().ToString(),
+            currency ?? []
+        );
 
     private static void AssertElement(CreditProgramDataModel actual, CreditProgram? expected)
     {

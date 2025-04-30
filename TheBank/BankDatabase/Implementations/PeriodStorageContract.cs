@@ -19,7 +19,8 @@ internal class PeriodStorageContract : IPeriodStorageContract
         _dbContext = dbContext;
         var config = new MapperConfiguration(cfg => 
         {
-            cfg.CreateMap<Period, PeriodDataModel>();
+            cfg.CreateMap<Period, PeriodDataModel>()
+                .ConstructUsing(src => new PeriodDataModel(src.Id, src.StartTime, src.EndTime, src.StorekeeperId));
             cfg.CreateMap<PeriodDataModel, Period>();
         });
         _mapper = new Mapper(config);
@@ -42,6 +43,8 @@ internal class PeriodStorageContract : IPeriodStorageContract
             {
                 query = query.Where(x => x.StorekeeperId == storekeeperId);
             }
+            var test0 = query.FirstOrDefault();
+            var test = _mapper.Map<PeriodDataModel>(test0);
             return [..query.Select(x => _mapper.Map<PeriodDataModel>(x))];
         }
         catch (Exception ex) 
@@ -70,6 +73,11 @@ internal class PeriodStorageContract : IPeriodStorageContract
         {
             _dbContext.Periods.Add(_mapper.Map<Period>(periodDataModel));
             _dbContext.SaveChanges();
+        }
+        catch (InvalidOperationException ex) when (ex.TargetSite?.Name == "ThrowIdentityConflict")
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw new ElementExistsException($"Id {periodDataModel.Id}");
         }
         catch (Exception ex) 
         {
