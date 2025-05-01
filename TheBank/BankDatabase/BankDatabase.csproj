@@ -20,4 +20,8 @@
     <InternalsVisibleTo Include="BankTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="BankWebApi" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 </Project>
