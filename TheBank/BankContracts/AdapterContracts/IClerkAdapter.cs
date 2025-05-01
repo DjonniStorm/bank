@@ -12,7 +12,7 @@ public interface IClerkAdapter
 
     ClerkOperationResponse GetElement(string data);
 
-    ClerkOperationResponse RegisterClerk(ClerkBindingModel clerkDataModel);
+    ClerkOperationResponse RegisterClerk(ClerkBindingModel clerkModel);
 
-    ClerkOperationResponse ChangeClerkInfo(ClerkBindingModel clerkDataModel);
+    ClerkOperationResponse ChangeClerkInfo(ClerkBindingModel clerkModel);
 }

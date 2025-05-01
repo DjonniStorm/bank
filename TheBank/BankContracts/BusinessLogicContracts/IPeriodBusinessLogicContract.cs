@@ -10,9 +10,9 @@ public interface IPeriodBusinessLogicContract
 
     List<PeriodDataModel> GetAllPeriodsByStorekeeper(string storekeeperId);
 
-    List<PeriodDataModel> GetAllPeriodsByStartTime(DateTime fromDate, DateTime toDate);
+    List<PeriodDataModel> GetAllPeriodsByStartTime(DateTime fromDate);
 
-    List<PeriodDataModel> GetAllPeriodsByEndTime(DateTime fromDate, DateTime toDate);
+    List<PeriodDataModel> GetAllPeriodsByEndTime(DateTime toDate);
 
     void InsertPeriod(PeriodDataModel periodataModel);
 

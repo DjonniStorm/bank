@@ -92,11 +92,11 @@ public class ClerkAdapter : IClerkAdapter
         }
     }
 
-    public ClerkOperationResponse RegisterClerk(ClerkBindingModel clerkDataModel)
+    public ClerkOperationResponse RegisterClerk(ClerkBindingModel clerkModel)
     {
         try
         {
-            _clerkBusinessLogicContract.InsertClerk(_mapper.Map<ClerkDataModel>(clerkDataModel));
+            _clerkBusinessLogicContract.InsertClerk(_mapper.Map<ClerkDataModel>(clerkModel));
             return ClerkOperationResponse.NoContent();
         }
         catch (ArgumentNullException ex)
@@ -128,11 +128,11 @@ public class ClerkAdapter : IClerkAdapter
         }
     }
 
-    public ClerkOperationResponse ChangeClerkInfo(ClerkBindingModel clerkDataModel)
+    public ClerkOperationResponse ChangeClerkInfo(ClerkBindingModel clerkModel)
     {
         try
         {
-            _clerkBusinessLogicContract.UpdateClerk(_mapper.Map<ClerkDataModel>(clerkDataModel));
+            _clerkBusinessLogicContract.UpdateClerk(_mapper.Map<ClerkDataModel>(clerkModel));
             return ClerkOperationResponse.NoContent();
         }
         catch (ArgumentNullException ex)
@@ -149,7 +149,7 @@ public class ClerkAdapter : IClerkAdapter
         {
             _logger.LogError(ex, "ElementNotFoundException");
             return ClerkOperationResponse.BadRequest(
-                $"Not found element by Id {clerkDataModel.Id}"
+                $"Not found element by Id {clerkModel.Id}"
             );
         }
         catch (ElementExistsException ex)
