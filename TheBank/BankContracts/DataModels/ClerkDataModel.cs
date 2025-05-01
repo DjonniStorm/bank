@@ -1,7 +1,7 @@
-﻿using BankContracts.Exceptions;
+﻿using System.Text.RegularExpressions;
+using BankContracts.Exceptions;
 using BankContracts.Extensions;
 using BankContracts.Infrastructure;
-using System.Text.RegularExpressions;
 
 namespace BankContracts.DataModels;
 
@@ -16,7 +16,16 @@ namespace BankContracts.DataModels;
 /// <param name="password">пароль</param>
 /// <param name="email">адрес электронной почты</param>
 /// <param name="phoneNumber">номер телефона</param>
-public class ClerkDataModel(string id, string name, string surname, string middleName, string login, string password, string email, string phoneNumber) : IValidation
+public class ClerkDataModel(
+    string id,
+    string name,
+    string surname,
+    string middleName,
+    string login,
+    string password,
+    string email,
+    string phoneNumber
+) : IValidation
 {
     public string Id { get; private set; } = id;
 
@@ -26,7 +35,7 @@ public class ClerkDataModel(string id, string name, string surname, string middl
 
     public string MiddleName { get; private set; } = middleName;
 
-    public string Login {  get; private set; } = login;
+    public string Login { get; private set; } = login;
 
     public string Password { get; private set; } = password;
 

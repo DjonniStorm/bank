@@ -5,6 +5,7 @@ using BankContracts.Exceptions;
 using BankContracts.Extensions;
 using BankContracts.StorageContracts;
 using Microsoft.Extensions.Logging;
+using static System.Single;
 
 namespace BankBusinessLogic.Implementations;
 
@@ -57,8 +58,10 @@ internal class DepositBusinessLogicContract(
             return _depositStorageContract.GetElementById(data)
                 ?? throw new ElementNotFoundException($"element not found: {data}");
         }
-        return _depositStorageContract.GetElementByName(data)
-            ?? throw new ElementNotFoundException($"element not found: {data}");
+        return TryParse(data, out var result) // пофиксить!!!
+            ? _depositStorageContract.GetElementByInterestRate(result) ?? 
+                throw new ElementNotFoundException($"element not found: {data}")
+            : throw new ElementNotFoundException($"element not found: {data}");
     }
 
     public void InsertDeposit(DepositDataModel depositDataModel)

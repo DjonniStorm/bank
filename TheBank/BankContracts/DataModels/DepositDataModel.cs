@@ -12,7 +12,9 @@ namespace BankContracts.DataModels;
 /// <param name="cost">стоимость</param>
 /// <param name="period">срок</param>
 /// <param name="clerkId">уникальный Guid индентификатор клерка</param>
-public class DepositDataModel(string id, float interestRate, decimal cost, int period, string clerkId) : IValidation
+/// <param name="depositCurrencies">валюты вклада</param>
+public class DepositDataModel(string id, float interestRate, decimal cost, int period, string clerkId,
+    List<DepositCurrencyDataModel> depositCurrencies) : IValidation
 {
     public string Id { get; private set; } = id;
 
@@ -23,6 +25,8 @@ public class DepositDataModel(string id, float interestRate, decimal cost, int p
     public int Period { get; private set; } = period;
 
     public string ClerkId { get; private set; } = clerkId;
+
+    public List<DepositCurrencyDataModel> Currencies { get; private set; } = depositCurrencies;
 
     public void Validate()
     {
@@ -53,6 +57,10 @@ public class DepositDataModel(string id, float interestRate, decimal cost, int p
         if (!ClerkId.IsGuid())
         {
             throw new ValidationException("The value in the field ClerkId is not a unique identifier");
+        }
+        if (Currencies is null)
+        {
+            throw new ValidationException("Field Currencies is null");
         }
     }
 }
