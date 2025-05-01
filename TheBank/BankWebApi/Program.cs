@@ -86,11 +86,15 @@ builder.Services.AddOpenApi();
 builder.Services.AddSingleton<IConfigurationDatabase, ConfigurationDatabase>();
 // бизнес логика
 builder.Services.AddTransient<IClerkBusinessLogicContract, ClerkBusinessLogicContract>();
+builder.Services.AddTransient<IPeriodBusinessLogicContract, PeriodBusinessLogicContract>();
 // бд
 builder.Services.AddTransient<BankDbContext>();
 builder.Services.AddTransient<IClerkStorageContract, ClerkStorageContract>();
+builder.Services.AddTransient<IPeriodStorageContract, PeriodStorageContract>();
 // адаптеры
 builder.Services.AddTransient<IClerkAdapter, ClerkAdapter>();
+builder.Services.AddTransient<IPeriodAdapter, PeriodAdapter>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
