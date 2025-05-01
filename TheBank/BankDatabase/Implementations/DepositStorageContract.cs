@@ -111,6 +111,7 @@ internal class DepositStorageContract : IDepositStorageContract
 
                     element.DepositCurrencies = _mapper.Map<List<DepositCurrency>>(depositDataModel.Currencies);
                 }
+                _mapper.Map(depositDataModel, element);
                 _dbContext.SaveChanges();
                 transaction.Commit();
             }

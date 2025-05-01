@@ -28,7 +28,7 @@ internal class ReplenishmentStorageContract : IReplenishmentStorageContract
     {
         try
         {
-            var query = _dbContext.Replenishments.Where(x => x.Date >= fromDate && x.Date <= toDate);
+            var query = _dbContext.Replenishments.AsQueryable();
             if (clerkId is not null)
             {
                 query = query.Where(x => x.ClerkId == clerkId);
@@ -36,6 +36,14 @@ internal class ReplenishmentStorageContract : IReplenishmentStorageContract
             if (depositId is not null)
             {
                 query = query.Where(x => x.DepositId == depositId);
+            }
+            if (fromDate is not null)
+            {
+                query = query.Where(x => x.Date >= fromDate);
+            }
+            if (toDate is not null)
+            {
+                query = query.Where(x => x.Date <= toDate);
             }
             return [.. query.Select(x => _mapper.Map<ReplenishmentDataModel>(x))];
         }

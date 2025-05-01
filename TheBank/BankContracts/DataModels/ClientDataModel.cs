@@ -27,9 +27,9 @@ public class ClientDataModel(string id, string name, string surname, decimal bal
 
     public string ClerkId { get; private set; } = clerkId;
 
-    public List<DepositClientDataModel> Deposits { get; private set; } = depositClients;
+    public List<DepositClientDataModel> DepositClients { get; private set; } = depositClients;
 
-    public List<ClientCreditProgramDataModel> CreditPrograms { get; private set; } = creditProgramClients;
+    public List<ClientCreditProgramDataModel> CreditProgramClients { get; private set; } = creditProgramClients;
 
     public void Validate()
     {
@@ -61,13 +61,13 @@ public class ClientDataModel(string id, string name, string surname, decimal bal
         {
             throw new ValidationException("The value in the field Clerkid is not a unique identifier");
         }
-        if (Deposits is null)
+        if (DepositClients is null)
         {
-            throw new ValidationException("Field Deposits is null");
+            throw new ValidationException("Field DepositClients is null");
         }
-        if (CreditPrograms is null)
+        if (CreditProgramClients is null)
         {
-            throw new ValidationException("Field CreditPrograms is null");
+            throw new ValidationException("Field CreditProgramClients is null");
         }
     }
 }
