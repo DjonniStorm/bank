@@ -11,7 +11,7 @@ namespace BankTests.StorageContactsTests;
 internal class StorekeeperStorageContractTests : BaseStorageContractTest
 {
     private IStorekeeperStorageContract _storageContract;
-    
+
     [SetUp]
     public void SetUp()
     {
@@ -94,7 +94,10 @@ internal class StorekeeperStorageContractTests : BaseStorageContractTest
     public void Try_AddElement_WhenHaveRecordWithSameLogin_Test()
     {
         var storekeeper = CreateModel(login: "cheburek");
-        BankDbContext.InsertStorekeeperToDatabaseAndReturn(email: "email@email.ru", login: "cheburek");
+        BankDbContext.InsertStorekeeperToDatabaseAndReturn(
+            email: "email@email.ru",
+            login: "cheburek"
+        );
         Assert.That(
             () => _storageContract.AddElement(storekeeper),
             Throws.TypeOf<ElementExistsException>()

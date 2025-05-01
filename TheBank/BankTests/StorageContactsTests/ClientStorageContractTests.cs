@@ -10,35 +10,70 @@ namespace BankTests.StorageContactsTests;
 [TestFixture]
 internal class ClientStorageContractTests : BaseStorageContractTest
 {
+    private IClientStorageContract _clientStorageContract;
+
     private string _clerkId;
 
-    private IClientStorageContract _clientStorageContract;
+    private string _depositId;
+
+    private string _creditProgramId;
+
+    private string _storekeeperId;
+
+    private string _periodId;
 
     [SetUp]
     public void SetUp()
     {
-        _clerkId = BankDbContext.InsertClerkToDatabaseAndReturn().Id;
         _clientStorageContract = new ClientStorageContract(BankDbContext);
+        _clerkId = BankDbContext.InsertClerkToDatabaseAndReturn().Id;
+        _storekeeperId = BankDbContext.InsertStorekeeperToDatabaseAndReturn().Id;
+        _depositId = BankDbContext.InsertDepositToDatabaseAndReturn(clerkId: _clerkId).Id;
+        _periodId = BankDbContext.InsertPeriodToDatabaseAndReturn(storekeeperId: _storekeeperId).Id;
+        _creditProgramId = BankDbContext
+            .InsertCreditProgramToDatabaseAndReturn(
+                storeleeperId: _storekeeperId,
+                periodId: _periodId
+            )
+            .Id;
     }
 
     [TearDown]
     public void TearDown()
     {
         BankDbContext.RemoveClientsFromDatabase();
+        BankDbContext.RemoveDepositsFromDatabase();
+        BankDbContext.RemovePeriodsFromDatabase();
+        BankDbContext.RemoveCreditProgramsFromDatabase();
         BankDbContext.RemoveClerksFromDatabase();
+        BankDbContext.RemoveStorekeepersFromDatabase();
     }
 
     [Test]
     public void TryGetListWhenHaveRecords_ShouldSucces_Test()
     {
-        var client = BankDbContext.InsertClientToDatabaseAndReturn(clerkId: _clerkId);
-        BankDbContext.InsertClientToDatabaseAndReturn(clerkId: _clerkId);
-        BankDbContext.InsertClientToDatabaseAndReturn(clerkId: _clerkId);
+        var clientId = Guid.NewGuid().ToString();
+        var client = BankDbContext.InsertClientToDatabaseAndReturn(
+            id: clientId,
+            clerkId: _clerkId,
+            depositClients: [(_depositId, clientId)]
+        );
+        BankDbContext.InsertClientToDatabaseAndReturn(
+            clerkId: _clerkId,
+            depositClients:
+            [
+                (BankDbContext.InsertDepositToDatabaseAndReturn(clerkId: _clerkId).Id, clientId),
+            ]
+        );
+        BankDbContext.InsertClientToDatabaseAndReturn(
+            clerkId: _clerkId,
+            creditProgramClients: [(clientId, _creditProgramId)]
+        );
 
         var list = _clientStorageContract.GetList();
         Assert.That(list, Is.Not.Null);
         Assert.That(list, Has.Count.EqualTo(3));
-        AssertElement(list.First(x => x.Id == client.Id), client);
+        AssertElement(list.First(x => x.Id == clientId), client);
     }
 
     [Test]
@@ -78,7 +113,13 @@ internal class ClientStorageContractTests : BaseStorageContractTest
     [Test]
     public void Try_AddElement_Test()
     {
-        var client = CreateModel(_clerkId);
+        var clientId = Guid.NewGuid().ToString();
+        var client = CreateModel(
+            _clerkId,
+            clientId,
+            depositClients: [new DepositClientDataModel(_depositId, clientId)],
+            clientCredits: [new ClientCreditProgramDataModel(clientId, _creditProgramId)]
+        );
         _clientStorageContract.AddElement(client);
         AssertElement(BankDbContext.GetClientFromDatabase(client.Id), client);
     }
@@ -86,10 +127,20 @@ internal class ClientStorageContractTests : BaseStorageContractTest
     [Test]
     public void Try_UpdElement_Test()
     {
-        var client = CreateModel(_clerkId);
-        BankDbContext.InsertClientToDatabaseAndReturn(id: client.Id, clerkId: _clerkId);
+        var clientId = Guid.NewGuid().ToString();
+        var client = CreateModel(
+            _clerkId,
+            id: clientId,
+            depositClients: [new DepositClientDataModel(_depositId, clientId)]
+        );
+        BankDbContext.InsertClientToDatabaseAndReturn(
+            id: clientId,
+            clerkId: _clerkId,
+            creditProgramClients: [(clientId, _creditProgramId)]
+        );
         _clientStorageContract.UpdElement(client);
-        AssertElement(BankDbContext.GetClientFromDatabase(client.Id), client);
+        BankDbContext.ChangeTracker.Clear();
+        AssertElement(BankDbContext.GetClientFromDatabase(clientId), client);
     }
 
     [Test]
@@ -131,6 +182,57 @@ internal class ClientStorageContractTests : BaseStorageContractTest
             Assert.That(actual.Balance, Is.EqualTo(expected.Balance));
             Assert.That(actual.ClerkId, Is.EqualTo(expected.ClerkId));
         });
+
+        if (expected.DepositClients is not null)
+        {
+            Assert.That(actual.DepositClients, Is.Not.Null);
+            Assert.That(actual.DepositClients, Has.Count.EqualTo(expected.DepositClients.Count));
+            for (int i = 0; i < actual.DepositClients.Count; ++i)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(
+                        actual.DepositClients[i].ClientId,
+                        Is.EqualTo(expected.DepositClients[i].ClientId)
+                    );
+                    Assert.That(
+                        actual.DepositClients[i].DepositId,
+                        Is.EqualTo(expected.DepositClients[i].DepositId)
+                    );
+                });
+            }
+        }
+        else
+        {
+            Assert.That(actual.DepositClients, Is.Null);
+        }
+
+        if (expected.CreditProgramClients is not null)
+        {
+            Assert.That(actual.CreditProgramClients, Is.Not.Null);
+            Assert.That(
+                actual.CreditProgramClients,
+                Has.Count.EqualTo(expected.CreditProgramClients.Count)
+            );
+            for (int i = 0; i < actual.CreditProgramClients.Count; ++i)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(
+                        actual.CreditProgramClients[i].ClientId,
+                        Is.EqualTo(expected.CreditProgramClients[i].ClientId)
+                    );
+                    Assert.That(
+                        actual.CreditProgramClients[i].CreditProgramId,
+                        Is.EqualTo(expected.CreditProgramClients[i].CreditProgramId)
+                    );
+                });
+            }
+        }
+        else
+        {
+            Assert.That(actual.CreditProgramClients, Is.Null);
+        }
     }
 
     private static void AssertElement(Client actual, ClientDataModel? expected)
@@ -144,5 +246,56 @@ internal class ClientStorageContractTests : BaseStorageContractTest
             Assert.That(actual.Balance, Is.EqualTo(expected.Balance));
             Assert.That(actual.ClerkId, Is.EqualTo(expected.ClerkId));
         });
+
+        if (expected.DepositClients is not null)
+        {
+            Assert.That(actual.DepositClients, Is.Not.Null);
+            Assert.That(actual.DepositClients, Has.Count.EqualTo(expected.DepositClients.Count));
+            for (int i = 0; i < actual.DepositClients.Count; ++i)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(
+                        actual.DepositClients[i].ClientId,
+                        Is.EqualTo(expected.DepositClients[i].ClientId)
+                    );
+                    Assert.That(
+                        actual.DepositClients[i].DepositId,
+                        Is.EqualTo(expected.DepositClients[i].DepositId)
+                    );
+                });
+            }
+        }
+        else
+        {
+            Assert.That(actual.DepositClients, Is.Null);
+        }
+
+        if (expected.CreditProgramClients is not null)
+        {
+            Assert.That(actual.CreditProgramClients, Is.Not.Null);
+            Assert.That(
+                actual.CreditProgramClients,
+                Has.Count.EqualTo(expected.CreditProgramClients.Count)
+            );
+            for (int i = 0; i < actual.CreditProgramClients.Count; ++i)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(
+                        actual.CreditProgramClients[i].ClientId,
+                        Is.EqualTo(expected.CreditProgramClients[i].ClientId)
+                    );
+                    Assert.That(
+                        actual.CreditProgramClients[i].CreditProgramId,
+                        Is.EqualTo(expected.CreditProgramClients[i].CreditProgramId)
+                    );
+                });
+            }
+        }
+        else
+        {
+            Assert.That(actual.CreditProgramClients, Is.Null);
+        }
     }
 }

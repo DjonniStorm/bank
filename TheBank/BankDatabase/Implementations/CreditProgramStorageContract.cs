@@ -22,8 +22,18 @@ internal class CreditProgramStorageContract : ICreditProgramStorageContract
         _dbContext = dbContext;
         var config = new MapperConfiguration(x =>
         {
-            x.CreateMap<CreditProgram, CreditProgramDataModel>();
-            x.CreateMap<CreditProgramDataModel, CreditProgram>();
+            x.CreateMap<CreditProgram, CreditProgramDataModel>()
+                .ForMember(dest => dest.Currencies, opt => opt.MapFrom(src => src.CurrencyCreditPrograms));
+            x.CreateMap<CreditProgramDataModel, CreditProgram>()
+                .ForMember(dest => dest.CurrencyCreditPrograms, opt => opt.MapFrom(src => src.Currencies));
+            x.CreateMap<CreditProgramCurrency, CreditProgramCurrencyDataModel>()
+                .ForMember(dest => dest.CreditProgramId, opt => opt.MapFrom(src => src.CreditProgramId))
+                .ForMember(dest => dest.CurrencyId, opt => opt.MapFrom(src => src.CurrencyId));
+            x.CreateMap<CreditProgramCurrencyDataModel, CreditProgramCurrency>()
+                .ForMember(dest => dest.CreditProgramId, opt => opt.MapFrom(src => src.CreditProgramId))
+                .ForMember(dest => dest.CurrencyId, opt => opt.MapFrom(src => src.CurrencyId))
+                .ForMember(dest => dest.CreditProgram, opt => opt.Ignore())
+                .ForMember(dest => dest.Currency, opt => opt.Ignore());
         });
         _mapper = new Mapper(config);
     }

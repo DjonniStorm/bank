@@ -41,7 +41,9 @@ internal static class BankDbContextExtension
         string? name = "slava",
         string? surname = "fomichev",
         decimal balance = 1_000_000,
-        string? clerkId = null
+        string? clerkId = null,
+        List<(string clientId, string creditProgramId)>? creditProgramClients = null, // Item1 = ClientId Item2 = CreditProgramId
+        List<(string depositId, string clientId)>? depositClients = null // Item1 = DepositId Item2 = ClientId
     )
     {
         var client = new Client()
@@ -51,7 +53,31 @@ internal static class BankDbContextExtension
             Surname = surname,
             Balance = balance,
             ClerkId = clerkId ?? Guid.NewGuid().ToString(),
+            DepositClients = [],
+            CreditProgramClients = [],
         };
+        if (creditProgramClients is not null)
+        {
+            foreach (var (clientId, creditProgramId) in creditProgramClients)
+            {
+                dbContext.CreditProgramClients.Add(
+                    new ClientCreditProgram
+                    {
+                        ClientId = clientId,
+                        CreditProgramId = creditProgramId,
+                    }
+                );
+            }
+        }
+        if (depositClients is not null)
+        {
+            foreach (var (depositId, clientId) in depositClients)
+            {
+                dbContext.DepositClients.Add(
+                    new DepositClient { ClientId = clientId, DepositId = depositId }
+                );
+            }
+        }
         dbContext.Clients.Add(client);
         dbContext.SaveChanges();
         return client;
@@ -64,7 +90,8 @@ internal static class BankDbContextExtension
         decimal cost = 1_000_000,
         decimal maxCost = 10_000_000,
         string? storeleeperId = null,
-        string? periodId = null
+        string? periodId = null,
+        List<(string currencyId, string creditProgramId)>? creditProgramCurrency = null // Item1 = ClientId Item2 = CreditProgramId
     )
     {
         var creditProgram = new CreditProgram()
@@ -77,6 +104,20 @@ internal static class BankDbContextExtension
             PeriodId = periodId ?? Guid.NewGuid().ToString(),
         };
         dbContext.CreditPrograms.Add(creditProgram);
+        dbContext.SaveChanges();
+        if (creditProgramCurrency is not null)
+        {
+            foreach (var (currencyId, creditProgramId) in creditProgramCurrency)
+            {
+                dbContext.CurrencyCreditPrograms.Add(
+                    new CreditProgramCurrency
+                    {
+                        CurrencyId = currencyId,
+                        CreditProgramId = creditProgram.Id,
+                    }
+                );
+            }
+        }
         dbContext.SaveChanges();
         return creditProgram;
     }
@@ -220,7 +261,10 @@ internal static class BankDbContextExtension
         dbContext.ExecuteSqlRaw("TRUNCATE \"Replenishments\" CASCADE");
 
     public static Client? GetClientFromDatabase(this BankDbContext dbContext, string id) =>
-        dbContext.Clients.FirstOrDefault(x => x.Id == id);
+        dbContext
+            .Clients.Include(x => x.DepositClients)
+            .Include(x => x.CreditProgramClients)
+            .FirstOrDefault(x => x.Id == id);
 
     public static Clerk? GetClerkFromDatabase(this BankDbContext dbContext, string id) =>
         dbContext.Clerks.FirstOrDefault(x => x.Id == id);

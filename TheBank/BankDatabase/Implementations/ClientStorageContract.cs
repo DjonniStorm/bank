@@ -20,8 +20,34 @@ internal class ClientStorageContract : IClientStorageContract
         var config = new MapperConfiguration(cfg =>
         {
             cfg.CreateMap<Clerk, ClerkDataModel>();
-            cfg.CreateMap<Client, ClientDataModel>();
-            cfg.CreateMap<ClientDataModel, Client>();
+            cfg.CreateMap<Client, ClientDataModel>()
+                .ForMember(dest => dest.DepositClients, opt => opt.MapFrom(src => src.DepositClients))
+                .ForMember(dest => dest.CreditProgramClients, opt => opt.MapFrom(src => src.CreditProgramClients));
+            cfg.CreateMap<ClientDataModel, Client>()
+                .ForMember(dest => dest.DepositClients, opt => opt.MapFrom(src => src.DepositClients))
+                .ForMember(dest => dest.CreditProgramClients, opt => opt.MapFrom(src => src.CreditProgramClients));
+            cfg.CreateMap<DepositClient, DepositClientDataModel>()
+                .ForMember(dest => dest.DepositId, opt => opt.MapFrom(src => src.DepositId))
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId));
+            cfg.CreateMap<DepositClientDataModel, DepositClient>()
+                .ForMember(dest => dest.DepositId, opt => opt.MapFrom(src => src.DepositId))
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId));
+            cfg.CreateMap<Deposit, DepositClientDataModel>()
+                .ForMember(dest => dest.DepositId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.ClientId, opt => opt.Ignore());
+            cfg.CreateMap<DepositClientDataModel, Deposit>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.DepositId));
+            cfg.CreateMap<ClientCreditProgram, ClientCreditProgramDataModel>()
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId))
+                .ForMember(dest => dest.CreditProgramId, opt => opt.MapFrom(src => src.CreditProgramId));
+            cfg.CreateMap<ClientCreditProgramDataModel, ClientCreditProgram>()
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.ClientId))
+                .ForMember(dest => dest.CreditProgramId, opt => opt.MapFrom(src => src.CreditProgramId));
+            cfg.CreateMap<CreditProgram, ClientCreditProgramDataModel>()
+                .ForMember(dest => dest.CreditProgramId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.ClientId, opt => opt.Ignore());
+            cfg.CreateMap<ClientCreditProgramDataModel, CreditProgram>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.CreditProgramId));
             cfg.CreateMap<Replenishment, ReplenishmentDataModel>();
         });
         _mapper = new Mapper(config);
@@ -122,7 +148,7 @@ internal class ClientStorageContract : IClientStorageContract
             {
                 var element = GetClientById(clientDataModel.Id) ?? throw new ElementNotFoundException(clientDataModel.Id);
                 //проверь пожалуйста(не уверен)
-                if (clientDataModel.Deposits != null && clientDataModel.CreditPrograms != null)
+                if (clientDataModel.DepositClients != null && clientDataModel.CreditProgramClients != null)
                 {
                     if (element.DepositClients != null || element.DepositClients?.Count >= 0)
                     {
@@ -131,11 +157,11 @@ internal class ClientStorageContract : IClientStorageContract
 
                     if (element.CreditProgramClients != null || element.CreditProgramClients?.Count >= 0)
                     {
-                        _dbContext.DepositClients.RemoveRange(element.DepositClients);
+                        _dbContext.CreditProgramClients.RemoveRange(element.CreditProgramClients);
                     }
 
-                    element.DepositClients = _mapper.Map<List<DepositClient>>(clientDataModel.Deposits);
-                    element.DepositClients = _mapper.Map<List<DepositClient>>(clientDataModel.CreditPrograms);
+                    element.DepositClients = _mapper.Map<List<DepositClient>>(clientDataModel.DepositClients);
+                    element.CreditProgramClients = _mapper.Map<List<ClientCreditProgram>>(clientDataModel.CreditProgramClients);
                 }
                 _mapper.Map(element, clientDataModel);
                 _dbContext.SaveChanges();
@@ -168,5 +194,5 @@ internal class ClientStorageContract : IClientStorageContract
             throw new StorageException(ex.Message);
         }
     }
-    private Client? GetClientById(string id) => _dbContext.Clients.FirstOrDefault(x => x.Id == id);
+    private Client? GetClientById(string id) => _dbContext.Clients.Include(client => client.DepositClients).Include(client => client.CreditProgramClients).FirstOrDefault(x => x.Id == id);
 }
