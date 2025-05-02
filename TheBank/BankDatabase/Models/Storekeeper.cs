@@ -1,5 +1,4 @@
-﻿using BankContracts.DataModels;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BankDatabase.Models;
 
