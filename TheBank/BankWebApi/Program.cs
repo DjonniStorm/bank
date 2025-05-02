@@ -87,13 +87,22 @@ builder.Services.AddSingleton<IConfigurationDatabase, ConfigurationDatabase>();
 // бизнес логика
 builder.Services.AddTransient<IClerkBusinessLogicContract, ClerkBusinessLogicContract>();
 builder.Services.AddTransient<IPeriodBusinessLogicContract, PeriodBusinessLogicContract>();
+builder.Services.AddTransient<IDepositBusinessLogicContract, DepositBusinessLogicContract>();
+builder.Services.AddTransient<IClientBusinessLogicContract, ClientBusinessLogicContract>();
+builder.Services.AddTransient<ICreditProgramBusinessLogicContract, CreditProgramBusinessLogicContract>();
 // бд
 builder.Services.AddTransient<BankDbContext>();
 builder.Services.AddTransient<IClerkStorageContract, ClerkStorageContract>();
 builder.Services.AddTransient<IPeriodStorageContract, PeriodStorageContract>();
+builder.Services.AddTransient<IDepositStorageContract, DepositStorageContract>();
+builder.Services.AddTransient<IClientStorageContract, ClientStorageContract>();
+builder.Services.AddTransient<ICreditProgramStorageContract, CreditProgramStorageContract>();
 // адаптеры
 builder.Services.AddTransient<IClerkAdapter, ClerkAdapter>();
 builder.Services.AddTransient<IPeriodAdapter, PeriodAdapter>();
+builder.Services.AddTransient<IDepositAdapter, DepositAdapter>();
+builder.Services.AddTransient<IClientAdapter, ClientAdapter>();
+builder.Services.AddTransient<ICreditProgramAdapter, CreditProgramAdapter>();
 
 var app = builder.Build();
 
