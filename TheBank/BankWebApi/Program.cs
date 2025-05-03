@@ -90,6 +90,9 @@ builder.Services.AddTransient<IPeriodBusinessLogicContract, PeriodBusinessLogicC
 builder.Services.AddTransient<IDepositBusinessLogicContract, DepositBusinessLogicContract>();
 builder.Services.AddTransient<IClientBusinessLogicContract, ClientBusinessLogicContract>();
 builder.Services.AddTransient<ICreditProgramBusinessLogicContract, CreditProgramBusinessLogicContract>();
+builder.Services.AddTransient<ICurrencyBusinessLogicContract, CurrencyBusinessLogicContract>();
+builder.Services.AddTransient<IStorekeeperBusinessLogicContract, StorekeeperBusinessLogicContract>();
+builder.Services.AddTransient<IReplenishmentBusinessLogicContract, ReplenishmentBusinessLogicContract>();
 // בה
 builder.Services.AddTransient<BankDbContext>();
 builder.Services.AddTransient<IClerkStorageContract, ClerkStorageContract>();
@@ -97,12 +100,18 @@ builder.Services.AddTransient<IPeriodStorageContract, PeriodStorageContract>();
 builder.Services.AddTransient<IDepositStorageContract, DepositStorageContract>();
 builder.Services.AddTransient<IClientStorageContract, ClientStorageContract>();
 builder.Services.AddTransient<ICreditProgramStorageContract, CreditProgramStorageContract>();
+builder.Services.AddTransient<ICurrencyStorageContract, CurrencyStorageContract>();
+builder.Services.AddTransient<IStorekeeperStorageContract, StorekeeperStorageContract>();
+builder.Services.AddTransient<IReplenishmentStorageContract, ReplenishmentStorageContract>();
 // אהאןעונû
 builder.Services.AddTransient<IClerkAdapter, ClerkAdapter>();
 builder.Services.AddTransient<IPeriodAdapter, PeriodAdapter>();
 builder.Services.AddTransient<IDepositAdapter, DepositAdapter>();
 builder.Services.AddTransient<IClientAdapter, ClientAdapter>();
 builder.Services.AddTransient<ICreditProgramAdapter, CreditProgramAdapter>();
+builder.Services.AddTransient<ICurrencyAdapter, CurrencyAdapter>();
+builder.Services.AddTransient<IStorekeeperAdapter, StorekeeperAdapter>();
+builder.Services.AddTransient<IReplenishmentAdapter, ReplenishmentAdapter>();
 
 var app = builder.Build();
 
