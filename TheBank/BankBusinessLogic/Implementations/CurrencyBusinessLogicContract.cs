@@ -22,7 +22,7 @@ internal class CurrencyBusinessLogicContract(
 
     private readonly ILogger _logger = logger;
 
-    public List<CurrencyDataModel> GetAllCurrencys()
+    public List<CurrencyDataModel> GetAllCurrencies()
     {
         _logger.LogInformation("get all currencys programs");
         return _currencyStorageContract.GetList();
