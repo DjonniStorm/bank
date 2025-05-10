@@ -1,5 +1,4 @@
-﻿using BankContracts.ViewModels;
-namespace BankContracts.BindingModels;
+﻿namespace BankContracts.BindingModels;
 
 public class ClientBindingModel
 {
