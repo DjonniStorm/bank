@@ -20,6 +20,7 @@ export const CreditPrograms = (): React.JSX.Element => {
 
   const handleAdd = (data: CreditProgramBindingModel) => {
     console.log(data);
+    createCreditProgram(data);
   };
 
   return (

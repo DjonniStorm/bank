@@ -25,19 +25,19 @@ import type {
 } from '@/types/types';
 
 const storekeepers: { id: string; name: string }[] = [
-  { id: 'store1', name: 'Кладовщик 1' },
-  { id: 'store2', name: 'Кладовщик 2' },
+  { id: crypto.randomUUID(), name: 'Кладовщик 1' },
+  { id: crypto.randomUUID(), name: 'Кладовщик 2' },
 ];
 
 const periods: { id: string; name: string }[] = [
-  { id: 'period1', name: 'Период 1' },
-  { id: 'period2', name: 'Период 2' },
+  { id: crypto.randomUUID(), name: 'Период 1' },
+  { id: crypto.randomUUID(), name: 'Период 2' },
 ];
 
 const currencies: CurrencyBindingModel[] = [
-  { id: 'curr1', name: 'Доллар США', abbreviation: 'USD', cost: 1 },
-  { id: 'curr2', name: 'Евро', abbreviation: 'EUR', cost: 1.2 },
-  { id: 'curr3', name: 'Рубль', abbreviation: 'RUB', cost: 0.01 },
+  { id: crypto.randomUUID(), name: 'Доллар США', abbreviation: 'USD', cost: 1 },
+  { id: crypto.randomUUID(), name: 'Евро', abbreviation: 'EUR', cost: 1.2 },
+  { id: crypto.randomUUID(), name: 'Рубль', abbreviation: 'RUB', cost: 0.01 },
 ];
 
 const formSchema = z.object({
@@ -77,8 +77,12 @@ export const CreditProgramForm = ({
   });
 
   const handleSubmit = (data: FormValues) => {
-    const payload: CreditProgramBindingModel = {
+    const dataWithId = {
       ...data,
+      id: crypto.randomUUID(),
+    };
+    const payload: CreditProgramBindingModel = {
+      ...dataWithId,
       currencyCreditPrograms: data.currencyCreditPrograms.map((currencyId) => ({
         currencyId,
       })),

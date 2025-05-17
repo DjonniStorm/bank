@@ -81,6 +81,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:26312")
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<IConfigurationDatabase, ConfigurationDatabase>();
@@ -135,7 +144,7 @@ if (app.Environment.IsProduction())
         dbContext.Database.Migrate();
     }
 }
-
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

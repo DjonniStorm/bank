@@ -63,6 +63,7 @@ public class CreditProgramsController(ICreditProgramAdapter adapter) : Controlle
     /// <param name="model">модель от пользователя</param>
     /// <returns></returns>
     [HttpPost]
+    [AllowAnonymous]
     public IActionResult Register([FromBody] CreditProgramBindingModel model)
     {
         return _adapter.RegisterCreditProgram(model).GetResponse(Request, Response);

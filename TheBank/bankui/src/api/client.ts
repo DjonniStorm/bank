@@ -3,7 +3,11 @@ import { ConfigManager } from '@/lib/config';
 const API_URL = ConfigManager.loadUrl();
 
 export async function getData<T>(path: string): Promise<T[]> {
-  const res = await fetch(`${API_URL}/${path}`);
+  const res = await fetch(`${API_URL}/${path}`, {
+    headers: {
+      mode: 'no-cors',
+    },
+  });
   if (!res.ok) {
     throw new Error(`Не получается загрузить ${path}: ${res.statusText}`);
   }
@@ -16,6 +20,7 @@ export async function postData<T>(path: string, data: T) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      mode: 'no-cors',
     },
     body: JSON.stringify(data),
   });
@@ -29,6 +34,7 @@ export async function putData<T>(path: string, data: T) {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      mode: 'no-cors',
     },
     body: JSON.stringify(data),
   });
