@@ -1,40 +1,53 @@
-import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-
-const getCreditPrograms = async () => {
-  const res = await fetch(
-    ' https://localhost:7204/api/creditPrograms/getAllRecords',
-    {
-      mode: 'no-cors',
-    },
-  );
-  if (!res.ok) {
-    throw new Error('cannot get');
-  }
-  const data = await res.json();
-  return data;
-};
-
-const useCreditPrograms = () => {
-  const { data, isError, isPending, isSuccess, isFetched } = useQuery({
-    queryKey: ['credit-programs'],
-    queryFn: getCreditPrograms,
-  });
-
-  return { data, isError, isPending, isSuccess, isFetched };
-};
+import { AppSidebar } from '../layout/Sidebar';
+import { useCreditPrograms } from '@/hooks/useCreditPrograms';
+import { DialogForm } from '../layout/DialogForm';
+import { DataTable } from '../layout/DataTable';
+import { CreditProgramForm } from '../features/CreditProgramForm';
+import type { CreditProgramBindingModel } from '@/types/types';
 
 export const CreditPrograms = (): React.JSX.Element => {
-  const cp = useCreditPrograms();
-  console.log(cp);
+  const {
+    isLoading,
+    isError,
+    error,
+    creditPrograms,
+    createCreditProgram,
+    updateCreditProgram,
+  } = useCreditPrograms();
+
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+
+  const handleAdd = (data: CreditProgramBindingModel) => {
+    console.log(data);
+  };
+
   return (
-    <main className="flex-1 w-full">
-      {cp.isPending && <>loading</>}
-      {cp.isFetched && cp.isError && <>empty list</>}
-      {cp.isSuccess && <></>}
-      <div className="flex gap-10">
-        <div>+</div>
-        <div>изменить</div>
+    <main className="flex-1 flex relative">
+      <AppSidebar
+        onAddClick={() => {
+          setIsDialogOpen(true);
+        }}
+        onEditClick={function (): void {}}
+      />
+
+      <div className="flex-1 p-4">
+        {isError && (
+          <div className="text-red-500">Ошибка загрузки: {error?.message}</div>
+        )}
+
+        <DialogForm<CreditProgramBindingModel>
+          title="Форма"
+          description="Описание"
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+          onSubmit={handleAdd}
+        >
+          <CreditProgramForm />
+        </DialogForm>
+        <div className="">
+          <DataTable data={[]} columns={[]} />
+        </div>
       </div>
     </main>
   );
