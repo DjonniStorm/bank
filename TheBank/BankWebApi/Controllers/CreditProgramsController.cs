@@ -18,6 +18,7 @@ public class CreditProgramsController(ICreditProgramAdapter adapter) : Controlle
     /// </summary>
     /// <returns>список кредитных программ</returns>
     [HttpGet]
+    [AllowAnonymous]
     public IActionResult GetAllRecords()
     {
         return _adapter.GetList().GetResponse(Request, Response);
