@@ -112,7 +112,6 @@ builder.Services.AddTransient<ICreditProgramAdapter, CreditProgramAdapter>();
 builder.Services.AddTransient<ICurrencyAdapter, CurrencyAdapter>();
 builder.Services.AddTransient<IStorekeeperAdapter, StorekeeperAdapter>();
 builder.Services.AddTransient<IReplenishmentAdapter, ReplenishmentAdapter>();
-
 builder.Services.AddTransient<IReportContract, ReportContract>();
 builder.Services.AddTransient<IReportAdapter, ReportAdapter>();
 
