@@ -39,7 +39,8 @@ public class StorekeepersController(IStorekeeperAdapter adapter) : ControllerBas
     /// </summary>
     /// <param name="model">модель от пользователя</param>
     /// <returns></returns>
-    [HttpPost]
+    [HttpPost("register")]
+    [AllowAnonymous]
     public IActionResult Register([FromBody] StorekeeperBindingModel model)
     {
         return _adapter.RegisterStorekeeper(model).GetResponse(Request, Response);
@@ -54,5 +55,21 @@ public class StorekeepersController(IStorekeeperAdapter adapter) : ControllerBas
     public IActionResult ChangeInfo([FromBody] StorekeeperBindingModel model)
     {
         return _adapter.ChangeStorekeeperInfo(model).GetResponse(Request, Response);
+    }
+
+    /// <summary>
+    /// вход для кладовщика
+    /// </summary>
+    /// <param name="model">модель с логином и паролем</param>
+    /// <returns></returns>
+    [HttpPost("login")]
+    [AllowAnonymous]
+    public IActionResult Login([FromBody] StorekeeperAuthBindingModel model) 
+    {
+        var res = _adapter.Login(model, out string token);
+
+        Response.Cookies.Append(AuthOptions.CookieName, token);
+
+        return res.GetResponse(Request, Response);
     }
 }

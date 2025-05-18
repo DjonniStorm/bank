@@ -43,9 +43,8 @@ export const CreditPrograms = (): React.JSX.Element => {
           isOpen={isDialogOpen}
           onClose={() => setIsDialogOpen(false)}
           onSubmit={handleAdd}
-        >
-          <CreditProgramForm />
-        </DialogForm>
+          children={<CreditProgramForm />}
+        />
         <div className="">
           <DataTable data={[]} columns={[]} />
         </div>

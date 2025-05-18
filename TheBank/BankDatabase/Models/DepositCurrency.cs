@@ -1,6 +1,8 @@
-﻿namespace BankDatabase.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-class DepositCurrency
+namespace BankDatabase.Models;
+
+public class DepositCurrency
 {
     public required string DepositId { get; set; }
 

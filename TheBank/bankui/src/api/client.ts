@@ -7,6 +7,7 @@ export async function getData<T>(path: string): Promise<T[]> {
     headers: {
       mode: 'no-cors',
     },
+    credentials: 'include',
   });
   if (!res.ok) {
     throw new Error(`Не получается загрузить ${path}: ${res.statusText}`);
@@ -22,6 +23,7 @@ export async function postData<T>(path: string, data: T) {
       'Content-Type': 'application/json',
       mode: 'no-cors',
     },
+    credentials: 'include',
     body: JSON.stringify(data),
   });
   if (!res.ok) {
@@ -36,6 +38,7 @@ export async function putData<T>(path: string, data: T) {
       'Content-Type': 'application/json',
       mode: 'no-cors',
     },
+    credentials: 'include',
     body: JSON.stringify(data),
   });
   if (!res.ok) {

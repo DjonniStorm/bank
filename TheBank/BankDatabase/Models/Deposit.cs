@@ -2,7 +2,7 @@
 
 namespace BankDatabase.Models;
 
-class Deposit
+public class Deposit
 {
     public required string Id { get; set; }
 

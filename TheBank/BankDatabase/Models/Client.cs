@@ -2,7 +2,7 @@
 
 namespace BankDatabase.Models;
 
-class Client
+public class Client
 {
     public required string Id { get; set; }
 

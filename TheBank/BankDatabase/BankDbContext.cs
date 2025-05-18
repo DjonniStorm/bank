@@ -4,9 +4,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BankDatabase;
 
-internal class BankDbContext(IConfigurationDatabase configurationDatabase) : DbContext
+public class BankDbContext : DbContext
 {
-    private readonly IConfigurationDatabase? _configurationDatabase = configurationDatabase;
+    private readonly IConfigurationDatabase? _configurationDatabase;
+
+    public BankDbContext(IConfigurationDatabase configurationDatabase)
+    {
+        _configurationDatabase = configurationDatabase;
+    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -33,7 +38,7 @@ internal class BankDbContext(IConfigurationDatabase configurationDatabase) : DbC
         modelBuilder.Entity<CreditProgram>()
             .HasIndex(x => x.Name)
             .IsUnique();
-        
+
         modelBuilder.Entity<Currency>()
             .HasIndex(x => x.Abbreviation)
             .IsUnique();
@@ -80,17 +85,17 @@ internal class BankDbContext(IConfigurationDatabase configurationDatabase) : DbC
     public DbSet<Clerk> Clerks { get; set; }
 
     public DbSet<Client> Clients { get; set; }
-    
+
     public DbSet<CreditProgram> CreditPrograms { get; set; }
-    
+
     public DbSet<Currency> Currencies { get; set; }
-    
+
     public DbSet<Deposit> Deposits { get; set; }
-    
+
     public DbSet<Period> Periods { get; set; }
-    
+
     public DbSet<Replenishment> Replenishments { get; set; }
-    
+
     public DbSet<Storekeeper> Storekeepers { get; set; }
 
     public DbSet<DepositCurrency> DepositCurrencies { get; set; }

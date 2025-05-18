@@ -15,4 +15,6 @@ public interface IStorekeeperAdapter
     StorekeeperOperationResponse RegisterStorekeeper(StorekeeperBindingModel storekeeperModel);
 
     StorekeeperOperationResponse ChangeStorekeeperInfo(StorekeeperBindingModel storekeeperModel);
+
+    StorekeeperOperationResponse Login(StorekeeperAuthBindingModel storekeeperModel, out string token);
 }

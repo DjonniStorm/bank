@@ -89,3 +89,8 @@ export interface StorekeeperBindingModel {
   email?: string;
   phoneNumber?: string;
 }
+
+export interface LoginBindingModel {
+  login: string;
+  password: string;
+}

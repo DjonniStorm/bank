@@ -6,6 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Currencies } from './components/pages/Currencies.tsx';
 import { CreditPrograms } from './components/pages/CreditPrograms.tsx';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthStorekeeper } from './components/pages/AuthStorekeeper.tsx';
 
 const routes = createBrowserRouter([
   {
@@ -22,6 +23,10 @@ const routes = createBrowserRouter([
       },
     ],
     errorElement: <p>бля пизда рулям</p>,
+  },
+  {
+    path: '/auth',
+    element: <AuthStorekeeper />,
   },
 ]);
 

@@ -8,6 +8,7 @@ import type {
   PeriodBindingModel,
   ReplenishmentBindingModel,
   StorekeeperBindingModel,
+  LoginBindingModel,
 } from '../types/types';
 
 // Clients API
@@ -117,4 +118,5 @@ export const storekeepersApi = {
     postData('api/Storekeepers/Register', data),
   update: (data: StorekeeperBindingModel) =>
     putData('api/Storekeepers/ChangeInfo', data),
+  login: (data: LoginBindingModel) => postData('api/Storekeepers/login', data),
 };

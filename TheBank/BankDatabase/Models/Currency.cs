@@ -2,7 +2,7 @@
 
 namespace BankDatabase.Models;
 
-class Currency
+public class Currency
 {
     public required string Id { get; set; }
 

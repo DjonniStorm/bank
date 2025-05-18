@@ -2,7 +2,7 @@
 
 namespace BankDatabase.Models;
 
-class CreditProgram
+public class CreditProgram
 {
     public required string Id { get; set; }
 

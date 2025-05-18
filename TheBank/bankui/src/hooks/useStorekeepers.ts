@@ -7,22 +7,33 @@ export const useStorekeepers = () => {
   const {
     data: storekeepers,
     isLoading,
-    isError,
+    isError: isGetAllError,
     error,
   } = useQuery({
     queryKey: ['storekeepers'],
     queryFn: storekeepersApi.getAll,
   });
 
-  const { mutate: createStorekeeper } = useMutation({
+  const { mutate: createStorekeeper, isError: isCreateError } = useMutation({
     mutationFn: storekeepersApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['storekeepers'] });
     },
   });
 
-  const { mutate: updateStorekeeper } = useMutation({
+  const { mutate: updateStorekeeper, isError: isUpdateError } = useMutation({
     mutationFn: storekeepersApi.update,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['storekeepers'] });
+    },
+  });
+
+  const {
+    mutate: loginStorekeeper,
+    isError: isLoginError,
+    error: loginError,
+  } = useMutation({
+    mutationFn: storekeepersApi.login,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['storekeepers'] });
     },
@@ -31,9 +42,13 @@ export const useStorekeepers = () => {
   return {
     storekeepers,
     isLoading,
-    isError,
+    isGetAllError,
+    isCreateError,
+    isLoginError,
+    loginError,
     error,
     createStorekeeper,
+    loginStorekeeper,
     updateStorekeeper,
   };
 };

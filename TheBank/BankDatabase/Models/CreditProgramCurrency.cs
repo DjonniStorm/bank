@@ -1,6 +1,8 @@
-﻿namespace BankDatabase.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-class CreditProgramCurrency
+namespace BankDatabase.Models;
+
+public class CreditProgramCurrency
 {
     public required string CreditProgramId { get; set; }
 
