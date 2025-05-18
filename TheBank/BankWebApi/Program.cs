@@ -113,6 +113,9 @@ builder.Services.AddTransient<ICurrencyAdapter, CurrencyAdapter>();
 builder.Services.AddTransient<IStorekeeperAdapter, StorekeeperAdapter>();
 builder.Services.AddTransient<IReplenishmentAdapter, ReplenishmentAdapter>();
 
+builder.Services.AddTransient<IReportContract, ReportContract>();
+builder.Services.AddTransient<IReportAdapter, ReportAdapter>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

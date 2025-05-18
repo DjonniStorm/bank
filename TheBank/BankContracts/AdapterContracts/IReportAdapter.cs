@@ -1,6 +1,6 @@
 ﻿namespace BankContracts.AdapterContracts;
 
-public interface IReportContract
+public interface IReportAdapter
 {
 
 }
