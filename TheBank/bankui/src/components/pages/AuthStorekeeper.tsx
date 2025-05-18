@@ -6,10 +6,17 @@ import type { LoginBindingModel, StorekeeperBindingModel } from '@/types/types';
 import { LoginForm } from '../features/LoginForm';
 import { Toaster } from '../ui/sonner';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 export const AuthStorekeeper = (): React.JSX.Element => {
-  const { createStorekeeper, loginStorekeeper, isLoginError, loginError } =
-    useStorekeepers();
+  const navigate = useNavigate();
+  const {
+    createStorekeeper,
+    loginStorekeeper,
+    isLoginError,
+    loginError,
+    isLoginSuccess,
+  } = useStorekeepers();
 
   const handleRegister = (data: StorekeeperBindingModel) => {
     console.log(data);
@@ -25,6 +32,12 @@ export const AuthStorekeeper = (): React.JSX.Element => {
       toast(`Ошибка ${loginError?.message}`);
     }
   }, [isLoginError, loginError]);
+
+  React.useEffect(() => {
+    if (isLoginSuccess) {
+      navigate('/storekeepers');
+    }
+  }, [isLoginSuccess]);
 
   return (
     <>

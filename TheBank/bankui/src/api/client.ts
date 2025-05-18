@@ -4,9 +4,6 @@ const API_URL = ConfigManager.loadUrl();
 
 export async function getData<T>(path: string): Promise<T[]> {
   const res = await fetch(`${API_URL}/${path}`, {
-    headers: {
-      mode: 'no-cors',
-    },
     credentials: 'include',
   });
   if (!res.ok) {
@@ -21,7 +18,7 @@ export async function postData<T>(path: string, data: T) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      mode: 'no-cors',
+      // mode: 'no-cors',
     },
     credentials: 'include',
     body: JSON.stringify(data),
@@ -36,7 +33,7 @@ export async function putData<T>(path: string, data: T) {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      mode: 'no-cors',
+      // mode: 'no-cors',
     },
     credentials: 'include',
     body: JSON.stringify(data),

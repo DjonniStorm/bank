@@ -4,14 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BankDatabase;
 
-public class BankDbContext : DbContext
+internal class BankDbContext(IConfigurationDatabase configurationDatabase) : DbContext
 {
-    private readonly IConfigurationDatabase? _configurationDatabase;
-
-    public BankDbContext(IConfigurationDatabase configurationDatabase)
-    {
-        _configurationDatabase = configurationDatabase;
-    }
+    private readonly IConfigurationDatabase? _configurationDatabase = configurationDatabase;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

@@ -21,9 +21,17 @@ public class PeriodAdapter : IPeriodAdapter
     {
         _periodBusinessLogicContract = periodBusinessLogicContract;
         _logger = logger;
-        var config = new MapperConfiguration(cfg => 
+        var config = new MapperConfiguration(cfg =>
         {
-            cfg.CreateMap<PeriodBindingModel, PeriodDataModel>();
+            cfg.CreateMap<PeriodBindingModel, PeriodDataModel>()
+                .ConstructUsing(src => new PeriodDataModel(
+                    src.Id,
+                    src.StartTime,
+                    src.EndTime,
+                    src.StorekeeperId
+                ));
+
+            // Маппинг PeriodDataModel -> PeriodViewModel
             cfg.CreateMap<PeriodDataModel, PeriodViewModel>();
         });
         _mapper = new Mapper(config);

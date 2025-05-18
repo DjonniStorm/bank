@@ -77,15 +77,15 @@ export const depositsApi = {
 
 // Periods API
 export const periodsApi = {
-  getAll: () => getData<PeriodBindingModel>('api/Period/GetAllRecords'),
+  getAll: () => getData<PeriodBindingModel>('api/Periods/GetAllRecords'),
   getById: (id: string) =>
-    getData<PeriodBindingModel>(`api/Period/GetRecord/${id}`),
+    getData<PeriodBindingModel>(`api/Periods/GetRecord/${id}`),
   getByStorekeeper: (storekeeperId: string) =>
     getData<PeriodBindingModel>(
       `api/Period/GetRecordByStorekeeper/${storekeeperId}`,
     ),
-  create: (data: PeriodBindingModel) => postData('api/Period/Register', data),
-  update: (data: PeriodBindingModel) => putData('api/Period/ChangeInfo', data),
+  create: (data: PeriodBindingModel) => postData('api/Periods/Register', data),
+  update: (data: PeriodBindingModel) => putData('api/Periods/ChangeInfo', data),
 };
 
 // Replenishments API
@@ -110,8 +110,7 @@ export const replenishmentsApi = {
 
 // Storekeepers API
 export const storekeepersApi = {
-  getAll: () =>
-    getData<StorekeeperBindingModel>('api/Storekeepers/GetAllRecords'),
+  getAll: () => getData<StorekeeperBindingModel>('api/storekeepers'),
   getById: (id: string) =>
     getData<StorekeeperBindingModel>(`api/Storekeepers/GetRecord/${id}`),
   create: (data: StorekeeperBindingModel) =>

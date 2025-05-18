@@ -68,7 +68,13 @@ public class StorekeepersController(IStorekeeperAdapter adapter) : ControllerBas
     {
         var res = _adapter.Login(model, out string token);
 
-        Response.Cookies.Append(AuthOptions.CookieName, token);
+        Response.Cookies.Append(AuthOptions.CookieName, token, new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.None,
+            Secure = true,
+            Expires = DateTime.UtcNow.AddDays(2)
+        });
 
         return res.GetResponse(Request, Response);
     }

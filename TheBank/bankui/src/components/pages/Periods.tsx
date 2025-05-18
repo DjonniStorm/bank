@@ -2,35 +2,33 @@ import React from 'react';
 import { AppSidebar } from '../layout/Sidebar';
 import { DialogForm } from '../layout/DialogForm';
 import { DataTable } from '../layout/DataTable';
-import { useCurrencies } from '@/hooks/useCurrencies';
+import { usePeriods } from '@/hooks/usePeriods';
 import { useStorekeepers } from '@/hooks/useStorekeepers';
 import type {
-  CurrencyBindingModel,
+  PeriodBindingModel,
   StorekeeperBindingModel,
 } from '@/types/types';
 import type { ColumnDef } from '../layout/DataTable';
-import { CurrencyForm } from '../features/CurrencyForm';
+import { PeriodForm } from '../features/PeriodForm';
 
-interface CurrencyTableData extends CurrencyBindingModel {
+// Определяем расширенный тип для данных таблицы
+interface PeriodTableData extends PeriodBindingModel {
   storekeeperName: string;
 }
 
-const columns: ColumnDef<CurrencyTableData>[] = [
+// Определяем столбцы
+const columns: ColumnDef<PeriodTableData>[] = [
   {
     accessorKey: 'id',
     header: 'ID',
   },
   {
-    accessorKey: 'name',
-    header: 'Название',
+    accessorKey: 'startTime',
+    header: 'Время начала',
   },
   {
-    accessorKey: 'abbreviation',
-    header: 'Аббревиатура',
-  },
-  {
-    accessorKey: 'cost',
-    header: 'Стоимость',
+    accessorKey: 'endTime',
+    header: 'Время окончания',
   },
   {
     accessorKey: 'storekeeperName',
@@ -38,23 +36,16 @@ const columns: ColumnDef<CurrencyTableData>[] = [
   },
 ];
 
-export const Currencies = (): React.JSX.Element => {
-  const {
-    isLoading,
-    isError,
-    error,
-    currencies,
-    createCurrency,
-    updateCurrency,
-  } = useCurrencies();
+export const Periods = (): React.JSX.Element => {
+  const { isLoading, isError, error, periods, createPeriod } = usePeriods();
   const { storekeepers } = useStorekeepers();
 
   const finalData = React.useMemo(() => {
-    if (!currencies || !storekeepers) return [];
+    if (!periods || !storekeepers) return [];
 
-    return currencies.map((currency) => {
+    return periods.map((period) => {
       const storekeeper = storekeepers.find(
-        (s) => s.id === currency.storekeeperId,
+        (s) => s.id === period.storekeeperId,
       );
       const storekeeperName = storekeeper
         ? [storekeeper.surname, storekeeper.name, storekeeper.middleName]
@@ -63,17 +54,17 @@ export const Currencies = (): React.JSX.Element => {
         : 'Неизвестный кладовщик';
 
       return {
-        ...currency,
+        ...period,
         storekeeperName,
       };
     });
-  }, [currencies, storekeepers]);
+  }, [periods, storekeepers]);
 
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
-  const handleAdd = (data: CurrencyBindingModel) => {
+  const handleAdd = (data: PeriodBindingModel) => {
     console.log(data);
-    createCurrency(data);
+    createPeriod(data);
   };
 
   if (isLoading) {
@@ -97,14 +88,14 @@ export const Currencies = (): React.JSX.Element => {
         onEditClick={() => {}}
       />
       <div className="flex-1 p-4">
-        <DialogForm<CurrencyBindingModel>
-          title="Форма валюты"
-          description="Добавьте новую валюту"
+        <DialogForm<PeriodBindingModel>
+          title="Форма"
+          description="Описание"
           isOpen={isDialogOpen}
           onClose={() => setIsDialogOpen(false)}
           onSubmit={handleAdd}
         >
-          <CurrencyForm />
+          <PeriodForm />
         </DialogForm>
         <div>
           <DataTable data={finalData} columns={columns} />

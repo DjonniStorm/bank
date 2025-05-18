@@ -162,7 +162,7 @@ app.UseHttpsRedirection();
 app.UseCookiePolicy(new CookiePolicyOptions
 {
     HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always,
-    Secure = CookieSecurePolicy.Always
+    Secure = app.Environment.IsProduction() ? CookieSecurePolicy.Always : CookieSecurePolicy.None
 });
 
 app.UseAuthentication();

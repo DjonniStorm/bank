@@ -31,6 +31,7 @@ export const useStorekeepers = () => {
   const {
     mutate: loginStorekeeper,
     isError: isLoginError,
+    isSuccess: isLoginSuccess,
     error: loginError,
   } = useMutation({
     mutationFn: storekeepersApi.login,
@@ -45,6 +46,8 @@ export const useStorekeepers = () => {
     isGetAllError,
     isCreateError,
     isLoginError,
+    isUpdateError,
+    isLoginSuccess,
     loginError,
     error,
     createStorekeeper,
