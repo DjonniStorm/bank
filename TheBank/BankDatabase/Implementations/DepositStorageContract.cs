@@ -43,6 +43,23 @@ internal class DepositStorageContract : IDepositStorageContract
         }
     }
 
+    public async Task<List<DepositDataModel>> GetListAsync(DateTime startDate, DateTime endDate, CancellationToken ct)
+    {
+        try
+        {
+            var query = _dbContext.Deposits.Include(x => x.Clerk).AsQueryable();
+            // Например: query = query.Where(x => x.CreatedDate >= startDate && x.CreatedDate <= endDate);
+
+            var deposits = await query.ToListAsync(ct);
+            return deposits.Select(x => _mapper.Map<DepositDataModel>(x)).ToList();
+        }
+        catch (Exception ex)
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw new StorageException(ex.Message);
+        }
+    }
+
     public DepositDataModel? GetElementById(string id)
     {
         try

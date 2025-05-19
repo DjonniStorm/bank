@@ -60,6 +60,23 @@ internal class CreditProgramStorageContract : ICreditProgramStorageContract
         }
     }
 
+    public async Task<List<CreditProgramDataModel>> GetListAsync(DateTime startDate, DateTime endDate, CancellationToken ct)
+    {
+        try
+        {
+            var query = _dbContext.CreditPrograms.AsQueryable();
+            //query = query.Where(x => x.CreatedDate >= startDate && x.CreatedDate <= endDate);
+
+            var creditPrograms = await query.ToListAsync(ct);
+            return creditPrograms.Select(x => _mapper.Map<CreditProgramDataModel>(x)).ToList();
+        }
+        catch (Exception ex)
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw new StorageException(ex.Message);
+        }
+    }
+
     public CreditProgramDataModel? GetElementById(string id)
     {
         try

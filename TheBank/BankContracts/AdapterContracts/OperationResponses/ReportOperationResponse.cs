@@ -1,20 +1,21 @@
-﻿namespace BankContracts.AdapterContracts.OperationResponses;
+﻿using BankContracts.Infrastructure;
+using BankContracts.ViewModels;
 
-public class ReportOperationResponse
+namespace BankContracts.AdapterContracts.OperationResponses;
+
+public class ReportOperationResponse : OperationResponse
 {
-    Task<ReportOperationResponse> GetDepositsByClients(CancellationToken ct);
+    public static ReportOperationResponse OK(List<ClientsByCreditProgramViewModel> data) => OK<ReportOperationResponse, List<ClientsByCreditProgramViewModel>>(data);
 
-    Task<ReportOperationResponse> CreateDocumentDepositsByClients(CancellationToken ct);
+    public static ReportOperationResponse OK(List<ClientsByDepositViewModel> data) => OK<ReportOperationResponse, List<ClientsByDepositViewModel>>(data);
 
-    Task<ReportOperationResponse> GetClientsByDeposits(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
+    public static ReportOperationResponse OK(List<DepositByCreditProgramViewModel> data) => OK<ReportOperationResponse, List<DepositByCreditProgramViewModel>>(data);
 
-    Task<ReportOperationResponse> CreateDocumentClientsByDeposits(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
+    public static ReportOperationResponse OK(List<CreditProgramAndDepositByCurrencyViewModel> data) => OK<ReportOperationResponse, List<CreditProgramAndDepositByCurrencyViewModel>>(data);
 
-    Task<ReportOperationResponse> GetDepositsByCurrency(CancellationToken ct);
+    public static ReportOperationResponse OK(Stream data, string fileName) => OK<ReportOperationResponse, Stream>(data, fileName);
 
-    Task<ReportOperationResponse> CreateDocumentDepositsByCurrency(CancellationToken ct);
+    public static ReportOperationResponse BadRequest(string message) => BadRequest<ReportOperationResponse>(message);
 
-    Task<ReportOperationResponse> GetCreditProgramByCurrency(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
-
-    Task<ReportOperationResponse> CreateDocumentClientsByDeposits(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
+    public static ReportOperationResponse InternalServerError(string message) => InternalServerError<ReportOperationResponse>(message);
 }

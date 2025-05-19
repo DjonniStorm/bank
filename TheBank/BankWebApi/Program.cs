@@ -1,4 +1,5 @@
 using BankBusinessLogic.Implementations;
+using BankBusinessLogic.OfficePackage;
 using BankContracts.AdapterContracts;
 using BankContracts.BusinessLogicContracts;
 using BankContracts.Infrastructure;
@@ -114,6 +115,9 @@ builder.Services.AddTransient<IStorekeeperAdapter, StorekeeperAdapter>();
 builder.Services.AddTransient<IReplenishmentAdapter, ReplenishmentAdapter>();
 builder.Services.AddTransient<IReportContract, ReportContract>();
 builder.Services.AddTransient<IReportAdapter, ReportAdapter>();
+builder.Services.AddTransient<BaseWordBuilder, OpenXmlWordBuilder>();
+builder.Services.AddTransient<BaseExcelBuilder, OpenXmlExcelBuilder>();
+builder.Services.AddTransient<BasePdfBuilder, MigraDocPdfBuilder>();
 
 var app = builder.Build();
 

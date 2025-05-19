@@ -139,6 +139,23 @@ internal class ClientStorageContract : IClientStorageContract
         }
     }
 
+    public async Task<List<ClientDataModel>> GetListAsync(DateTime startDate, DateTime endDate, CancellationToken ct)
+    {
+        try
+        {
+            var clients = await _dbContext.Clients
+                .Include(x => x.Clerk)
+                .ToListAsync(ct);
+
+            return clients.Select(x => _mapper.Map<ClientDataModel>(x)).ToList();
+        }
+        catch (Exception ex)
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw new StorageException(ex.Message);
+        }
+    }
+
     public void UpdElement(ClientDataModel clientDataModel)
     {
         try

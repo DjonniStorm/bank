@@ -1,19 +1,18 @@
-﻿using BankContracts.BindingModels;
-using BankContracts.ViewModels;
+﻿using BankContracts.DataModels;
 
 namespace BankContracts.BusinessLogicContracts;
 
 public interface IReportContract
 {
-    List<ReportClientCreditProgramViewModel> GetClientCreditProgram(List<ClientBindingModel> clients);
-    List<ReportClientDepositViewModel> GetClientDeposit(ReportBindingModel model);
-    MemoryStream SaveClientCreditProgramToWord(ReportBindingModel model, List<ClientBindingModel> clients);
-    MemoryStream SaveClientCreditProgramToExcel(ReportBindingModel model, List<ClientBindingModel> clients);
-    MemoryStream SaveClientDepositToPDF(ReportBindingModel model);
+    Task<List<ClientsByCreditProgramDataModel>> GetDataClientsByCreditProgramAsync(CancellationToken ct);
+    Task<Stream> CreateDocumentClientsByCreditProgramAsync(CancellationToken ct);
 
-    List<ReportDepositCreditProgramViewModel> GetDepositCreditProgram(List<DepositBindingModel> deposits);
-    List<ReportCreditProgramDepositCurrencyViewModel> GetDepositCurrency(ReportBindingModel model);
-    MemoryStream SaveDepositCreditProgramToWord(ReportBindingModel model, List<DepositBindingModel> currencies);
-    MemoryStream SaveDepositCreditProgramToExcel(ReportBindingModel model, List<DepositBindingModel> currencies);
-    MemoryStream SaveDepositCurrencyToPDF(ReportBindingModel model);
+    Task<List<ClientsByDepositDataModel>> GetDataClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
+    Task<Stream> CreateDocumentClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
+
+    Task<List<DepositByCreditProgramDataModel>> GetDataDepositByCreditProgramAsync(CancellationToken ct);
+    Task<Stream> CreateDocumentDepositByCreditProgramAsync(CancellationToken ct);
+
+    Task<List<CreditProgramAndDepositByCurrencyDataModel>> GetDataDepositAndCreditProgramByCurrencyAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
+    Task<Stream> CreateDocumentDepositAndCreditProgramByCurrencyAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
 }
