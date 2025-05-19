@@ -83,7 +83,6 @@ const BaseCurrencyForm = ({
   const storekeeper = useAuthStore((store) => store.user);
 
   const handleSubmit = (data: BaseFormValues | EditFormValues) => {
-    // Если это форма редактирования, используем только заполненные поля
     const payload: CurrencyBindingModel = {
       id: data.id || crypto.randomUUID(),
       storekeeperId: storekeeper?.id,
