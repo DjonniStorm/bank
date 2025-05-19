@@ -17,6 +17,8 @@ import {
 } from '../ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
+import { useAuthStore } from '@/store/workerStore';
+import { useStorekeepers } from '@/hooks/useStorekeepers';
 
 type NavOptionValue = {
   name: string;
@@ -38,11 +40,6 @@ const navOptions = [
         name: 'Просмотреть',
         link: '/currencies',
       },
-      {
-        id: 2,
-        name: 'Создать',
-        link: '',
-      },
     ],
   },
   {
@@ -53,11 +50,6 @@ const navOptions = [
         name: 'Просмотреть',
         link: '/credit-programs',
       },
-      {
-        id: 2,
-        name: 'Создать',
-        link: '',
-      },
     ],
   },
   {
@@ -67,11 +59,6 @@ const navOptions = [
         id: 1,
         name: 'Просмотреть',
         link: '/periods',
-      },
-      {
-        id: 2,
-        name: 'Создать',
-        link: '',
       },
     ],
   },
@@ -88,6 +75,14 @@ const navOptions = [
 ];
 
 export const Header = (): React.JSX.Element => {
+  const user = useAuthStore((store) => store.user);
+  const logout = useAuthStore((store) => store.logout);
+  const { logout: serverLogout } = useAuthStore();
+  const loggedOut = () => {
+    serverLogout();
+    logout();
+  };
+  const fullName = `${user?.name ?? ''} ${user?.surname ?? ''}`;
   return (
     <header className="flex w-full p-2 justify-between">
       <nav className="text-black">
@@ -98,7 +93,7 @@ export const Header = (): React.JSX.Element => {
         </Menubar>
       </nav>
       <div>
-        <ProfileIcon name={'Евгений Эгов'} />
+        <ProfileIcon name={fullName || 'Евгений Эгов'} logout={loggedOut} />
       </div>
     </header>
   );
@@ -127,9 +122,13 @@ const MenuOption = ({ item }: { item: NavOption }) => {
 
 type ProfileIconProps = {
   name: string;
+  logout: () => void;
 };
 
-export const ProfileIcon = ({ name }: ProfileIconProps): React.JSX.Element => {
+export const ProfileIcon = ({
+  name,
+  logout,
+}: ProfileIconProps): React.JSX.Element => {
   return (
     <div>
       <DropdownMenu>
@@ -144,13 +143,17 @@ export const ProfileIcon = ({ name }: ProfileIconProps): React.JSX.Element => {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link to="/" className="block w-full text-left">
+            <Link to="/profile" className="block w-full text-left">
               Профиль
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Button variant="outline" className="block w-full text-left">
+            <Button
+              onClick={logout}
+              variant="outline"
+              className="block w-full text-left"
+            >
               Выйти
             </Button>
           </DropdownMenuItem>

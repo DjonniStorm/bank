@@ -1,4 +1,10 @@
-import { getData, postData, putData } from './client';
+import {
+  getData,
+  getSingleData,
+  postData,
+  postLoginData,
+  putData,
+} from './client';
 import type {
   ClientBindingModel,
   ClerkBindingModel,
@@ -115,7 +121,11 @@ export const storekeepersApi = {
     getData<StorekeeperBindingModel>(`api/Storekeepers/GetRecord/${id}`),
   create: (data: StorekeeperBindingModel) =>
     postData('api/Storekeepers/Register', data),
-  update: (data: StorekeeperBindingModel) =>
-    putData('api/Storekeepers/ChangeInfo', data),
-  login: (data: LoginBindingModel) => postData('api/Storekeepers/login', data),
+  update: (data: StorekeeperBindingModel) => putData('api/Storekeepers', data),
+  // auth
+  login: (data: LoginBindingModel) =>
+    postLoginData('api/Storekeepers/login', data),
+  logout: () => postData('api/storekeepers/logout', {}),
+  getCurrentUser: () =>
+    getSingleData<StorekeeperBindingModel>('api/storekeepers/me'),
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,13 +10,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import type { PeriodBindingModel } from '@/types/types';
 import { Calendar } from '@/components/ui/calendar';
@@ -28,9 +21,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useStorekeepers } from '@/hooks/useStorekeepers';
+import { useAuthStore } from '@/store/workerStore';
 
-const formSchema = z.object({
+type BaseFormValues = {
+  id?: string;
+  startTime: Date;
+  endTime: Date;
+};
+
+type EditFormValues = {
+  id?: string;
+  startTime?: Date;
+  endTime?: Date;
+};
+
+const baseSchema = z.object({
   id: z.string().optional(),
   startTime: z.date({
     required_error: 'Укажите время начала',
@@ -40,38 +45,70 @@ const formSchema = z.object({
     required_error: 'Укажите время окончания',
     invalid_type_error: 'Неверный формат даты',
   }),
-  storekeeperId: z.string().min(1, 'Выберите кладовщика'),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+const addSchema = baseSchema;
 
-type PeriodFormProps = {
+const editSchema = z.object({
+  id: z.string().optional(),
+  startTime: z
+    .date({
+      required_error: 'Укажите время начала',
+      invalid_type_error: 'Неверный формат даты',
+    })
+    .optional(),
+  endTime: z
+    .date({
+      required_error: 'Укажите время окончания',
+      invalid_type_error: 'Неверный формат даты',
+    })
+    .optional(),
+});
+
+interface BasePeriodFormProps {
   onSubmit: (data: PeriodBindingModel) => void;
-};
+  schema: z.ZodType<BaseFormValues | EditFormValues>;
+  defaultValues?: Partial<BaseFormValues | EditFormValues>;
+}
 
-export const PeriodForm = ({
+const BasePeriodForm = ({
   onSubmit,
-}: PeriodFormProps): React.JSX.Element => {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  schema,
+  defaultValues,
+}: BasePeriodFormProps): React.JSX.Element => {
+  const form = useForm<BaseFormValues | EditFormValues>({
+    resolver: zodResolver(schema),
     defaultValues: {
-      id: '',
-      storekeeperId: '',
+      id: defaultValues?.id || '',
+      startTime: defaultValues?.startTime || new Date(),
+      endTime: defaultValues?.endTime || new Date(),
     },
   });
 
-  const {
-    storekeepers,
-    isLoading: isLoadingStorekeepers,
-    error: storekeepersError,
-  } = useStorekeepers();
+  useEffect(() => {
+    if (defaultValues) {
+      form.reset({
+        id: defaultValues.id || '',
+        startTime: defaultValues.startTime || new Date(),
+        endTime: defaultValues.endTime || new Date(),
+      });
+    }
+  }, [defaultValues, form]);
 
-  const handleSubmit = (data: FormValues) => {
+  const storekeeper = useAuthStore((store) => store.user);
+
+  const handleSubmit = (data: BaseFormValues | EditFormValues) => {
     const payload: PeriodBindingModel = {
-      ...data,
       id: data.id || crypto.randomUUID(),
-      startTime: data.startTime,
-      endTime: data.endTime,
+      storekeeperId: storekeeper?.id,
+      startTime:
+        'startTime' in data && data.startTime !== undefined
+          ? data.startTime
+          : new Date(),
+      endTime:
+        'endTime' in data && data.endTime !== undefined
+          ? data.endTime
+          : new Date(),
     };
 
     onSubmit(payload);
@@ -164,50 +201,35 @@ export const PeriodForm = ({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="storekeeperId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Кладовщик</FormLabel>
-              <Select
-                onValueChange={(value) => field.onChange(value)}
-                value={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger disabled={isLoadingStorekeepers}>
-                    <SelectValue placeholder="Выберите кладовщика" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {isLoadingStorekeepers ? (
-                    <SelectItem value="loading" disabled>
-                      Загрузка...
-                    </SelectItem>
-                  ) : storekeepersError ? (
-                    <SelectItem value="error" disabled>
-                      Ошибка загрузки
-                    </SelectItem>
-                  ) : (
-                    storekeepers?.map((storekeeper) => (
-                      <SelectItem key={storekeeper.id} value={storekeeper.id}>
-                        {storekeeper.name} {storekeeper.surname}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              {storekeepersError && (
-                <FormMessage>{storekeepersError.message}</FormMessage>
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
         <Button type="submit" className="w-full">
           Сохранить
         </Button>
       </form>
     </Form>
+  );
+};
+
+export const PeriodFormAdd = ({
+  onSubmit,
+}: {
+  onSubmit: (data: PeriodBindingModel) => void;
+}): React.JSX.Element => {
+  return <BasePeriodForm onSubmit={onSubmit} schema={addSchema} />;
+};
+
+export const PeriodFormEdit = ({
+  onSubmit,
+  defaultValues,
+}: {
+  onSubmit: (data: PeriodBindingModel) => void;
+  defaultValues: Partial<BaseFormValues>;
+}): React.JSX.Element => {
+  return (
+    <BasePeriodForm
+      onSubmit={onSubmit}
+      schema={editSchema}
+      defaultValues={defaultValues}
+    />
   );
 };

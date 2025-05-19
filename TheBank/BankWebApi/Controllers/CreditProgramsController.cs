@@ -18,7 +18,6 @@ public class CreditProgramsController(ICreditProgramAdapter adapter) : Controlle
     /// </summary>
     /// <returns>список кредитных программ</returns>
     [HttpGet]
-    [AllowAnonymous]
     public IActionResult GetAllRecords()
     {
         return _adapter.GetList().GetResponse(Request, Response);
@@ -63,7 +62,6 @@ public class CreditProgramsController(ICreditProgramAdapter adapter) : Controlle
     /// <param name="model">модель от пользователя</param>
     /// <returns></returns>
     [HttpPost]
-    [AllowAnonymous]
     public IActionResult Register([FromBody] CreditProgramBindingModel model)
     {
         return _adapter.RegisterCreditProgram(model).GetResponse(Request, Response);

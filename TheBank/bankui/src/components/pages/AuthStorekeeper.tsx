@@ -1,43 +1,47 @@
 import { useStorekeepers } from '@/hooks/useStorekeepers';
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { RegisterForm } from '../features/RegisterForm';
-import type { LoginBindingModel, StorekeeperBindingModel } from '@/types/types';
 import { LoginForm } from '../features/LoginForm';
-import { Toaster } from '../ui/sonner';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import type { LoginBindingModel, StorekeeperBindingModel } from '@/types/types';
+
+type Forms = 'login' | 'register';
 
 export const AuthStorekeeper = (): React.JSX.Element => {
-  const navigate = useNavigate();
   const {
     createStorekeeper,
     loginStorekeeper,
     isLoginError,
     loginError,
-    isLoginSuccess,
+    isCreateError,
   } = useStorekeepers();
 
+  const [currentForm, setCurrentForm] = React.useState<Forms>('login');
+
   const handleRegister = (data: StorekeeperBindingModel) => {
-    console.log(data);
-    createStorekeeper(data);
+    createStorekeeper(data, {
+      onSuccess: () => {
+        toast('Регистрация успешна! Войдите в систему.');
+      },
+      onError: (error) => {
+        toast(`Ошибка регистрации: ${error.message}`);
+      },
+    });
   };
+
   const handleLogin = (data: LoginBindingModel) => {
-    console.log(data);
     loginStorekeeper(data);
   };
 
   React.useEffect(() => {
     if (isLoginError) {
-      toast(`Ошибка ${loginError?.message}`);
+      toast(`Ошибка входа: ${loginError?.message}`);
     }
-  }, [isLoginError, loginError]);
-
-  React.useEffect(() => {
-    if (isLoginSuccess) {
-      navigate('/storekeepers');
+    if (isCreateError) {
+      toast('Ошибка при регистрации');
     }
-  }, [isLoginSuccess]);
+  }, [isLoginError, loginError, isCreateError]);
 
   return (
     <>
@@ -45,10 +49,20 @@ export const AuthStorekeeper = (): React.JSX.Element => {
         <div>
           <Tabs defaultValue="login" className="w-[400px]">
             <TabsList>
-              <TabsTrigger value="login">Вход</TabsTrigger>
-              <TabsTrigger value="register">Регистрация</TabsTrigger>
+              <TabsTrigger
+                onClick={() => setCurrentForm('login')}
+                value="login"
+              >
+                Вход
+              </TabsTrigger>
+              <TabsTrigger
+                onClick={() => setCurrentForm('register')}
+                value="register"
+              >
+                Регистрация
+              </TabsTrigger>
             </TabsList>
-            <TabsContent value="login">
+            <TabsContent value={currentForm}>
               <LoginForm onSubmit={handleLogin} />
             </TabsContent>
             <TabsContent value="register">
@@ -57,7 +71,6 @@ export const AuthStorekeeper = (): React.JSX.Element => {
           </Tabs>
         </div>
       </main>
-      <Toaster />
     </>
   );
 };

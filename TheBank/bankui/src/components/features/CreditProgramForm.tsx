@@ -19,26 +19,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import type {
-  CreditProgramBindingModel,
-  CurrencyBindingModel,
-} from '@/types/types';
-
-const storekeepers: { id: string; name: string }[] = [
-  { id: crypto.randomUUID(), name: 'Кладовщик 1' },
-  { id: crypto.randomUUID(), name: 'Кладовщик 2' },
-];
-
-const periods: { id: string; name: string }[] = [
-  { id: crypto.randomUUID(), name: 'Период 1' },
-  { id: crypto.randomUUID(), name: 'Период 2' },
-];
-
-const currencies: CurrencyBindingModel[] = [
-  { id: crypto.randomUUID(), name: 'Доллар США', abbreviation: 'USD', cost: 1 },
-  { id: crypto.randomUUID(), name: 'Евро', abbreviation: 'EUR', cost: 1.2 },
-  { id: crypto.randomUUID(), name: 'Рубль', abbreviation: 'RUB', cost: 0.01 },
-];
+import type { CreditProgramBindingModel } from '@/types/types';
+import { useAuthStore } from '@/store/workerStore';
+import { usePeriods } from '@/hooks/usePeriods';
+import { useCurrencies } from '@/hooks/useCurrencies';
 
 const formSchema = z.object({
   id: z.string().optional(),
@@ -47,7 +31,6 @@ const formSchema = z.object({
   maxCost: z.coerce
     .number()
     .min(0, 'Максимальная стоимость не может быть отрицательной'),
-  storekeeperId: z.string().min(1, 'Выберите кладовщика'),
   periodId: z.string().min(1, 'Выберите период'),
   currencyCreditPrograms: z
     .array(z.string())
@@ -70,11 +53,15 @@ export const CreditProgramForm = ({
       name: '',
       cost: 0,
       maxCost: 0,
-      storekeeperId: '',
       periodId: '',
       currencyCreditPrograms: [],
     },
   });
+
+  const { periods } = usePeriods();
+  const { currencies } = useCurrencies();
+
+  const storekeeper = useAuthStore((store) => store.user);
 
   const handleSubmit = (data: FormValues) => {
     const dataWithId = {
@@ -86,6 +73,7 @@ export const CreditProgramForm = ({
       currencyCreditPrograms: data.currencyCreditPrograms.map((currencyId) => ({
         currencyId,
       })),
+      storekeeperId: storekeeper?.id,
     };
 
     onSubmit(payload);
@@ -147,30 +135,6 @@ export const CreditProgramForm = ({
         />
         <FormField
           control={form.control}
-          name="storekeeperId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Кладовщик</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите кладовщика" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {storekeepers.map((storekeeper) => (
-                    <SelectItem key={storekeeper.id} value={storekeeper.id}>
-                      {storekeeper.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
           name="periodId"
           render={({ field }) => (
             <FormItem>
@@ -182,11 +146,16 @@ export const CreditProgramForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {periods.map((period) => (
-                    <SelectItem key={period.id} value={period.id}>
-                      {period.name}
-                    </SelectItem>
-                  ))}
+                  {periods &&
+                    periods.map((period) => (
+                      <SelectItem key={period.id} value={period.id}>
+                        {`${new Date(
+                          period.startTime,
+                        ).toLocaleDateString()} - ${new Date(
+                          period.endTime,
+                        ).toLocaleDateString()}`}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -212,11 +181,12 @@ export const CreditProgramForm = ({
                     }}
                     className="w-full border rounded-md p-2 h-24"
                   >
-                    {currencies.map((currency) => (
-                      <option key={currency.id} value={currency.id}>
-                        {currency.name}
-                      </option>
-                    ))}
+                    {currencies &&
+                      currencies.map((currency) => (
+                        <option key={currency.id} value={currency.id}>
+                          {currency.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </FormControl>

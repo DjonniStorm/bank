@@ -4,19 +4,15 @@ import { DialogForm } from '../layout/DialogForm';
 import { DataTable } from '../layout/DataTable';
 import { usePeriods } from '@/hooks/usePeriods';
 import { useStorekeepers } from '@/hooks/useStorekeepers';
-import type {
-  PeriodBindingModel,
-  StorekeeperBindingModel,
-} from '@/types/types';
+import type { PeriodBindingModel } from '@/types/types';
 import type { ColumnDef } from '../layout/DataTable';
-import { PeriodForm } from '../features/PeriodForm';
+import { PeriodFormAdd, PeriodFormEdit } from '../features/PeriodForm';
+import { toast } from 'sonner';
 
-// Определяем расширенный тип для данных таблицы
 interface PeriodTableData extends PeriodBindingModel {
   storekeeperName: string;
 }
 
-// Определяем столбцы
 const columns: ColumnDef<PeriodTableData>[] = [
   {
     accessorKey: 'id',
@@ -25,10 +21,12 @@ const columns: ColumnDef<PeriodTableData>[] = [
   {
     accessorKey: 'startTime',
     header: 'Время начала',
+    renderCell: (item) => new Date(item.startTime).toLocaleDateString(),
   },
   {
     accessorKey: 'endTime',
     header: 'Время окончания',
+    renderCell: (item) => new Date(item.endTime).toLocaleDateString(),
   },
   {
     accessorKey: 'storekeeperName',
@@ -37,7 +35,8 @@ const columns: ColumnDef<PeriodTableData>[] = [
 ];
 
 export const Periods = (): React.JSX.Element => {
-  const { isLoading, isError, error, periods, createPeriod } = usePeriods();
+  const { isLoading, isError, error, periods, createPeriod, updatePeriod } =
+    usePeriods();
   const { storekeepers } = useStorekeepers();
 
   const finalData = React.useMemo(() => {
@@ -60,11 +59,49 @@ export const Periods = (): React.JSX.Element => {
     });
   }, [periods, storekeepers]);
 
-  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState<boolean>(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] =
+    React.useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = React.useState<
+    PeriodBindingModel | undefined
+  >();
 
   const handleAdd = (data: PeriodBindingModel) => {
-    console.log(data);
     createPeriod(data);
+    setIsAddDialogOpen(false);
+  };
+
+  const handleEdit = (data: PeriodBindingModel) => {
+    if (selectedItem) {
+      updatePeriod({
+        ...selectedItem,
+        ...data,
+      });
+      setIsEditDialogOpen(false);
+      setSelectedItem(undefined);
+    }
+  };
+
+  const handleSelectItem = (id: string | undefined) => {
+    const item = periods?.find((p) => p.id === id);
+    if (item) {
+      setSelectedItem({
+        ...item,
+        startTime: new Date(item.startTime),
+        endTime: new Date(item.endTime),
+      });
+    } else {
+      setSelectedItem(undefined);
+    }
+  };
+
+  const openEditForm = () => {
+    if (!selectedItem) {
+      toast('Выберите элемент для редактирования');
+      return;
+    }
+
+    setIsEditDialogOpen(true);
   };
 
   if (isLoading) {
@@ -83,22 +120,43 @@ export const Periods = (): React.JSX.Element => {
     <main className="flex-1 flex relative">
       <AppSidebar
         onAddClick={() => {
-          setIsDialogOpen(true);
+          setIsAddDialogOpen(true);
         }}
-        onEditClick={() => {}}
+        onEditClick={() => {
+          openEditForm();
+        }}
       />
       <div className="flex-1 p-4">
         <DialogForm<PeriodBindingModel>
-          title="Форма"
-          description="Описание"
-          isOpen={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
+          title="Форма сроков"
+          description="Добавить сроки"
+          isOpen={isAddDialogOpen}
+          onClose={() => setIsAddDialogOpen(false)}
           onSubmit={handleAdd}
         >
-          <PeriodForm />
+          <PeriodFormAdd onSubmit={handleAdd} />
         </DialogForm>
+        {selectedItem && (
+          <DialogForm<PeriodBindingModel>
+            title="Форма сроков"
+            description="Изменить сроки"
+            isOpen={isEditDialogOpen}
+            onClose={() => setIsEditDialogOpen(false)}
+            onSubmit={handleEdit}
+          >
+            <PeriodFormEdit
+              onSubmit={handleEdit}
+              defaultValues={selectedItem}
+            />
+          </DialogForm>
+        )}
         <div>
-          <DataTable data={finalData} columns={columns} />
+          <DataTable
+            data={finalData}
+            columns={columns}
+            onRowSelected={(id) => handleSelectItem(id)}
+            selectedRow={selectedItem?.id}
+          />
         </div>
       </div>
     </main>

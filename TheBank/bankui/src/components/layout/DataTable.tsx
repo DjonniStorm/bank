@@ -12,6 +12,8 @@ import { Checkbox } from '../ui/checkbox';
 type DataTableProps<T> = {
   data: T[];
   columns: ColumnDef<T>[];
+  selectedRow?: string;
+  onRowSelected: (id: string | undefined) => void;
 };
 
 export type ColumnDef<T> = {
@@ -23,13 +25,11 @@ export type ColumnDef<T> = {
 export const DataTable = <T extends {}>({
   data,
   columns,
+  selectedRow,
+  onRowSelected,
 }: DataTableProps<T>): React.JSX.Element => {
-  const [selectedRowId, setSelectedRowId] = React.useState<
-    string | undefined
-  >();
-
   const handleRowSelect = (id: string) => {
-    setSelectedRowId((prev) => (prev === id ? undefined : id));
+    onRowSelected(selectedRow === id ? undefined : id);
   };
   return (
     <div className="rounded-md border">
@@ -59,12 +59,12 @@ export const DataTable = <T extends {}>({
               <TableRow
                 key={(item as any).id || index}
                 data-state={
-                  selectedRowId === (item as any).id ? 'selected' : undefined
+                  selectedRow === (item as any).id ? 'selected' : undefined
                 }
               >
                 <TableCell>
                   <Checkbox
-                    checked={selectedRowId === (item as any).id}
+                    checked={selectedRow === (item as any).id}
                     onCheckedChange={() => handleRowSelect((item as any).id)}
                     aria-label="Select row"
                   />

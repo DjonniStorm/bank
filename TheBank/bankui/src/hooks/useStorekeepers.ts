@@ -1,8 +1,13 @@
 import { storekeepersApi } from '@/api/api';
+import { useAuthStore } from '@/store/workerStore';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const useStorekeepers = () => {
   const queryClient = useQueryClient();
+  const setAuth = useAuthStore((store) => store.setAuth);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     data: storekeepers,
@@ -21,7 +26,11 @@ export const useStorekeepers = () => {
     },
   });
 
-  const { mutate: updateStorekeeper, isError: isUpdateError } = useMutation({
+  const {
+    mutate: updateStorekeeper,
+    isError: isUpdateError,
+    error: updateError,
+  } = useMutation({
     mutationFn: storekeepersApi.update,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['storekeepers'] });
@@ -35,8 +44,12 @@ export const useStorekeepers = () => {
     error: loginError,
   } = useMutation({
     mutationFn: storekeepersApi.login,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['storekeepers'] });
+    onSuccess: (userData) => {
+      setAuth(userData);
+      const params = new URLSearchParams(location.search);
+      const redirect = params.get('redirect') || '/storekeepers';
+      navigate(redirect);
+      queryClient.invalidateQueries({ queryKey: ['storekeeper'] });
     },
   });
 
@@ -49,6 +62,7 @@ export const useStorekeepers = () => {
     isUpdateError,
     isLoginSuccess,
     loginError,
+    updateError,
     error,
     createStorekeeper,
     loginStorekeeper,

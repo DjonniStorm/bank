@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,55 +11,88 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import type { CurrencyBindingModel } from '@/types/types';
-import { useStorekeepers } from '@/hooks/useStorekeepers'; // Импорт хука для кладовщиков
+import { useAuthStore } from '@/store/workerStore';
 
-const formSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(1, 'Укажите название валюты'),
-  abbreviation: z.string().min(1, 'Укажите аббревиатуру'),
-  cost: z.coerce.number().min(0, 'Стоимость не может быть отрицательной'),
-  storekeeperId: z.string().min(1, 'Выберите кладовщика'),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
-type CurrencyFormProps = {
-  onSubmit: (data: CurrencyBindingModel) => void;
+type BaseFormValues = {
+  id?: string;
+  name: string;
+  abbreviation: string;
+  cost: number;
 };
 
-export const CurrencyForm = ({
+type EditFormValues = {
+  id?: string;
+  name?: string;
+  abbreviation?: string;
+  cost?: number;
+};
+
+const baseSchema = z.object({
+  id: z.string().optional(),
+  name: z.string({ message: 'Введите название' }),
+  abbreviation: z.string({ message: 'Введите аббревиатуру' }),
+  cost: z.coerce.number({ message: 'Введите стоимость' }),
+});
+
+const addSchema = baseSchema;
+
+const editSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, 'Укажите название валюты').optional(),
+  abbreviation: z.string().min(1, 'Укажите аббревиатуру').optional(),
+  cost: z.coerce
+    .number()
+    .min(0, 'Стоимость не может быть отрицательной')
+    .optional(),
+});
+
+interface BaseCurrencyFormProps {
+  onSubmit: (data: CurrencyBindingModel) => void;
+  schema: z.ZodType<BaseFormValues | EditFormValues>;
+  defaultValues?: Partial<BaseFormValues | EditFormValues>;
+}
+
+const BaseCurrencyForm = ({
   onSubmit,
-}: CurrencyFormProps): React.JSX.Element => {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  schema,
+  defaultValues,
+}: BaseCurrencyFormProps): React.JSX.Element => {
+  const form = useForm<BaseFormValues | EditFormValues>({
+    resolver: zodResolver(schema),
     defaultValues: {
-      id: '',
-      name: '',
-      abbreviation: '',
-      cost: 0,
-      storekeeperId: '',
+      id: defaultValues?.id || '',
+      name: defaultValues?.name || '',
+      abbreviation: defaultValues?.abbreviation || '',
+      cost: defaultValues?.cost || 0,
     },
   });
 
-  const {
-    storekeepers,
-    isLoading: isLoadingStorekeepers,
-    error: storekeepersError,
-  } = useStorekeepers(); // Получаем данные кладовщиков
+  useEffect(() => {
+    if (defaultValues) {
+      form.reset({
+        id: defaultValues.id || '',
+        name: defaultValues.name || '',
+        abbreviation: defaultValues.abbreviation || '',
+        cost: defaultValues.cost || 0,
+      });
+    }
+  }, [defaultValues, form]);
 
-  const handleSubmit = (data: FormValues) => {
+  const storekeeper = useAuthStore((store) => store.user);
+
+  const handleSubmit = (data: BaseFormValues | EditFormValues) => {
+    // Если это форма редактирования, используем только заполненные поля
     const payload: CurrencyBindingModel = {
-      ...data,
       id: data.id || crypto.randomUUID(),
+      storekeeperId: storekeeper?.id,
+      name: 'name' in data && data.name !== undefined ? data.name : '',
+      abbreviation:
+        'abbreviation' in data && data.abbreviation !== undefined
+          ? data.abbreviation
+          : '',
+      cost: 'cost' in data && data.cost !== undefined ? data.cost : 0,
     };
 
     onSubmit(payload);
@@ -115,51 +148,34 @@ export const CurrencyForm = ({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="storekeeperId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Кладовщик</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger disabled={isLoadingStorekeepers}>
-                    {' '}
-                    {/* Отключаем выбор, пока данные загружаются */}
-                    <SelectValue placeholder="Выберите кладовщика" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {isLoadingStorekeepers ? ( // Индикатор загрузки
-                    <SelectItem value="loading" disabled>
-                      Загрузка...
-                    </SelectItem>
-                  ) : storekeepersError ? ( // Сообщение об ошибке
-                    <SelectItem value="error" disabled>
-                      Ошибка загрузки
-                    </SelectItem>
-                  ) : (
-                    // Реальные данные
-                    storekeepers?.map((storekeeper) => (
-                      <SelectItem key={storekeeper.id} value={storekeeper.id}>
-                        {storekeeper.name} {storekeeper.surname}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              {storekeepersError && (
-                <FormMessage>{storekeepersError.message}</FormMessage>
-              )}{' '}
-              {/* Отображаем ошибку под полем */}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <Button type="submit" className="w-full">
           Сохранить
         </Button>
       </form>
     </Form>
+  );
+};
+
+export const CurrencyFormAdd = ({
+  onSubmit,
+}: {
+  onSubmit: (data: CurrencyBindingModel) => void;
+}): React.JSX.Element => {
+  return <BaseCurrencyForm onSubmit={onSubmit} schema={addSchema} />;
+};
+
+export const CurrencyFormEdit = ({
+  onSubmit,
+  defaultValues,
+}: {
+  onSubmit: (data: CurrencyBindingModel) => void;
+  defaultValues: Partial<BaseFormValues>;
+}): React.JSX.Element => {
+  return (
+    <BaseCurrencyForm
+      onSubmit={onSubmit}
+      schema={editSchema}
+      defaultValues={defaultValues}
+    />
   );
 };

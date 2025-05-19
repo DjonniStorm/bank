@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace BankDatabase.Models;
+﻿namespace BankDatabase.Models;
 
 public class CreditProgramCurrency
 {

@@ -53,7 +53,11 @@ export const Storekeepers = (): React.JSX.Element => {
   return (
     <main className="container mx-auto py-10">
       <h1 className="text-2xl font-bold mb-6">Кладовщики</h1>
-      <DataTable data={storekeepers || []} columns={columns} />
+      <DataTable
+        data={storekeepers || []}
+        columns={columns}
+        onRowSelected={console.log}
+      />
     </main>
   );
 };

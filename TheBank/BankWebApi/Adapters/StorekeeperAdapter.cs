@@ -194,7 +194,7 @@ public class StorekeeperAdapter : IStorekeeperAdapter
 
             token = _jwtProvider.GenerateToken(storekeeper);
             
-            return StorekeeperOperationResponse.OK(token);
+            return StorekeeperOperationResponse.OK(_mapper.Map<StorekeeperViewModel>(storekeeper));
         }
         catch (Exception ex)
         {

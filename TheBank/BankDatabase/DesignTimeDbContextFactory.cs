@@ -3,13 +3,13 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace BankDatabase;
 
-public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<BankDbContext>
-{
-    public BankDbContext CreateDbContext(string[] args)
-    {
-        return new BankDbContext(new ConfigurationDatabase());
-    }
-}
+//public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<BankDbContext>
+//{
+//    //public BankDbContext CreateDbContext(string[] args)
+//    //{
+//    //    return new BankDbContext(new ConfigurationDatabase());
+//    //}
+//}
 
 internal class ConfigurationDatabase : IConfigurationDatabase
 {

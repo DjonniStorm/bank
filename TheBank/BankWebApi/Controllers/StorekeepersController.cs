@@ -2,6 +2,7 @@
 using BankContracts.BindingModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BankWebApi.Controllers;
 
@@ -67,6 +68,10 @@ public class StorekeepersController(IStorekeeperAdapter adapter) : ControllerBas
     public IActionResult Login([FromBody] StorekeeperAuthBindingModel model) 
     {
         var res = _adapter.Login(model, out string token);
+        if (string.IsNullOrEmpty(token))
+        {
+            return NotFound("User not found");
+        }
 
         Response.Cookies.Append(AuthOptions.CookieName, token, new CookieOptions
         {
@@ -77,5 +82,33 @@ public class StorekeepersController(IStorekeeperAdapter adapter) : ControllerBas
         });
 
         return res.GetResponse(Request, Response);
+    }
+
+    /// <summary>
+    /// Получение данных текущего кладовщика
+    /// </summary>
+    /// <returns>Данные кладовщика</returns>
+    [HttpGet("me")]
+    public IActionResult GetCurrentUser()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var response = _adapter.GetElement(userId);
+        return response.GetResponse(Request, Response);
+    }
+
+    /// <summary>
+    /// Выход кладовщика
+    /// </summary>
+    /// <returns></returns>
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        Response.Cookies.Delete(AuthOptions.CookieName);
+        return Ok();
     }
 }
