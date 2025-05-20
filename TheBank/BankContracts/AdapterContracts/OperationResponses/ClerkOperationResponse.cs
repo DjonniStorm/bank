@@ -21,4 +21,7 @@ public class ClerkOperationResponse : OperationResponse
 
     public static ClerkOperationResponse InternalServerError(string message) =>
         InternalServerError<ClerkOperationResponse>(message);
+
+    public static ClerkOperationResponse Unauthorized(string message) =>
+        Unauthorized<ClerkOperationResponse>(message);
 }

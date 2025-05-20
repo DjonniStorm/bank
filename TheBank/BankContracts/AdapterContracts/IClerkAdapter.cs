@@ -15,4 +15,6 @@ public interface IClerkAdapter
     ClerkOperationResponse RegisterClerk(ClerkBindingModel clerkModel);
 
     ClerkOperationResponse ChangeClerkInfo(ClerkBindingModel clerkModel);
+
+    ClerkOperationResponse Login(LoginBindingModel clerkModel, out string token);
 }

@@ -1,6 +1,6 @@
 ﻿namespace BankContracts.BindingModels;
 
-public class StorekeeperAuthBindingModel
+public class LoginBindingModel
 {
     public required string Login { get; set; }
 

@@ -95,7 +95,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:26312")
+        policy.WithOrigins("http://localhost:26312", "http://localhost:3654")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();

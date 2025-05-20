@@ -65,12 +65,12 @@ public class StorekeepersController(IStorekeeperAdapter adapter) : ControllerBas
     /// <returns></returns>
     [HttpPost("login")]
     [AllowAnonymous]
-    public IActionResult Login([FromBody] StorekeeperAuthBindingModel model) 
+    public IActionResult Login([FromBody] LoginBindingModel model) 
     {
         var res = _adapter.Login(model, out string token);
         if (string.IsNullOrEmpty(token))
         {
-            return NotFound("User not found");
+            return res.GetResponse(Request, Response);
         }
 
         Response.Cookies.Append(AuthOptions.CookieName, token, new CookieOptions

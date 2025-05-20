@@ -177,7 +177,7 @@ public class StorekeeperAdapter : IStorekeeperAdapter
         }
     }
 
-    public StorekeeperOperationResponse Login(StorekeeperAuthBindingModel storekeeperAuth, out string token)
+    public StorekeeperOperationResponse Login(LoginBindingModel storekeeperAuth, out string token)
     {
         token = string.Empty;
         try
