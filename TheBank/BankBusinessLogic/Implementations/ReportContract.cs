@@ -1,17 +1,14 @@
 ﻿using BankBusinessLogic.OfficePackage;
-using BankContracts.BindingModels;
 using BankContracts.BusinessLogicContracts;
 using BankContracts.DataModels;
 using BankContracts.StorageContracts;
-using BankContracts.ViewModels;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Extensions.Logging;
 
 namespace BankBusinessLogic.Implementations;
 
 public class ReportContract(IClientStorageContract clientStorage, ICurrencyStorageContract currencyStorage,
     ICreditProgramStorageContract creditProgramStorage, IDepositStorageContract depositStorage,
-    BaseWordBuilder baseWordBuilder, BaseExcelBuilder baseExcelBuilder, BasePdfBuilder basePdfBuilder) : IReportContract
+    BaseWordBuilder baseWordBuilder, BaseExcelBuilder baseExcelBuilder, BasePdfBuilder basePdfBuilder, ILogger logger) : IReportContract
 {
     private readonly IClientStorageContract _clientStorage = clientStorage;
     private readonly ICurrencyStorageContract _currencyStorage = currencyStorage;
@@ -20,12 +17,11 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
     private readonly BaseWordBuilder _baseWordBuilder = baseWordBuilder;
     private readonly BaseExcelBuilder _baseExcelBuilder = baseExcelBuilder;
     private readonly BasePdfBuilder _basePdfBuilder = basePdfBuilder;
-
-    internal static readonly string[] documentHeaderDepositByCreditProgram = ["Кредитная программа", "Процентная ставка", "Сумм", "Срок"];
-    internal static readonly string[] tableHeaderDepositByCreditProgram = ["Кредитная программа", "Процентная ставка", "Сумм", "Срок"];
+    private readonly ILogger _logger = logger;
 
     public Task<List<DepositByCreditProgramDataModel>> GetDataDepositByCreditProgramAsync(CancellationToken ct)
     {
+        _logger.LogInformation("Get data DepositByCreditProgram");
         return GetDepositByCreditProgramListAsync(ct);
     }
 
@@ -33,10 +29,13 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
     {
         var data = await GetDepositByCreditProgramListAsync(ct) ?? throw new InvalidOperationException("No found data");
 
+        // Заголовки таблицы
+        var tableHeader = new[] { "Кредитная программа", "Процентная ставка", "Сумма", "Срок" };
+
         // Формируем строки таблицы
         var tableRows = new List<string[]>
         {
-            documentHeaderDepositByCreditProgram
+            tableHeader
         };
 
         foreach (var item in data)
@@ -58,10 +57,10 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             }
         }
 
-        return _basePdfBuilder
+        return _baseWordBuilder
             .AddHeader("Вклады по кредитным программам")
-            .CreateTable(
-                new[] { 1500, 1500, 1500, 1500 },
+            .AddTable(
+                new[] { 2000, 2000, 2000, 2000 },
                 tableRows
             )
             .Build();
@@ -135,7 +134,6 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
 
         return _baseWordBuilder
             .AddHeader("Клиенты по кредитным программам")
-            .AddParagraph($"Сформировано на дату {DateTime.Now:dd.MM.yyyy HH:mm}")
             .AddTable(
                 new[] { 2000, 2000, 2000, 2000 },
                 tableRows
@@ -170,5 +168,174 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
 
         return result;
     }
-}
 
+    public Task<List<ClientsByDepositDataModel>> GetDataClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
+    {
+        _logger.LogInformation("Get data ClientsByDeposit from {dateStart} to {dateFinish}", dateStart, dateFinish);
+        return GetClientsByDepositListAsync(dateStart, dateFinish, ct);
+    }
+
+    public async Task<Stream> CreateDocumentClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
+    {
+        var data = await GetClientsByDepositListAsync(dateStart, dateFinish, ct) ?? throw new InvalidOperationException("No found data");
+
+        // Заголовки таблицы
+        var tableHeader = new[] { "Фамилия клиента", "Имя клиента", "Баланс", "Ставка", "Срок"};
+
+        _logger.LogInformation("Create report SalesByPeriod from {dateStart} to {dateFinish}", dateStart, dateFinish);
+
+        // Формируем строки таблицы
+        var tableRows = new List<string[]>
+        {
+        tableHeader
+        };
+
+        foreach (var item in data)
+        {
+            tableRows.Add(new[]
+            {
+            item.ClientSurname,
+            item.ClientName,
+            item.ClientBalance.ToString("0.##"),
+            item.DepositRate.ToString("0.##"),
+            item.DepositPeriod.ToString(),
+        });
+        }
+
+        return _basePdfBuilder
+            .AddHeader("Клиенты по вкладам")
+            .AddParagraph($"с {dateStart.ToShortDateString()} по {dateFinish.ToShortDateString()}")
+            .CreateTable(
+                new[] { 1500, 1500, 1500, 1000, 1000},
+                tableRows
+            )
+            .Build();
+    }
+
+    private async Task<List<ClientsByDepositDataModel>> GetClientsByDepositListAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
+    {
+        // Получаем всех клиентов
+        var clients = _clientStorage.GetList();
+        // Получаем все вклады за период (если есть поле даты, фильтруйте по нему)
+        var deposits = await _depositStorage.GetListAsync(dateStart, dateFinish, ct);
+
+        var result = new List<ClientsByDepositDataModel>();
+
+        foreach (var client in clients)
+        {
+            if (client.DepositClients == null || client.DepositClients.Count == 0)
+                continue;
+
+            foreach (var depositClient in client.DepositClients)
+            {
+                var deposit = deposits.FirstOrDefault(d => d.Id == depositClient.DepositId);
+                if (deposit == null)
+                    continue;
+
+                result.Add(new ClientsByDepositDataModel
+                {
+                    ClientSurname = client.Surname,
+                    ClientName = client.Name,
+                    ClientBalance = client.Balance,
+                    DepositRate = deposit.InterestRate,
+                    DepositPeriod = deposit.Period,
+                    FromPeriod = dateStart,
+                    ToPeriod = dateFinish
+                });
+            }
+        }
+
+        return result;
+    }
+
+    public Task<List<CreditProgramAndDepositByCurrencyDataModel>> GetDataDepositAndCreditProgramByCurrencyAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
+    {
+        _logger.LogInformation("Get data DepositAndCreditProgramByCurrency from {dateStart} to {dateFinish}", dateStart, dateFinish);
+        return GetDepositAndCreditProgramByCurrencyListAsync(dateStart, dateFinish, ct);
+    }
+
+
+    public async Task<Stream> CreateDocumentDepositAndCreditProgramByCurrencyAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
+    {
+        var data = await GetDepositAndCreditProgramByCurrencyListAsync(dateStart, dateFinish, ct) ?? throw new InvalidOperationException("No found data");
+
+        // Заголовки таблицы
+        var tableHeader = new[] { "Валюта", "Кредитная программа", "Макс. сумма", "Ставка по вкладу", "Срок вклада" };
+
+        // Формируем строки таблицы
+        var tableRows = new List<string[]>
+        {
+            tableHeader
+        };
+
+        foreach (var item in data)
+        {
+            int count = Math.Max(
+                Math.Max(item.CreditProgramName.Count, item.CreditProgramMaxCost.Count),
+                Math.Max(item.DepositRate.Count, item.DepositPeriod.Count)
+            );
+
+            for (int i = 0; i < count; i++)
+            {
+                tableRows.Add(new[]
+                {
+                i == 0 ? item.CurrencyName : "",
+                i < item.CreditProgramName.Count ? item.CreditProgramName[i] : "",
+                i < item.CreditProgramMaxCost.Count ? item.CreditProgramMaxCost[i].ToString() : "",
+                i < item.DepositRate.Count ? item.DepositRate[i].ToString("0.##") : "",
+                i < item.DepositPeriod.Count ? item.DepositPeriod[i].ToString() : ""
+            });
+            }
+        }
+
+        return _basePdfBuilder
+            .AddHeader("Кредитные программы и вклады по валютам")
+            .AddParagraph($"с {dateStart:dd.MM.yyyy} по {dateFinish:dd.MM.yyyy}")
+            .CreateTable(
+                new[] { 1500, 2000, 1500, 1500, 1500 },
+                tableRows
+            )
+            .Build();
+    }
+
+    private async Task<List<CreditProgramAndDepositByCurrencyDataModel>> GetDepositAndCreditProgramByCurrencyListAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
+    {
+        // Получаем все валюты
+        var currencies = _currencyStorage.GetList();
+        // Получаем все кредитные программы
+        var creditPrograms = _creditProgramStorage.GetList();
+        // Получаем все вклады за период (если есть поле даты, фильтруйте по нему)
+        var deposits = await _depositStorage.GetListAsync(dateStart, dateFinish, ct);
+
+        var result = new List<CreditProgramAndDepositByCurrencyDataModel>();
+
+        foreach (var currency in currencies)
+        {
+            // Кредитные программы, связанные с этой валютой
+            var relatedCreditPrograms = creditPrograms
+                .Where(cp => cp.Currencies != null && cp.Currencies.Any(cc => cc.CurrencyId == currency.Id))
+                .ToList();
+
+            // Вклады, связанные с этой валютой
+            var relatedDeposits = deposits
+                .Where(d => d.Currencies != null && d.Currencies.Any(dc => dc.CurrencyId == currency.Id))
+                .ToList();
+
+            if (relatedCreditPrograms.Count == 0 && relatedDeposits.Count == 0)
+                continue;
+
+            result.Add(new CreditProgramAndDepositByCurrencyDataModel
+            {
+                CurrencyName = currency.Name,
+                CreditProgramName = relatedCreditPrograms.Select(cp => cp.Name).ToList(),
+                CreditProgramMaxCost = relatedCreditPrograms.Select(cp => (int)cp.MaxCost).ToList(),
+                DepositRate = relatedDeposits.Select(d => d.InterestRate).ToList(),
+                DepositPeriod = relatedDeposits.Select(d => d.Period).ToList(),
+                FromPeriod = dateStart,
+                ToPeriod = dateFinish
+            });
+        }
+
+        return result;
+    }
+}
