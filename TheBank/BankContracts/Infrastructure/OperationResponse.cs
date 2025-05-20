@@ -13,6 +13,8 @@ public class OperationResponse
 
     protected object? Result { get; set; }
 
+    protected string? FileName { get; set; }
+
     public IActionResult GetResponse(HttpRequest request, HttpResponse response)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -24,6 +26,13 @@ public class OperationResponse
         {
             return new StatusCodeResult((int)StatusCode);
         }
+        if (Result is Stream stream)
+        {
+            return new FileStreamResult(stream, "application/octetstream")
+            {
+                FileDownloadName = FileName
+            };
+        }
 
         return new ObjectResult(Result);
     }
@@ -31,6 +40,9 @@ public class OperationResponse
     protected static TResult OK<TResult, TData>(TData data)
         where TResult : OperationResponse, new() =>
         new() { StatusCode = HttpStatusCode.OK, Result = data };
+
+    protected static TResult OK<TResult, TData>(TData data, string fileName) where TResult : OperationResponse,
+        new() => new() { StatusCode = HttpStatusCode.OK, Result = data, FileName = fileName };
 
     protected static TResult NoContent<TResult>()
         where TResult : OperationResponse, new() => new() { StatusCode = HttpStatusCode.NoContent };

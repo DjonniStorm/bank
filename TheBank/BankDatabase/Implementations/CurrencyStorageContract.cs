@@ -46,6 +46,23 @@ internal class CurrencyStorageContract : ICurrencyStorageContract
         }
     }
 
+    public async Task<List<CurrencyDataModel>> GetListAsync(DateTime startDate, DateTime endDate, CancellationToken ct)
+    {
+        try
+        {
+            var query = _dbContext.Currencies.AsQueryable();
+            // query = query.Where(x => x.CreatedDate >= startDate && x.CreatedDate <= endDate);
+
+            var currencies = await query.ToListAsync(ct);
+            return currencies.Select(x => _mapper.Map<CurrencyDataModel>(x)).ToList();
+        }
+        catch (Exception ex)
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw new StorageException(ex.Message);
+        }
+    }
+
     public CurrencyDataModel? GetElementById(string id)
     {
         try
