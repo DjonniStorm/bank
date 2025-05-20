@@ -27,24 +27,19 @@ internal class PeriodBusinessLogicContract(
         _logger.LogInformation("get all periods");
         return _periodStorageContract.GetList();
     }
-
-    public List<PeriodDataModel> GetAllPeriodsByEndTime(DateTime fromDate, DateTime toDate)
+    public List<PeriodDataModel> GetAllPeriodsByStartTime(DateTime fromDate)
     {
-        if (toDate.IsDateNotOlder(toDate))
+        if (fromDate.IsDateNotOlder(DateTime.UtcNow))
         {
-            throw new IncorrectDatesException(fromDate, toDate);
+            throw new IncorrectDatesException(fromDate, DateTime.UtcNow);
         }
-        return _periodStorageContract.GetList(fromDate, toDate).OrderBy(x => x.EndTime).ToList()
+        return _periodStorageContract.GetList(startDate: fromDate).OrderBy(x => x.StartTime).ToList()
             ?? throw new NullListException(nameof(PeriodDataModel));
     }
 
-    public List<PeriodDataModel> GetAllPeriodsByStartTime(DateTime fromDate, DateTime toDate)
+    public List<PeriodDataModel> GetAllPeriodsByEndTime(DateTime toDate)
     {
-        if (toDate.IsDateNotOlder(toDate))
-        {
-            throw new IncorrectDatesException(fromDate, toDate);
-        }
-        return _periodStorageContract.GetList(fromDate, toDate).OrderBy(x => x.StartTime).ToList()
+        return _periodStorageContract.GetList(endDate: toDate).OrderBy(x => x.EndTime).ToList()
             ?? throw new NullListException(nameof(PeriodDataModel));
     }
 

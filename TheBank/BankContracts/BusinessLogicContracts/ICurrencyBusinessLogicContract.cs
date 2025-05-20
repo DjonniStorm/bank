@@ -3,7 +3,7 @@ namespace BankContracts.BusinessLogicContracts;
 
 public interface ICurrencyBusinessLogicContract
 {
-    List<CurrencyDataModel> GetAllCurrencys();
+    List<CurrencyDataModel> GetAllCurrencies();
 
     List<CurrencyDataModel> GetCurrencyByStorekeeper(string storekeeperId);
 

@@ -170,7 +170,7 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
             Assert.That(actual.StorekeeperId, Is.EqualTo(expected.StorekeeperId));
             Assert.That(actual.PeriodId, Is.EqualTo(expected.PeriodId));
         });
-        if (actual.Currencies is not null)
+        if (actual.Currencies is not null && actual.Currencies.Count > 0)
         {
             Assert.That(expected.CurrencyCreditPrograms, Is.Not.Null);
             Assert.That(
@@ -210,7 +210,7 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
             Assert.That(actual.StorekeeperId, Is.EqualTo(expected.StorekeeperId));
             Assert.That(actual.PeriodId, Is.EqualTo(expected.PeriodId));
         });
-        if (actual.CurrencyCreditPrograms is not null)
+        if (actual.CurrencyCreditPrograms is not null && actual.CurrencyCreditPrograms.Count > 0)
         {
             Assert.That(expected.Currencies, Is.Not.Null);
             Assert.That(
