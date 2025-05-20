@@ -89,7 +89,7 @@ internal static class BankDbContextExtension
         string? name = "bankrot",
         decimal cost = 1_000_000,
         decimal maxCost = 10_000_000,
-        string? storeleeperId = null,
+        string? storekeeperId = null,
         string? periodId = null,
         List<(string currencyId, string creditProgramId)>? creditProgramCurrency = null // Item1 = ClientId Item2 = CreditProgramId
     )
@@ -100,7 +100,7 @@ internal static class BankDbContextExtension
             Name = name,
             Cost = cost,
             MaxCost = maxCost,
-            StorekeeperId = storeleeperId ?? Guid.NewGuid().ToString(),
+            StorekeeperId = storekeeperId ?? Guid.NewGuid().ToString(),
             PeriodId = periodId ?? Guid.NewGuid().ToString(),
         };
         dbContext.CreditPrograms.Add(creditProgram);

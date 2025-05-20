@@ -42,18 +42,18 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
     {
         var creditProgramId = Guid.NewGuid().ToString();
         var creditProgram = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
-            storeleeperId: _storekeeperId,
+            storekeeperId: _storekeeperId,
             periodId: _periodId,
             creditProgramCurrency: [( _currenyId, creditProgramId )]
         );
         BankDbContext.InsertCreditProgramToDatabaseAndReturn(
             name: "bankrot2",
-            storeleeperId: _storekeeperId,
+            storekeeperId: _storekeeperId,
             periodId: _periodId
         );
         BankDbContext.InsertCreditProgramToDatabaseAndReturn(
             name: "bankrot3",
-            storeleeperId: _storekeeperId,
+            storekeeperId: _storekeeperId,
             periodId: _periodId
         );
 
@@ -75,7 +75,7 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
     public void Try_GetElementById_WhenHaveRecord_Test()
     {
         var creditProgram = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
-            storeleeperId: _storekeeperId,
+            storekeeperId: _storekeeperId,
             periodId: _periodId
         );
         AssertElement(_storageContract.GetElementById(creditProgram.Id), creditProgram);
@@ -100,7 +100,7 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
         BankDbContext.InsertCreditProgramToDatabaseAndReturn(
             name: "1",
             periodId: _periodId,
-            storeleeperId: _storekeeperId,
+            storekeeperId: _storekeeperId,
             creditProgramCurrency: [(_currenyId, credit.Id)]
         );
         Assert.That(
@@ -120,7 +120,7 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
         BankDbContext.InsertCreditProgramToDatabaseAndReturn(
             credit.Id,
             periodId: _periodId,
-            storeleeperId: _storekeeperId,
+            storekeeperId: _storekeeperId,
             creditProgramCurrency: [(_currenyId, credit.Id)]
         );
         _storageContract.UpdElement(credit);
