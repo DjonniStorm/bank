@@ -115,7 +115,7 @@ internal class ReportContractTestss
 
         _basePdfBuilder.Setup(x => x.AddHeader(It.IsAny<string>())).Returns(_basePdfBuilder.Object);
         _basePdfBuilder.Setup(x => x.AddParagraph(It.IsAny<string>())).Returns(_basePdfBuilder.Object);
-        _basePdfBuilder.Setup(x => x.CreateTable(It.IsAny<int[]>(), It.IsAny<List<string[]>>())).Returns(_basePdfBuilder.Object);
+        _basePdfBuilder.Setup(x => x.AddTable(It.IsAny<int[]>(), It.IsAny<List<string[]>>())).Returns(_basePdfBuilder.Object);
         _basePdfBuilder.Setup(x => x.Build()).Returns(new MemoryStream(Encoding.UTF8.GetBytes("test")));
 
         var stream = await _reportContract.CreateDocumentClientsByDepositAsync(dateStart, dateFinish, ct);
@@ -123,7 +123,7 @@ internal class ReportContractTestss
         Assert.That(stream, Is.Not.Null);
         _basePdfBuilder.Verify(x => x.AddHeader(It.IsAny<string>()), Times.Once);
         _basePdfBuilder.Verify(x => x.AddParagraph(It.IsAny<string>()), Times.Once);
-        _basePdfBuilder.Verify(x => x.CreateTable(It.IsAny<int[]>(), It.IsAny<List<string[]>>()), Times.Once);
+        _basePdfBuilder.Verify(x => x.AddTable(It.IsAny<int[]>(), It.IsAny<List<string[]>>()), Times.Once);
         _basePdfBuilder.Verify(x => x.Build(), Times.Once);
     }
 }
