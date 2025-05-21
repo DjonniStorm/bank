@@ -1,6 +1,5 @@
 import {
   getData,
-  getReport,
   getSingleData,
   postData,
   postLoginData,

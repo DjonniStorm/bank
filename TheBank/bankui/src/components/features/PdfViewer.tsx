@@ -1,43 +1,56 @@
 import React from 'react';
-import DocViewer, { DocViewerRenderers } from 'react-doc-viewer';
-import { useReports } from '@/hooks/useReports';
-import { type ReportType, type ReportParams } from '@/api/client';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface PdfViewerProps {
-  reportType: ReportType;
-  params?: ReportParams;
+  report: { blob: Blob; fileName: string; mimeType: string } | undefined | null;
 }
 
-export const PdfViewer = ({ reportType, params }: PdfViewerProps) => {
-  const { pdfReport, isPdfLoading, isPdfError, pdfError } = useReports(
-    reportType,
-    params,
-  );
-  const [documents, setDocuments] = React.useState<
-    { uri: string; fileType: string }[]
-  >([]);
+export const PdfViewer = ({ report }: PdfViewerProps) => {
+  const [numPages, setNumPages] = React.useState<number | null>(null);
+  const [pageNumber, setPageNumber] = React.useState(1);
+  const [pdfUrl, setPdfUrl] = React.useState<string | undefined>(undefined);
 
+  // Создаем URL для Blob при изменении report
   React.useEffect(() => {
-    if (pdfReport?.blob) {
-      const uri = URL.createObjectURL(pdfReport.blob);
-      setDocuments([{ uri, fileType: 'pdf' }]);
-      return () => URL.revokeObjectURL(uri);
+    if (report?.blob) {
+      const url = URL.createObjectURL(report.blob);
+      setPdfUrl(url);
+      // Очищаем URL при размонтировании компонента или изменении report
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPdfUrl(undefined);
     }
-  }, [pdfReport]);
+  }, [report]);
 
-  if (isPdfLoading) return <div className="p-4">Загрузка PDF...</div>;
-  if (isPdfError)
-    return <div className="p-4 text-red-500">Ошибка: {pdfError?.message}</div>;
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+    setPageNumber(1);
+  };
+
+  if (!pdfUrl) {
+    return (
+      <div className="p-4">Загрузка или нет данных для отображения PDF.</div>
+    );
+  }
 
   return (
     <div className="p-4">
-      {documents.length > 0 && (
-        <DocViewer
-          documents={documents}
-          pluginRenderers={DocViewerRenderers}
-          style={{ height: '500px' }}
-        />
-      )}
+      <Document
+        file={pdfUrl}
+        onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={console.error}
+      >
+        {Array.from(new Array(numPages || 0), (el, index) => (
+          <Page key={`page_${index + 1}`} pageNumber={index + 1} />
+        ))}
+      </Document>
+      <p>
+        Страница {pageNumber} из {numPages}
+      </p>
     </div>
   );
 };

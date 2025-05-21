@@ -97,7 +97,7 @@ export const Periods = (): React.JSX.Element => {
 
   const openEditForm = () => {
     if (!selectedItem) {
-      toast('Выберите элемент для редактирования');
+      toast.error('Выберите элемент для редактирования');
       return;
     }
 
@@ -127,18 +127,17 @@ export const Periods = (): React.JSX.Element => {
         }}
       />
       <div className="flex-1 p-4">
-        {!selectedItem && 
-        <DialogForm<PeriodBindingModel>
-          title="Форма сроков"
-          description="Добавить сроки"
-          isOpen={isAddDialogOpen}
-          onClose={() => setIsAddDialogOpen(false)}
-          onSubmit={handleAdd}
-        >
-          <PeriodFormAdd />
-        </DialogForm>
-        
-        }
+        {!selectedItem && (
+          <DialogForm<PeriodBindingModel>
+            title="Форма сроков"
+            description="Добавить сроки"
+            isOpen={isAddDialogOpen}
+            onClose={() => setIsAddDialogOpen(false)}
+            onSubmit={handleAdd}
+          >
+            <PeriodFormAdd />
+          </DialogForm>
+        )}
         {selectedItem && (
           <DialogForm<PeriodBindingModel>
             title="Форма сроков"
@@ -147,9 +146,7 @@ export const Periods = (): React.JSX.Element => {
             onClose={() => setIsEditDialogOpen(false)}
             onSubmit={handleEdit}
           >
-            <PeriodFormEdit
-              defaultValues={selectedItem}
-            />
+            <PeriodFormEdit defaultValues={selectedItem} />
           </DialogForm>
         )}
         <div>

@@ -78,8 +78,7 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     [Consumes("application/json")]
     public async Task<IActionResult> GetDepositAndCreditProgramByCurrency(DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
     {
-        return (await _adapter.GetDataDepositAndCreditProgramByCurrencyAsync(fromDate, toDate,
-        cancellationToken)).GetResponse(Request, Response);
+        return (await _adapter.GetDataDepositAndCreditProgramByCurrencyAsync(fromDate, toDate, cancellationToken)).GetResponse(Request, Response);
     }
 
     [HttpGet]

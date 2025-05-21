@@ -116,7 +116,7 @@ export const CreditPrograms = (): React.JSX.Element => {
 
   const openEditForm = () => {
     if (!selectedItem) {
-      toast('Выберите элемент для редактирования');
+      toast.error('Выберите элемент для редактирования');
       return;
     }
 
