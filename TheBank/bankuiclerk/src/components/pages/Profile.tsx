@@ -1,13 +1,13 @@
 import React from 'react';
 import { useAuthStore } from '@/store/workerStore';
 import { ProfileForm } from '../features/ProfileForm';
-import type { StorekeeperBindingModel } from '@/types/types';
-import { useStorekeepers } from '@/hooks/useStorekeepers';
+import type { ClerkBindingModel } from '@/types/types';
+import { useClerks } from '@/hooks/useClerks';
 import { toast } from 'sonner';
 
 export const Profile = (): React.JSX.Element => {
   const { user, updateUser } = useAuthStore();
-  const { updateStorekeeper, isUpdateError, updateError } = useStorekeepers();
+  const { updateClerk, isUpdateError, updateError } = useClerks();
 
   React.useEffect(() => {
     if (isUpdateError) {
@@ -23,10 +23,10 @@ export const Profile = (): React.JSX.Element => {
     );
   }
 
-  const handleUpdate = (data: Partial<StorekeeperBindingModel>) => {
+  const handleUpdate = (data: Partial<ClerkBindingModel>) => {
     console.log(data);
     updateUser(data);
-    updateStorekeeper(data);
+    updateClerk(data);
   };
 
   return (

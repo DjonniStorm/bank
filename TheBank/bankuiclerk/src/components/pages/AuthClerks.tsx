@@ -1,26 +1,21 @@
-import { useStorekeepers } from '@/hooks/useStorekeepers';
+import { useClerks } from '@/hooks/useClerks';
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { RegisterForm } from '../features/RegisterForm';
 import { LoginForm } from '../features/LoginForm';
 import { toast } from 'sonner';
-import type { LoginBindingModel, StorekeeperBindingModel } from '@/types/types';
+import type { LoginBindingModel, ClerkBindingModel } from '@/types/types';
 
 type Forms = 'login' | 'register';
 
-export const AuthStorekeeper = (): React.JSX.Element => {
-  const {
-    createStorekeeper,
-    loginStorekeeper,
-    isLoginError,
-    loginError,
-    isCreateError,
-  } = useStorekeepers();
+export const AuthClerks = (): React.JSX.Element => {
+  const { createClerk, loginClerk, isLoginError, loginError, isCreateError } =
+    useClerks();
 
   const [currentForm, setCurrentForm] = React.useState<Forms>('login');
 
-  const handleRegister = (data: StorekeeperBindingModel) => {
-    createStorekeeper(data, {
+  const handleRegister = (data: ClerkBindingModel) => {
+    createClerk(data, {
       onSuccess: () => {
         toast('Регистрация успешна! Войдите в систему.');
       },
@@ -31,7 +26,7 @@ export const AuthStorekeeper = (): React.JSX.Element => {
   };
 
   const handleLogin = (data: LoginBindingModel) => {
-    loginStorekeeper(data);
+    loginClerk(data);
   };
 
   React.useEffect(() => {

@@ -1,13 +1,13 @@
-import { storekeepersApi } from '@/api/api';
-import type { StorekeeperBindingModel } from '@/types/types';
+import { clerksApi } from '@/api/api';
+import type { ClerkBindingModel } from '@/types/types';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 type AuthState = {
-  user?: StorekeeperBindingModel;
-  setAuth: (user: StorekeeperBindingModel) => void;
-  updateUser: (user: StorekeeperBindingModel) => void;
-  getUser: () => StorekeeperBindingModel | undefined;
+  user?: ClerkBindingModel;
+  setAuth: (user: ClerkBindingModel) => void;
+  updateUser: (user: ClerkBindingModel) => void;
+  getUser: () => ClerkBindingModel | undefined;
   logout: () => Promise<void>;
 };
 
@@ -15,17 +15,17 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: undefined,
-      setAuth: (user: StorekeeperBindingModel) => {
+      setAuth: (user: ClerkBindingModel) => {
         set({ user: user });
       },
-      updateUser: (user: StorekeeperBindingModel) => {
+      updateUser: (user: ClerkBindingModel) => {
         set({ user: user });
       },
       getUser: () => {
         return get().user;
       },
       logout: async () => {
-        await storekeepersApi.logout();
+        await clerksApi.logout();
         set({ user: undefined });
       },
     }),

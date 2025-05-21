@@ -30,11 +30,15 @@ export const clientsApi = {
 
 // Clerks API
 export const clerksApi = {
-  getAll: () => getData<ClerkBindingModel>('api/Clerks/GetAllRecords'),
+  getAll: () => getData<ClerkBindingModel>('api/clerks'),
   getById: (id: string) =>
     getData<ClerkBindingModel>(`api/Clerks/GetRecord/${id}`),
   create: (data: ClerkBindingModel) => postData('api/Clerks/Register', data),
-  update: (data: ClerkBindingModel) => putData('api/Clerks/ChangeInfo', data),
+  update: (data: ClerkBindingModel) => putData('api/Clerks', data),
+  // auth
+  login: (data: LoginBindingModel) => postLoginData('api/Clerks/login', data),
+  logout: () => postData('api/clerks/logout', {}),
+  getCurrentUser: () => getSingleData<ClerkBindingModel>('api/clerks/me'),
 };
 
 // Credit Programs API

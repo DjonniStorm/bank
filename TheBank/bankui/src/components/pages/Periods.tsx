@@ -127,6 +127,7 @@ export const Periods = (): React.JSX.Element => {
         }}
       />
       <div className="flex-1 p-4">
+        {!selectedItem && 
         <DialogForm<PeriodBindingModel>
           title="Форма сроков"
           description="Добавить сроки"
@@ -134,8 +135,10 @@ export const Periods = (): React.JSX.Element => {
           onClose={() => setIsAddDialogOpen(false)}
           onSubmit={handleAdd}
         >
-          <PeriodFormAdd onSubmit={handleAdd} />
+          <PeriodFormAdd />
         </DialogForm>
+        
+        }
         {selectedItem && (
           <DialogForm<PeriodBindingModel>
             title="Форма сроков"
@@ -145,7 +148,6 @@ export const Periods = (): React.JSX.Element => {
             onSubmit={handleEdit}
           >
             <PeriodFormEdit
-              onSubmit={handleEdit}
               defaultValues={selectedItem}
             />
           </DialogForm>

@@ -1,5 +1,8 @@
 ﻿namespace BankWebApi.Infrastructure;
 
+/// <summary>
+/// да пох на это
+/// </summary>
 public class PasswordHelper
 {
     public static string HashPassword(string password) => BCrypt.Net.BCrypt.HashPassword(password);

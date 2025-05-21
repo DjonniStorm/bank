@@ -27,6 +27,8 @@ public class DepositAdapter : IDepositAdapter
             cfg.CreateMap<DepositDataModel, DepositViewModel>();
             cfg.CreateMap<DepositCurrencyBindingModel, DepositCurrencyDataModel>();
             cfg.CreateMap<DepositCurrencyDataModel, DepositCurrencyViewModel>();
+            cfg.CreateMap<DepositClientBindingModel, DepositClientDataModel>()
+               .ConstructUsing(src => new DepositClientDataModel(src.DepositId, src.ClientId));
         });
         _mapper = new Mapper(config);
     }
@@ -117,7 +119,7 @@ public class DepositAdapter : IDepositAdapter
         {
             _logger.LogError(ex, "StorageException");
             return DepositOperationResponse.BadRequest(
-                $"Error while working with data storage: {ex.InnerException!.Message}"
+                $"Error while working with data storage: {ex.InnerException?.Message}"
             );
         }
         catch (Exception ex)

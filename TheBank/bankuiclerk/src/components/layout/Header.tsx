@@ -18,7 +18,6 @@ import {
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { useAuthStore } from '@/store/workerStore';
-import { useStorekeepers } from '@/hooks/useStorekeepers';
 
 type NavOptionValue = {
   name: string;
@@ -33,42 +32,42 @@ type NavOption = {
 
 const navOptions = [
   {
-    name: 'Валюты',
+    name: 'Клиенты',
     options: [
       {
         id: 1,
         name: 'Просмотреть',
-        link: '/currencies',
+        link: '/clients',
       },
     ],
   },
   {
-    name: 'Кредитные программы',
+    name: 'Вклады',
     options: [
       {
         id: 1,
         name: 'Просмотреть',
-        link: '/credit-programs',
+        link: '/deposits',
       },
     ],
   },
   {
-    name: 'Сроки',
+    name: 'Пополнения',
     options: [
       {
         id: 1,
         name: 'Просмотреть',
-        link: '/periods',
+        link: '/replenishments',
       },
     ],
   },
   {
-    name: 'Кладовщики',
+    name: 'Клерки',
     options: [
       {
         id: 1,
         name: 'Просмотреть',
-        link: '/storekeepers',
+        link: '/clerks',
       },
     ],
   },
