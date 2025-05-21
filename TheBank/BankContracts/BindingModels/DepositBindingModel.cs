@@ -1,6 +1,4 @@
-﻿using BankContracts.ViewModels;
-
-namespace BankContracts.BindingModels;
+﻿namespace BankContracts.BindingModels;
 
 
 public class DepositBindingModel
@@ -15,5 +13,5 @@ public class DepositBindingModel
 
     public string? ClerkId { get; set; }
 
-    public List<DepositClientBindingModel>? DepositClients { get; set; }
+    public List<DepositCurrencyBindingModel>? DepositCurrencies { get; set; }
 }
