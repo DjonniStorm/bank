@@ -18,6 +18,7 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
     private readonly BaseExcelBuilder _baseExcelBuilder = baseExcelBuilder;
     private readonly BasePdfBuilder _basePdfBuilder = basePdfBuilder;
     private readonly ILogger _logger = logger;
+    private readonly MailWorker _mailWorker = new MailWorker();
 
     private static readonly string[] documentHeader = ["Название программы", "Фамилия", "Имя", "Баланс"];
     private static readonly string[] depositHeader = ["Название программы", "Ставка", "Сумма", "Срок"];
@@ -66,11 +67,23 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             }
         }
 
-        return _baseWordBuilder
+        var stream = _baseWordBuilder
             .AddHeader("Клиенты по кредитным программам")
             .AddParagraph($"Сформировано на дату {DateTime.Now}")
             .AddTable([3000, 3000, 3000, 3000], tableRows)
             .Build();
+
+        try
+        {
+            _mailWorker.sendYandex();
+            _logger.LogInformation("Report sent via email successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send report via email");
+        }
+
+        return stream;
     }
 
     public async Task<List<ClientsByDepositDataModel>> GetDataClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
