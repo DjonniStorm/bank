@@ -10,7 +10,9 @@ public interface IReportAdapter
     Task<ReportOperationResponse> GetDataDepositAndCreditProgramByCurrencyAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
 
     Task<ReportOperationResponse> CreateDocumentClientsByCreditProgramAsync(CancellationToken ct);
+    Task<ReportOperationResponse> CreateExcelDocumentClientsByCreditProgramAsync(CancellationToken ct);
     Task<ReportOperationResponse> CreateDocumentClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
     Task<ReportOperationResponse> CreateDocumentDepositByCreditProgramAsync(CancellationToken ct);
+    Task<ReportOperationResponse> CreateExcelDocumentDepositByCreditProgramAsync(CancellationToken ct);
     Task<ReportOperationResponse> CreateDocumentDepositAndCreditProgramByCurrencyAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct);
 }

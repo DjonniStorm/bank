@@ -2,6 +2,7 @@
 using BankDatabase.Models;
 using BankTests.Infrastructure;
 using System.Net;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankTests.WebApiControllersTests;
 
@@ -335,11 +336,24 @@ internal class ReportControllerTests : BaseWebApiControllerTest
         BankDbContext.DepositClients.Add(new DepositClient { ClientId = client2.Id, DepositId = deposit2.Id });
         BankDbContext.SaveChanges();
 
+        // Проверяем, что связи созданы
+        var client1After = BankDbContext.Clients
+            .Include(x => x.DepositClients)
+            .First(x => x.Id == client1.Id);
+        var client2After = BankDbContext.Clients
+            .Include(x => x.DepositClients)
+            .First(x => x.Id == client2.Id);
+
+        Assert.That(client1After.DepositClients, Is.Not.Null);
+        Assert.That(client1After.DepositClients, Has.Count.EqualTo(1));
+        Assert.That(client2After.DepositClients, Is.Not.Null);
+        Assert.That(client2After.DepositClients, Has.Count.EqualTo(1));
+
         var dateStart = DateTime.UtcNow.AddDays(-1);
         var dateFinish = DateTime.UtcNow.AddDays(1);
 
         //Act
-        var response = await HttpClient.GetAsync($"/api/report/loadclientsbydeposit?dateStart={dateStart:yyyy-MM-dd}&dateFinish={dateFinish:yyyy-MM-dd}");
+        var response = await HttpClient.GetAsync($"/api/report/loadclientsbydeposit?fromDate={dateStart:yyyy-MM-dd}&toDate={dateFinish:yyyy-MM-dd}");
 
         //Assert
         await AssertStreamAsync(response, "clients_by_deposit.pdf");
@@ -411,10 +425,147 @@ internal class ReportControllerTests : BaseWebApiControllerTest
         var dateFinish = DateTime.UtcNow.AddDays(1);
 
         //Act
-        var response = await HttpClient.GetAsync($"/api/report/loaddepositandcreditprogrambycurrency?dateStart={dateStart:yyyy-MM-dd}&dateFinish={dateFinish:yyyy-MM-dd}");
+        var response = await HttpClient.GetAsync($"/api/report/loaddepositandcreditprogrambycurrency?fromDate={dateStart:yyyy-MM-dd}&toDate={dateFinish:yyyy-MM-dd}");
 
         //Assert
         await AssertStreamAsync(response, "deposit_and_credit_program_by_currency.pdf");
+    }
+
+    [Test]
+    public async Task ExcelClientByCreditProgram_WhenHaveRecords_ShouldSuccess_Test()
+    {
+        //Arrange
+        var storekeeper = BankDbContext.InsertStorekeeperToDatabaseAndReturn(
+            email: $"storekeeper_{Guid.NewGuid()}@email.com",
+            login: $"storekeeper_{Guid.NewGuid()}",
+            phone: $"+7-{Guid.NewGuid():N}"
+        );
+        var clerk = BankDbContext.InsertClerkToDatabaseAndReturn(
+            email: $"clerk_{Guid.NewGuid()}@email.com",
+            login: $"clerk_{Guid.NewGuid()}",
+            phone: $"+7-{Guid.NewGuid():N}"
+        );
+        var period = BankDbContext.InsertPeriodToDatabaseAndReturn(storekeeperId: storekeeper.Id);
+        
+        // Создаем валюты
+        var currency1 = BankDbContext.InsertCurrencyToDatabaseAndReturn(
+            name: "Рубль",
+            abbreviation: "RUB",
+            storekeeperId: storekeeper.Id
+        );
+        var currency2 = BankDbContext.InsertCurrencyToDatabaseAndReturn(
+            name: "Доллар",
+            abbreviation: "USD",
+            storekeeperId: storekeeper.Id
+        );
+
+        // Создаем кредитные программы и связываем их с валютами
+        var creditProgram1 = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            name: "Credit Program 1",
+            storekeeperId: storekeeper.Id,
+            periodId: period.Id,
+            creditProgramCurrency: [(currency1.Id, Guid.NewGuid().ToString())]
+        );
+        var creditProgram2 = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            name: "Credit Program 2",
+            storekeeperId: storekeeper.Id,
+            periodId: period.Id,
+            creditProgramCurrency: [(currency2.Id, Guid.NewGuid().ToString())]
+        );
+
+        // Создаем клиентов
+        var client1 = BankDbContext.InsertClientToDatabaseAndReturn(
+            surname: "Ivanov",
+            name: "Ivan",
+            balance: 10000,
+            clerkId: clerk.Id
+        );
+        var client2 = BankDbContext.InsertClientToDatabaseAndReturn(
+            surname: "Petrov",
+            name: "Petr",
+            balance: 20000,
+            clerkId: clerk.Id
+        );
+
+        // Связываем клиентов с кредитными программами
+        BankDbContext.CreditProgramClients.Add(new ClientCreditProgram { ClientId = client1.Id, CreditProgramId = creditProgram1.Id });
+        BankDbContext.CreditProgramClients.Add(new ClientCreditProgram { ClientId = client2.Id, CreditProgramId = creditProgram2.Id });
+        BankDbContext.SaveChanges();
+
+        //Act
+        var response = await HttpClient.GetAsync("/api/report/loadexcelclientbycreditprogram");
+
+        //Assert
+        await AssertStreamAsync(response, "clients_by_credit_program.xlsx");
+    }
+
+    [Test]
+    public async Task ExcelDepositByCreditProgram_WhenHaveRecords_ShouldSuccess_Test()
+    {
+        //Arrange
+        var storekeeper = BankDbContext.InsertStorekeeperToDatabaseAndReturn(
+            email: $"storekeeper_{Guid.NewGuid()}@email.com",
+            login: $"storekeeper_{Guid.NewGuid()}",
+            phone: $"+7-{Guid.NewGuid():N}"
+        );
+        var period = BankDbContext.InsertPeriodToDatabaseAndReturn(storekeeperId: storekeeper.Id);
+        
+        // Создаем валюты
+        var currency1 = BankDbContext.InsertCurrencyToDatabaseAndReturn(
+            name: "Рубль",
+            abbreviation: "RUB",
+            storekeeperId: storekeeper.Id
+        );
+        var currency2 = BankDbContext.InsertCurrencyToDatabaseAndReturn(
+            name: "Доллар",
+            abbreviation: "USD",
+            storekeeperId: storekeeper.Id
+        );
+
+        // Создаем кредитные программы и связываем их с валютами
+        var creditProgram1 = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            name: "Credit Program 1",
+            storekeeperId: storekeeper.Id,
+            periodId: period.Id,
+            creditProgramCurrency: [(currency1.Id, Guid.NewGuid().ToString())]
+        );
+        var creditProgram2 = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            name: "Credit Program 2",
+            storekeeperId: storekeeper.Id,
+            periodId: period.Id,
+            creditProgramCurrency: [(currency2.Id, Guid.NewGuid().ToString())]
+        );
+
+        var clerk = BankDbContext.InsertClerkToDatabaseAndReturn(
+            email: $"clerk_{Guid.NewGuid()}@email.com",
+            login: $"clerk_{Guid.NewGuid()}",
+            phone: $"+7-{Guid.NewGuid():N}"
+        );
+        
+        // Создаем вклады и связываем их с валютами
+        var deposit1 = BankDbContext.InsertDepositToDatabaseAndReturn(
+            interestRate: 5.5f,
+            cost: 10000,
+            period: 12,
+            clerkId: clerk.Id
+        );
+        var deposit2 = BankDbContext.InsertDepositToDatabaseAndReturn(
+            interestRate: 6.5f,
+            cost: 20000,
+            period: 24,
+            clerkId: clerk.Id
+        );
+
+        // Связываем вклады с валютами
+        BankDbContext.DepositCurrencies.Add(new DepositCurrency { DepositId = deposit1.Id, CurrencyId = currency1.Id });
+        BankDbContext.DepositCurrencies.Add(new DepositCurrency { DepositId = deposit2.Id, CurrencyId = currency2.Id });
+        BankDbContext.SaveChanges();
+
+        //Act
+        var response = await HttpClient.GetAsync("/api/report/loadexceldepositbycreditprogram");
+
+        //Assert
+        await AssertStreamAsync(response, "deposit_by_credit_program.xlsx");
     }
 
     private static async Task AssertStreamAsync(HttpResponseMessage response, string fileNameForSave = "")

@@ -40,7 +40,36 @@ public class ReportAdapter : IReportAdapter
     {
         try
         {
-            return SendStream(await _reportContract.CreateDocumentClientsByCreditProgramAsync(ct), "clientbycreditprogram.xslx");
+            return SendStream(await _reportContract.CreateDocumentClientsByCreditProgramAsync(ct), "clientbycreditprogram.docx");
+        }
+        catch (IncorrectDatesException ex)
+        {
+            _logger.LogError(ex, "IncorrectDatesException");
+            return ReportOperationResponse.BadRequest($"Incorrect dates: {ex.Message}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "InvalidOperationException");
+            return ReportOperationResponse.InternalServerError($"Error while working with data storage: {ex.InnerException!.Message}");
+        }
+        catch (StorageException ex)
+        {
+            _logger.LogError(ex, "StorageException");
+            return ReportOperationResponse.InternalServerError($"Error while working with data storage: {ex.InnerException!.Message}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception");
+            return
+            ReportOperationResponse.InternalServerError(ex.Message);
+        }
+    }
+
+    public async Task<ReportOperationResponse> CreateExcelDocumentClientsByCreditProgramAsync(CancellationToken ct)
+    {
+        try
+        {
+            return SendStream(await _reportContract.CreateExcelDocumentClientsByCreditProgramAsync(ct), "clientbycreditprogram.xlsx");
         }
         catch (IncorrectDatesException ex)
         {
@@ -129,12 +158,50 @@ public class ReportAdapter : IReportAdapter
     {
         try
         {
-            return SendStream(await _reportContract.CreateDocumentDepositByCreditProgramAsync(ct), "depositbycreditprogram.xslx");
+            return SendStream(await _reportContract.CreateDocumentDepositByCreditProgramAsync(ct), "depositbycreditprogram.docx");
         }
         catch (IncorrectDatesException ex)
         {
             _logger.LogError(ex, "IncorrectDatesException");
             return ReportOperationResponse.BadRequest($"Incorrect dates: {ex.Message}");
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "No deposits with currencies found")
+        {
+            _logger.LogError(ex, "InvalidOperationException");
+            return ReportOperationResponse.BadRequest("No deposits with currencies found");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "InvalidOperationException");
+            return ReportOperationResponse.InternalServerError($"Error while working with data storage: {ex.InnerException!.Message}");
+        }
+        catch (StorageException ex)
+        {
+            _logger.LogError(ex, "StorageException");
+            return ReportOperationResponse.InternalServerError($"Error while working with data storage: {ex.InnerException!.Message}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception");
+            return ReportOperationResponse.InternalServerError(ex.Message);
+        }
+    }
+
+    public async Task<ReportOperationResponse> CreateExcelDocumentDepositByCreditProgramAsync(CancellationToken ct)
+    {
+        try
+        {
+            return SendStream(await _reportContract.CreateExcelDocumentDepositByCreditProgramAsync(ct), "depositbycreditprogram.xlsx");
+        }
+        catch (IncorrectDatesException ex)
+        {
+            _logger.LogError(ex, "IncorrectDatesException");
+            return ReportOperationResponse.BadRequest($"Incorrect dates: {ex.Message}");
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "No deposits with currencies found")
+        {
+            _logger.LogError(ex, "InvalidOperationException");
+            return ReportOperationResponse.BadRequest("No deposits with currencies found");
         }
         catch (InvalidOperationException ex)
         {

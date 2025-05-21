@@ -64,7 +64,7 @@ public class OpenXmlExcelBuilder : BaseExcelBuilder
         }
 
         uint counter = 1;
-        int coef = 2;
+        int coef = 1;
         _columns.Append(columnsWidths.Select(x => new Column
         {
             Min = counter,
@@ -79,7 +79,7 @@ public class OpenXmlExcelBuilder : BaseExcelBuilder
         }
 
         _rowIndex++;
-        for (var i = 1; i < data.Count - 1; ++i)
+        for (var i = 1; i < data.Count; ++i)
         {
             for (var j = 0; j < data[i].Length; ++j)
             {
@@ -89,12 +89,6 @@ public class OpenXmlExcelBuilder : BaseExcelBuilder
             _rowIndex++;
         }
 
-        for (var j = 0; j < data.Last().Length; ++j)
-        {
-            CreateCell(j, _rowIndex, data.Last()[j], StyleIndex.BoldTextWithBorder);
-        }
-
-        _rowIndex++;
         return this;
     }
 

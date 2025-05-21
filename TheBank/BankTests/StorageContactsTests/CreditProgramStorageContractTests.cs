@@ -234,7 +234,7 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
         }
         else
         {
-            Assert.That(expected.Currencies, Is.Null);
+            Assert.That(expected.Currencies, Is.Empty);
         }
     }
 }

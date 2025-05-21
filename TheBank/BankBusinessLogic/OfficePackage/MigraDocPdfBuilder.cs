@@ -56,34 +56,54 @@ public class MigraDocPdfBuilder : BasePdfBuilder
         // Добавляем столбцы с заданной шириной
         foreach (var width in columnsWidths)
         {
-            var column = table.AddColumn(Unit.FromPoint(width));
+            var widthInCm = width / 28.35;
+            var column = table.AddColumn(Unit.FromCentimeter(widthInCm));
             column.Format.Alignment = ParagraphAlignment.Left;
         }
 
-        // Первая строка — заголовок (жирный)
-        var headerRow = table.AddRow();
-        headerRow.HeadingFormat = true;
-        headerRow.Format.Font.Bold = true;
-        headerRow.Format.Alignment = ParagraphAlignment.Center;
-        headerRow.VerticalAlignment = VerticalAlignment.Center;
-        headerRow.Shading.Color = Colors.LightGray;
-
+        // Первая строка — объединённый заголовок
+        var headerRow1 = table.AddRow();
+        headerRow1.HeadingFormat = true;
+        headerRow1.Format.Font.Bold = true;
+        headerRow1.Format.Alignment = ParagraphAlignment.Center;
+        headerRow1.VerticalAlignment = VerticalAlignment.Center;
+        headerRow1.Shading.Color = Colors.White;
         for (int j = 0; j < data[0].Length; j++)
         {
-            var cell = headerRow.Cells[j];
+            var cell = headerRow1.Cells[j];
             cell.AddParagraph(data[0][j]);
             cell.Format.Alignment = ParagraphAlignment.Center;
             cell.VerticalAlignment = VerticalAlignment.Center;
             cell.Borders.Width = 0.5;
         }
+        // Объединяем ячейки: "Кредитная программа" (j=1,2), "Вклад" (j=3,4)
+        headerRow1.Cells[1].MergeRight = 1;
+        headerRow1.Cells[3].MergeRight = 1;
 
-        // Промежуточные строки — обычные
-        for (int i = 1; i < data.Count - 1; i++)
+        // Вторая строка — подзаголовки
+        var headerRow2 = table.AddRow();
+        headerRow2.HeadingFormat = true;
+        headerRow2.Format.Font.Bold = true;
+        headerRow2.Format.Alignment = ParagraphAlignment.Center;
+        headerRow2.VerticalAlignment = VerticalAlignment.Center;
+        headerRow2.Shading.Color = Colors.White;
+        for (int j = 0; j < data[1].Length; j++)
+        {
+            var cell = headerRow2.Cells[j];
+            cell.AddParagraph(data[1][j]);
+            cell.Format.Alignment = ParagraphAlignment.Center;
+            cell.VerticalAlignment = VerticalAlignment.Center;
+            cell.Borders.Width = 0.5;
+        }
+
+        // Данные — обычные строки, без жирности и заливки, выравнивание по левому краю
+        for (int i = 2; i < data.Count; i++)
         {
             var row = table.AddRow();
+            row.Format.Font.Bold = false;
             row.Format.Alignment = ParagraphAlignment.Left;
             row.VerticalAlignment = VerticalAlignment.Center;
-
+            row.Shading.Color = Colors.White;
             for (int j = 0; j < data[i].Length; j++)
             {
                 var cell = row.Cells[j];
@@ -94,26 +114,7 @@ public class MigraDocPdfBuilder : BasePdfBuilder
             }
         }
 
-        // Последняя строка — жирная (например, итог)
-        if (data.Count > 1)
-        {
-            var lastRow = table.AddRow();
-            lastRow.Format.Font.Bold = true;
-            lastRow.Format.Alignment = ParagraphAlignment.Center;
-            lastRow.VerticalAlignment = VerticalAlignment.Center;
-            lastRow.Shading.Color = Colors.LightGray;
-
-            for (int j = 0; j < data[^1].Length; j++)
-            {
-                var cell = lastRow.Cells[j];
-                cell.AddParagraph(data[^1][j]);
-                cell.Format.Alignment = ParagraphAlignment.Center;
-                cell.VerticalAlignment = VerticalAlignment.Center;
-                cell.Borders.Width = 0.5;
-            }
-        }
-
-        section.AddParagraph(); // Добавляем пустую строку после таблицы
+        section.AddParagraph();
         return this;
     }
 

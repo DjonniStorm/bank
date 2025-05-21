@@ -42,7 +42,9 @@ internal class CreditProgramStorageContract : ICreditProgramStorageContract
     {
         try
         {
-            var query = _dbContext.CreditPrograms.AsQueryable();
+            var query = _dbContext.CreditPrograms
+                .Include(x => x.CurrencyCreditPrograms)
+                .AsQueryable();
             if (storekeeperId is not null)
             {
                 query = query.Where(x => x.StorekeeperId == storekeeperId);
