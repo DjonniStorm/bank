@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,27 +12,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import type {
-  DepositBindingModel,
-  DepositClientBindingModel,
-} from '@/types/types';
+import type { DepositBindingModel } from '@/types/types';
 import { useAuthStore } from '@/store/workerStore';
-import { useClients } from '@/hooks/useClients';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 
 type BaseFormValues = {
   id?: string;
   interestRate: number;
   cost: number;
   period: number;
-  clientIds: string[];
 };
 
 type EditFormValues = {
@@ -40,7 +27,6 @@ type EditFormValues = {
   interestRate?: number;
   cost?: number;
   period?: number;
-  clientIds?: string[];
 };
 
 const baseSchema = z.object({
@@ -50,7 +36,6 @@ const baseSchema = z.object({
     .min(0, 'Процентная ставка не может быть отрицательной'),
   cost: z.coerce.number().min(0, 'Стоимость не может быть отрицательной'),
   period: z.coerce.number().int().min(1, 'Срок вклада должен быть не менее 1'),
-  clientIds: z.array(z.string()),
 });
 
 const addSchema = baseSchema;
@@ -70,7 +55,6 @@ const editSchema = z.object({
     .int()
     .min(1, 'Срок вклада должен быть не менее 1')
     .optional(),
-  clientIds: z.array(z.string()).optional(),
 });
 
 interface BaseDepositFormProps {
@@ -84,16 +68,6 @@ const BaseDepositForm = ({
   schema,
   defaultValues,
 }: BaseDepositFormProps): React.JSX.Element => {
-  const { clients } = useClients();
-
-  const initialClientIds = useMemo(
-    () =>
-      defaultValues?.depositClients
-        ?.map((dc) => dc.clientId)
-        .filter((id): id is string => !!id) || [],
-    [defaultValues?.depositClients],
-  );
-
   const form = useForm<BaseFormValues | EditFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -101,7 +75,6 @@ const BaseDepositForm = ({
       interestRate: defaultValues?.interestRate || 0,
       cost: defaultValues?.cost || 0,
       period: defaultValues?.period || 1,
-      clientIds: initialClientIds,
     },
   });
 
@@ -112,28 +85,14 @@ const BaseDepositForm = ({
         interestRate: defaultValues.interestRate || 0,
         cost: defaultValues.cost || 0,
         period: defaultValues.period || 1,
-        clientIds: initialClientIds,
       });
     }
-  }, [defaultValues, form, initialClientIds]);
+  }, [defaultValues, form]);
 
   const clerk = useAuthStore((store) => store.user);
 
   const handleSubmit = (data: BaseFormValues | EditFormValues) => {
     const depositId = data.id || crypto.randomUUID();
-
-    const depositClients: DepositClientBindingModel[] = (
-      'clientIds' in data && data.clientIds ? data.clientIds : []
-    ).map((clientId) => {
-      const existingDepositClient = defaultValues?.depositClients?.find(
-        (dc) => dc.clientId === clientId,
-      );
-      return {
-        id: existingDepositClient?.id, // Use existing relationship ID if available
-        clientId: clientId,
-        depositId: depositId,
-      };
-    });
 
     const payload: DepositBindingModel = {
       id: depositId,
@@ -144,13 +103,10 @@ const BaseDepositForm = ({
           : 0,
       cost: 'cost' in data && data.cost !== undefined ? data.cost : 0,
       period: 'period' in data && data.period !== undefined ? data.period : 1,
-      depositClients: depositClients,
     };
 
     onSubmit(payload);
   };
-
-  const selectedClientIds = form.watch('clientIds') || [];
 
   return (
     <Form {...form}>
@@ -214,67 +170,6 @@ const BaseDepositForm = ({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="clientIds"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Клиенты</FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  const currentValues = field.value || [];
-                  if (!currentValues.includes(value)) {
-                    field.onChange([...currentValues, value]);
-                  }
-                }}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите клиентов" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {clients?.map((client) => (
-                    <SelectItem
-                      key={client.id}
-                      value={client.id || ''}
-                      className={cn(
-                        selectedClientIds.includes(client.id || '') &&
-                          'bg-muted',
-                      )}
-                    >
-                      {`${client.name} ${client.surname}`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {field.value?.map((id) => {
-                  const client = clients?.find((c) => c.id === id);
-                  return client ? (
-                    <div
-                      key={id}
-                      className="bg-secondary px-2 py-1 rounded-md text-sm flex items-center gap-2"
-                    >
-                      <span>{`${client.name} ${client.surname}`}</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          field.onChange(field.value?.filter((v) => v !== id));
-                        }}
-                        className="text-destructive hover:text-destructive/80"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ) : null;
-                })}
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         <Button type="submit" className="w-full">
           Сохранить
         </Button>

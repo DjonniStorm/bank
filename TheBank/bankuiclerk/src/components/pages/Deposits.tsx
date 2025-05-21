@@ -1,16 +1,17 @@
 import { useDeposits } from '@/hooks/useDeposits';
 import { useClerks } from '@/hooks/useClerks';
+import { useCurrencies } from '@/hooks/useCurrencies';
 import React from 'react';
 import { AppSidebar } from '../layout/Sidebar';
 import { DataTable, type ColumnDef } from '../layout/DataTable';
-import type { DepositBindingModel, ClientBindingModel } from '@/types/types';
+import type { DepositBindingModel } from '@/types/types';
 import { DialogForm } from '../layout/DialogForm';
 import { DepositFormAdd, DepositFormEdit } from '../features/DepositForm';
 import { toast } from 'sonner';
 
 type DepositRowData = DepositBindingModel & {
   clerkName: string;
-  clientsDisplay: string;
+  currenciesDisplay: string;
 };
 
 const columns: ColumnDef<DepositRowData>[] = [
@@ -35,8 +36,8 @@ const columns: ColumnDef<DepositRowData>[] = [
     header: 'Клерк',
   },
   {
-    accessorKey: 'clientsDisplay',
-    header: 'Клиенты',
+    accessorKey: 'currenciesDisplay',
+    header: 'Валюты',
   },
 ];
 
@@ -53,6 +54,7 @@ export const Deposits = (): React.JSX.Element => {
     isLoading: isClerksLoading,
     error: clerksError,
   } = useClerks();
+  const { currencies, isLoading: isCurrenciesLoading } = useCurrencies();
 
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] =
@@ -62,33 +64,39 @@ export const Deposits = (): React.JSX.Element => {
   >();
 
   const finalData = React.useMemo(() => {
-    if (!deposits || !clerks) return [];
+    if (!deposits || !clerks || !currencies) return [];
 
     return deposits.map((deposit) => {
       const clerk = clerks.find((c) => c.id === deposit.clerkId);
-      const clientsDisplay =
-        deposit.depositClients
+
+      // Формирование списка валют
+      const currenciesDisplay =
+        deposit.depositCurrencies
           ?.map((dc) => {
-            const client = clerks?.find((c) => c.id === dc.clientId);
-            return client ? `${client.name} ${client.surname}` : dc.clientId;
+            const currency = currencies?.find((c) => c.id === dc.currencyId);
+            return currency
+              ? `${currency.name} (${currency.abbreviation})`
+              : dc.currencyId;
           })
-          .join(', ') || 'Нет клиентов';
+          .join(', ') || 'Нет валют';
 
       return {
         ...deposit,
         clerkName: clerk ? `${clerk.name} ${clerk.surname}` : 'Неизвестно',
-        clientsDisplay: clientsDisplay,
+        currenciesDisplay,
       };
     });
-  }, [deposits, clerks]);
+  }, [deposits, clerks, currencies]);
 
   const handleAdd = (data: DepositBindingModel) => {
+    console.log('Добавление вклада с данными:', data);
     createDeposit(data);
     setIsAddDialogOpen(false);
   };
 
   const handleEdit = (data: DepositBindingModel) => {
     if (selectedItem) {
+      console.log('Обновление вклада с данными:', { ...selectedItem, ...data });
       updateDeposit({
         ...selectedItem,
         ...data,
@@ -118,7 +126,7 @@ export const Deposits = (): React.JSX.Element => {
     setIsEditDialogOpen(true);
   };
 
-  if (isDepositsLoading || isClerksLoading) {
+  if (isDepositsLoading || isClerksLoading || isCurrenciesLoading) {
     return <main className="container mx-auto py-10">Загрузка...</main>;
   }
 

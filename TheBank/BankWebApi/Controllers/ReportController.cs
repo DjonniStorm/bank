@@ -1,5 +1,6 @@
 ﻿using BankBusinessLogic.Implementations;
 using BankContracts.AdapterContracts;
+using BankContracts.BindingModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -89,33 +90,28 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendReportByCreditProgram(string email, CancellationToken ct)
+    public async Task<IActionResult> SendReportByCreditProgram([FromBody] MailSendInfoBindingModel model, CancellationToken ct)
     {
         try
         {
             var report = await _adapter.CreateDocumentClientsByCreditProgramAsync(ct);
-            var response = report.GetResponse(Request, Response);
-            
-            if (response is FileStreamResult fileResult)
+            var stream = report.GetStream();
+            var fileName = report.GetFileName() ?? "report.docx";
+            if (stream == null)
+                return BadRequest("Не удалось сформировать отчет");
+            var tempPath = Path.Combine(Path.GetTempPath(), fileName);
+            using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
             {
-                var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
-                {
-                    await fileResult.FileStream.CopyToAsync(fileStream);
-                }
-
-                await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Отчет по клиентам по кредитным программам",
-                    body: "<h1>Отчет по клиентам по кредитным программам</h1><p>В приложении находится отчет по клиентам по кредитным программам.</p>",
-                    attachmentPath: tempPath
-                );
-
-                System.IO.File.Delete(tempPath);
-                return Ok("Отчет успешно отправлен на почту");
+                await stream.CopyToAsync(fileStream);
             }
-
-            return BadRequest("Не удалось получить отчет");
+            await _emailService.SendReportAsync(
+                toEmail: model.ToEmail,
+                subject: model.Subject,
+                body: model.Body,
+                attachmentPath: tempPath
+            );
+            System.IO.File.Delete(tempPath);
+            return Ok("Отчет успешно отправлен на почту");
         }
         catch (Exception ex)
         {
@@ -124,33 +120,28 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendReportByDeposit(string email, DateTime fromDate, DateTime toDate, CancellationToken ct)
+    public async Task<IActionResult> SendReportByDeposit([FromBody] MailSendInfoBindingModel model, DateTime fromDate, DateTime toDate, CancellationToken ct)
     {
         try
         {
             var report = await _adapter.CreateDocumentClientsByDepositAsync(fromDate, toDate, ct);
-            var response = report.GetResponse(Request, Response);
-            
-            if (response is FileStreamResult fileResult)
+            var stream = report.GetStream();
+            var fileName = report.GetFileName() ?? "report.pdf";
+            if (stream == null)
+                return BadRequest("Не удалось сформировать отчет");
+            var tempPath = Path.Combine(Path.GetTempPath(), fileName);
+            using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
             {
-                var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
-                {
-                    await fileResult.FileStream.CopyToAsync(fileStream);
-                }
-
-                await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Отчет по клиентам по вкладам",
-                    body: $"<h1>Отчет по клиентам по вкладам</h1><p>Отчет за период с {fromDate:dd.MM.yyyy} по {toDate:dd.MM.yyyy}</p>",
-                    attachmentPath: tempPath
-                );
-
-                System.IO.File.Delete(tempPath);
-                return Ok("Отчет успешно отправлен на почту");
+                await stream.CopyToAsync(fileStream);
             }
-
-            return BadRequest("Не удалось получить отчет");
+            await _emailService.SendReportAsync(
+                toEmail: model.ToEmail,
+                subject: model.Subject,
+                body: model.Body,
+                attachmentPath: tempPath
+            );
+            System.IO.File.Delete(tempPath);
+            return Ok("Отчет успешно отправлен на почту");
         }
         catch (Exception ex)
         {
@@ -159,33 +150,28 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendReportByCurrency(string email, DateTime fromDate, DateTime toDate, CancellationToken ct)
+    public async Task<IActionResult> SendReportByCurrency([FromBody] MailSendInfoBindingModel model, DateTime fromDate, DateTime toDate, CancellationToken ct)
     {
         try
         {
             var report = await _adapter.CreateDocumentDepositAndCreditProgramByCurrencyAsync(fromDate, toDate, ct);
-            var response = report.GetResponse(Request, Response);
-            
-            if (response is FileStreamResult fileResult)
+            var stream = report.GetStream();
+            var fileName = report.GetFileName() ?? "report.pdf";
+            if (stream == null)
+                return BadRequest("Не удалось сформировать отчет");
+            var tempPath = Path.Combine(Path.GetTempPath(), fileName);
+            using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
             {
-                var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
-                {
-                    await fileResult.FileStream.CopyToAsync(fileStream);
-                }
-
-                await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Отчет по вкладам и кредитным программам по валютам",
-                    body: $"<h1>Отчет по вкладам и кредитным программам по валютам</h1><p>Отчет за период с {fromDate:dd.MM.yyyy} по {toDate:dd.MM.yyyy}</p>",
-                    attachmentPath: tempPath
-                );
-
-                System.IO.File.Delete(tempPath);
-                return Ok("Отчет успешно отправлен на почту");
+                await stream.CopyToAsync(fileStream);
             }
-
-            return BadRequest("Не удалось получить отчет");
+            await _emailService.SendReportAsync(
+                toEmail: model.ToEmail,
+                subject: model.Subject,
+                body: model.Body,
+                attachmentPath: tempPath
+            );
+            System.IO.File.Delete(tempPath);
+            return Ok("Отчет успешно отправлен на почту");
         }
         catch (Exception ex)
         {
@@ -194,33 +180,28 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendExcelReportByCreditProgram(string email, CancellationToken ct)
+    public async Task<IActionResult> SendExcelReportByCreditProgram([FromBody] MailSendInfoBindingModel model, CancellationToken ct)
     {
         try
         {
             var report = await _adapter.CreateExcelDocumentClientsByCreditProgramAsync(ct);
-            var response = report.GetResponse(Request, Response);
-            
-            if (response is FileStreamResult fileResult)
+            var stream = report.GetStream();
+            var fileName = report.GetFileName() ?? "report.xlsx";
+            if (stream == null)
+                return BadRequest("Не удалось сформировать отчет");
+            var tempPath = Path.Combine(Path.GetTempPath(), fileName);
+            using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
             {
-                var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
-                {
-                    await fileResult.FileStream.CopyToAsync(fileStream);
-                }
-
-                await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Excel отчет по клиентам по кредитным программам",
-                    body: "<h1>Excel отчет по клиентам по кредитным программам</h1><p>В приложении находится Excel отчет по клиентам по кредитным программам.</p>",
-                    attachmentPath: tempPath
-                );
-
-                System.IO.File.Delete(tempPath);
-                return Ok("Excel отчет успешно отправлен на почту");
+                await stream.CopyToAsync(fileStream);
             }
-
-            return BadRequest("Не удалось получить отчет");
+            await _emailService.SendReportAsync(
+                toEmail: model.ToEmail,
+                subject: model.Subject,
+                body: model.Body,
+                attachmentPath: tempPath
+            );
+            System.IO.File.Delete(tempPath);
+            return Ok("Excel отчет успешно отправлен на почту");
         }
         catch (Exception ex)
         {
@@ -229,33 +210,28 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendReportDepositByCreditProgram(string email, CancellationToken ct)
+    public async Task<IActionResult> SendReportDepositByCreditProgram([FromBody] MailSendInfoBindingModel model, CancellationToken ct)
     {
         try
         {
             var report = await _adapter.CreateDocumentDepositByCreditProgramAsync(ct);
-            var response = report.GetResponse(Request, Response);
-            
-            if (response is FileStreamResult fileResult)
+            var stream = report.GetStream();
+            var fileName = report.GetFileName() ?? "report.docx";
+            if (stream == null)
+                return BadRequest("Не удалось сформировать отчет");
+            var tempPath = Path.Combine(Path.GetTempPath(), fileName);
+            using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
             {
-                var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
-                {
-                    await fileResult.FileStream.CopyToAsync(fileStream);
-                }
-
-                await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Отчет по вкладам по кредитным программам",
-                    body: "<h1>Отчет по вкладам по кредитным программам</h1><p>В приложении находится отчет по вкладам по кредитным программам.</p>",
-                    attachmentPath: tempPath
-                );
-
-                System.IO.File.Delete(tempPath);
-                return Ok("Отчет успешно отправлен на почту");
+                await stream.CopyToAsync(fileStream);
             }
-
-            return BadRequest("Не удалось получить отчет");
+            await _emailService.SendReportAsync(
+                toEmail: model.ToEmail,
+                subject: model.Subject,
+                body: model.Body,
+                attachmentPath: tempPath
+            );
+            System.IO.File.Delete(tempPath);
+            return Ok("Отчет успешно отправлен на почту");
         }
         catch (Exception ex)
         {
@@ -264,33 +240,28 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendExcelReportDepositByCreditProgram(string email, CancellationToken ct)
+    public async Task<IActionResult> SendExcelReportDepositByCreditProgram([FromBody] MailSendInfoBindingModel model, CancellationToken ct)
     {
         try
         {
             var report = await _adapter.CreateExcelDocumentDepositByCreditProgramAsync(ct);
-            var response = report.GetResponse(Request, Response);
-            
-            if (response is FileStreamResult fileResult)
+            var stream = report.GetStream();
+            var fileName = report.GetFileName() ?? "report.xlsx";
+            if (stream == null)
+                return BadRequest("Не удалось сформировать отчет");
+            var tempPath = Path.Combine(Path.GetTempPath(), fileName);
+            using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
             {
-                var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
-                {
-                    await fileResult.FileStream.CopyToAsync(fileStream);
-                }
-
-                await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Excel отчет по вкладам по кредитным программам",
-                    body: "<h1>Excel отчет по вкладам по кредитным программам</h1><p>В приложении находится Excel отчет по вкладам по кредитным программам.</p>",
-                    attachmentPath: tempPath
-                );
-
-                System.IO.File.Delete(tempPath);
-                return Ok("Excel отчет успешно отправлен на почту");
+                await stream.CopyToAsync(fileStream);
             }
-
-            return BadRequest("Не удалось получить отчет");
+            await _emailService.SendReportAsync(
+                toEmail: model.ToEmail,
+                subject: model.Subject,
+                body: model.Body,
+                attachmentPath: tempPath
+            );
+            System.IO.File.Delete(tempPath);
+            return Ok("Excel отчет успешно отправлен на почту");
         }
         catch (Exception ex)
         {

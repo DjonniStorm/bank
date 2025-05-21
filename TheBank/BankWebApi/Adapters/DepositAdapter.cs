@@ -23,12 +23,34 @@ public class DepositAdapter : IDepositAdapter
         _logger = logger;
         var config = new MapperConfiguration(cfg =>
         {
-            cfg.CreateMap<DepositBindingModel, DepositDataModel>();
-            cfg.CreateMap<DepositDataModel, DepositViewModel>();
-            cfg.CreateMap<DepositCurrencyBindingModel, DepositCurrencyDataModel>();
+            // DepositBindingModel -> DepositDataModel
+            cfg.CreateMap<DepositBindingModel, DepositDataModel>()
+       .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id ?? string.Empty))
+       .ForMember(dest => dest.InterestRate, opt => opt.MapFrom(src => src.InterestRate))
+       .ForMember(dest => dest.Cost, opt => opt.MapFrom(src => src.Cost))
+       .ForMember(dest => dest.Period, opt => opt.MapFrom(src => src.Period))
+       .ForMember(dest => dest.ClerkId, opt => opt.MapFrom(src => src.ClerkId ?? string.Empty))
+       .ForMember(dest => dest.Currencies, opt => opt.MapFrom(src => src.DepositCurrencies ?? new List<DepositCurrencyBindingModel>()));
+
+            // DepositDataModel -> DepositViewModel
+            cfg.CreateMap<DepositDataModel, DepositViewModel>()
+       .ForMember(dest => dest.DepositCurrencies, opt => opt.MapFrom(src => src.Currencies != null ? src.Currencies : new List<DepositCurrencyDataModel>()));
+
+            // DepositCurrencyBindingModel -> DepositCurrencyDataModel
+            cfg.CreateMap<DepositCurrencyBindingModel, DepositCurrencyDataModel>()
+       .ForMember(dest => dest.DepositId, opt => opt.MapFrom(src => src.DepositId ?? string.Empty))
+       .ForMember(dest => dest.CurrencyId, opt => opt.MapFrom(src => src.CurrencyId ?? string.Empty));
+
+            // DepositCurrencyDataModel -> DepositCurrencyViewModel
             cfg.CreateMap<DepositCurrencyDataModel, DepositCurrencyViewModel>();
-            cfg.CreateMap<DepositClientBindingModel, DepositClientDataModel>()
-               .ConstructUsing(src => new DepositClientDataModel(src.DepositId, src.ClientId));
+
+            // DepositCurrencyViewModel -> DepositCurrencyBindingModel
+            cfg.CreateMap<DepositCurrencyViewModel, DepositCurrencyBindingModel>();
+
+            // Явный маппинг DepositCurrencyDataModel -> DepositCurrencyBindingModel
+            cfg.CreateMap<DepositCurrencyDataModel, DepositCurrencyBindingModel>()
+       .ForMember(dest => dest.DepositId, opt => opt.MapFrom(src => src.DepositId))
+       .ForMember(dest => dest.CurrencyId, opt => opt.MapFrom(src => src.CurrencyId));
         });
         _mapper = new Mapper(config);
     }

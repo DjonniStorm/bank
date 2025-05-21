@@ -27,6 +27,13 @@ export interface DepositBindingModel {
   period: number;
   clerkId?: string;
   depositClients?: DepositClientBindingModel[];
+  depositCurrencies?: DepositCurrencyBindingModel[];
+}
+
+export interface DepositCurrencyBindingModel {
+  id?: string;
+  depositId?: string;
+  currencyId?: string;
 }
 
 export interface CurrencyBindingModel {
@@ -93,4 +100,11 @@ export interface StorekeeperBindingModel {
 export interface LoginBindingModel {
   login: string;
   password: string;
+}
+
+export interface MailSendInfoBindingModel {
+  toEmail: string;
+  subject: string;
+  body: string;
+  attachmentPath?: string;
 }

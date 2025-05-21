@@ -229,16 +229,47 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
 
         foreach (var currency in data)
         {
+            // Вывод информации по кредитным программам
             for (int i = 0; i < currency.CreditProgramName.Count; i++)
             {
-                tableRows.Add(new string[]
+                // Вычисляем индекс депозита, если есть соответствующие
+                string depositRate = "—";
+                string depositPeriod = "—";
+
+                // Проверяем, есть ли депозиты для этой валюты и не вышли ли мы за границы массива
+                if (currency.DepositRate.Count > 0)
                 {
+                    // Берем индекс по модулю, чтобы не выйти за границы массива
+                    int depositIndex = i % currency.DepositRate.Count;
+                    depositRate = currency.DepositRate[depositIndex].ToString("N2");
+                    depositPeriod = $"{currency.DepositPeriod[depositIndex]} мес.";
+                }
+
+                // Добавляем строку в таблицу
+                tableRows.Add(
+                [
                     currency.CurrencyName,
                     currency.CreditProgramName[i],
                     currency.CreditProgramMaxCost[i].ToString("N2"),
-                    currency.DepositRate[i].ToString("N2"),
-                    $"{currency.DepositPeriod[i]} мес."
-                });
+                    depositRate,
+                    depositPeriod
+                ]);
+            }
+
+            // Если есть депозиты, но нет кредитных программ, добавляем строки только с депозитами
+            if (currency.CreditProgramName.Count == 0 && currency.DepositRate.Count > 0)
+            {
+                for (int j = 0; j < currency.DepositRate.Count; j++)
+                {
+                    tableRows.Add(
+                    [
+                        currency.CurrencyName,
+                        "—",
+                        "—",
+                        currency.DepositRate[j].ToString("N2"),
+                        $"{currency.DepositPeriod[j]} мес."
+                    ]);
+                }
             }
         }
 

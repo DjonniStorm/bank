@@ -109,7 +109,7 @@ internal class DepositStorageContract : IDepositStorageContract
         catch (InvalidOperationException ex) when (ex.TargetSite?.Name == "ThrowIdentityConflict")
         {
             _dbContext.ChangeTracker.Clear();
-            throw new ElementExistsException($"Id {depositDataModel.Id }");
+            throw new ElementExistsException($"Id {depositDataModel.Id}");
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { ConstraintName: "IX_Deposits_InterestRate" })
         {
@@ -127,39 +127,75 @@ internal class DepositStorageContract : IDepositStorageContract
     {
         try
         {
-            var transaction = _dbContext.Database.BeginTransaction();
+            using var transaction = _dbContext.Database.BeginTransaction();
             try
             {
-                var element = GetDepositById(depositDataModel.Id) ?? throw new ElementNotFoundException(depositDataModel.Id);
+                // Загружаем существующий вклад со связями
+                var existingDeposit = _dbContext.Deposits
+                    .Include(d => d.DepositCurrencies)
+                    .FirstOrDefault(d => d.Id == depositDataModel.Id);
 
+                if (existingDeposit == null)
+                {
+                    throw new ElementNotFoundException(depositDataModel.Id);
+                }
+
+                // Обновляем основные поля вклада
+                existingDeposit.InterestRate = depositDataModel.InterestRate;
+                existingDeposit.Cost = depositDataModel.Cost;
+                existingDeposit.Period = depositDataModel.Period;
+                existingDeposit.ClerkId = depositDataModel.ClerkId;
+
+                // Обновляем связи с валютами, если они переданы
                 if (depositDataModel.Currencies != null)
                 {
-                    if (element.DepositCurrencies != null || element.DepositCurrencies?.Count >= 0)
+                    // Удаляем все существующие связи
+                    if (existingDeposit.DepositCurrencies != null)
                     {
-                        _dbContext.DepositCurrencies.RemoveRange(element.DepositCurrencies);
+                        _dbContext.DepositCurrencies.RemoveRange(existingDeposit.DepositCurrencies);
                     }
 
-                    element.DepositCurrencies = _mapper.Map<List<DepositCurrency>>(depositDataModel.Currencies);
+                    // Сохраняем изменения для применения удаления
+                    _dbContext.SaveChanges();
+
+                    // Создаем новые связи
+                    existingDeposit.DepositCurrencies = depositDataModel.Currencies.Select(c =>
+                        new DepositCurrency
+                        {
+                            DepositId = existingDeposit.Id,
+                            CurrencyId = c.CurrencyId
+                        }).ToList();
                 }
-                _mapper.Map(depositDataModel, element);
+
+                // Сохраняем все изменения
                 _dbContext.SaveChanges();
                 transaction.Commit();
+
+                // Выводим отладочную информацию
+                System.Console.WriteLine($"Updated deposit {existingDeposit.Id} with {existingDeposit.DepositCurrencies?.Count ?? 0} currency relations");
+                foreach (var relation in existingDeposit.DepositCurrencies ?? Enumerable.Empty<DepositCurrency>())
+                {
+                    System.Console.WriteLine($"Currency relation: DepositId={relation.DepositId}, CurrencyId={relation.CurrencyId}");
+                }
             }
-            catch
+            catch (Exception ex)
             {
                 transaction.Rollback();
-                throw;
+                System.Console.WriteLine($"Error in transaction: {ex.Message}");
+                if (ex is ElementNotFoundException)
+                    throw;
+                throw new StorageException(ex.Message);
             }
-        }
-        catch (ElementNotFoundException)
-        {
-            _dbContext.ChangeTracker.Clear();
-            throw;
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { ConstraintName: "IX_Deposits_InterestRate" })
         {
             _dbContext.ChangeTracker.Clear();
             throw new ElementExistsException($"InterestRate {depositDataModel.InterestRate}");
+        }
+        catch (ElementNotFoundException)
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw;
         }
         catch (Exception ex)
         {

@@ -30,9 +30,8 @@ export const clientsApi = {
 
 // Clerks API
 export const clerksApi = {
-  getAll: () => getData<ClerkBindingModel>('api/Clerks/GetAllRecords'),
-  getById: (id: string) =>
-    getData<ClerkBindingModel>(`api/Clerks/GetRecord/${id}`),
+  getAll: () => getData<ClerkBindingModel>('api/Clerks'),
+  getById: (id: string) => getData<ClerkBindingModel>(`api/Clerks/${id}`),
   create: (data: ClerkBindingModel) => postData('api/Clerks/Register', data),
   update: (data: ClerkBindingModel) => putData('api/Clerks/ChangeInfo', data),
 };
@@ -132,5 +131,5 @@ export const storekeepersApi = {
 
 //Reports API
 export const reportsApi = {
-  loadClientsByCreditProgram: () => getReport('path'),
+  // loadClientsByCreditProgram: () => getReport('path'),
 };

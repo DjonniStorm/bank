@@ -18,4 +18,7 @@ public class ReportOperationResponse : OperationResponse
     public static ReportOperationResponse BadRequest(string message) => BadRequest<ReportOperationResponse>(message);
 
     public static ReportOperationResponse InternalServerError(string message) => InternalServerError<ReportOperationResponse>(message);
+
+    public Stream? GetStream() => Result as Stream;
+    public string? GetFileName() => FileName;
 }

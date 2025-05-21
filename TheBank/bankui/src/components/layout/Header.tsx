@@ -72,6 +72,16 @@ const navOptions = [
     ],
   },
   {
+    name: 'Вклады',
+    options: [
+      {
+        id: 1,
+        name: 'Управление валютами вкладов',
+        link: '/deposit-currencies',
+      },
+    ],
+  },
+  {
     name: 'Отчеты',
     options: [
       {

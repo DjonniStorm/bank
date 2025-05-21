@@ -7,6 +7,7 @@ import {
   type ReportType,
   type ReportFormat,
 } from '@/api/client';
+import type { MailSendInfoBindingModel } from '@/types/types';
 
 export const useReports = (reportType: ReportType, params?: ReportParams) => {
   const requiresDates =
@@ -38,14 +39,14 @@ export const useReports = (reportType: ReportType, params?: ReportParams) => {
     mutationFn: ({
       reportType,
       format,
-      email,
+      mailInfo,
       params,
     }: {
       reportType: ReportType;
       format: ReportFormat;
-      email: string;
+      mailInfo: MailSendInfoBindingModel;
       params?: ReportParams;
-    }) => sendReportByEmail(reportType, format, email, params),
+    }) => sendReportByEmail(reportType, format, mailInfo, params),
   });
 
   return {

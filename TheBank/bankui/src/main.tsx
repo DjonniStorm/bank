@@ -16,6 +16,7 @@ import { Periods } from './components/pages/Periods.tsx';
 import { Toaster } from './components/ui/sonner.tsx';
 import { Profile } from './components/pages/Profile.tsx';
 import { Reports } from './components/pages/Reports.tsx';
+import { DepositCurrencyManager } from './components/pages/DepositCurrencyManager.tsx';
 
 const routes = createBrowserRouter([
   {
@@ -45,6 +46,10 @@ const routes = createBrowserRouter([
       {
         path: '/reports',
         element: <Reports />,
+      },
+      {
+        path: '/deposit-currencies',
+        element: <DepositCurrencyManager />,
       },
     ],
     errorElement: <p>бля пизда рулям</p>,

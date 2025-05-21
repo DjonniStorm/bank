@@ -6,23 +6,23 @@ import { DialogForm } from '../layout/DialogForm';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { toast } from 'sonner';
-import {
-  sendReportByEmail,
-  type ReportType,
-  type ReportFormat,
-  type ReportParams,
-} from '@/api/client';
-import {
-  useWordReport,
-  useExcelReport,
-  usePdfReport,
-} from '@/hooks/useReports';
 import { Calendar } from '../ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { type QueryObserverResult } from '@tanstack/react-query';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '../ui/form';
+import { ConfigManager } from '@/lib/config';
 
 type ReportViewerProps = {
   selectedReport: SelectedReport;
@@ -30,58 +30,39 @@ type ReportViewerProps = {
 
 type ReportData = { blob: Blob; fileName: string; mimeType: string };
 
+const emailFormSchema = z.object({
+  toEmail: z.string().email({ message: 'Введите корректный email' }),
+  subject: z.string().min(1, { message: 'Тема обязательна' }),
+  body: z.string().min(1, { message: 'Текст сообщения обязателен' }),
+});
+
+const API_URL = ConfigManager.loadUrl();
+
 export const ReportViewer = ({
   selectedReport,
 }: ReportViewerProps): React.JSX.Element => {
   const [isSendDialogOpen, setIsSendDialogOpen] = React.useState(false);
-  const [email, setEmail] = React.useState('');
   const [fromDate, setFromDate] = React.useState<Date | undefined>(undefined);
   const [toDate, setToDate] = React.useState<Date | undefined>(undefined);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<Error | null>(null);
+  const [report, setReport] = React.useState<ReportData | null>(null);
 
-  const pdfParams: ReportParams | undefined =
-    selectedReport === 'pdf' && fromDate && toDate
-      ? {
-          fromDate: format(fromDate, 'yyyy-MM-dd'),
-          toDate: format(toDate, 'yyyy-MM-dd'),
-        }
-      : undefined;
+  const form = useForm<z.infer<typeof emailFormSchema>>({
+    resolver: zodResolver(emailFormSchema),
+    defaultValues: {
+      toEmail: '',
+      subject: getDefaultSubject(selectedReport),
+      body: getDefaultBody(selectedReport, fromDate, toDate),
+    },
+  });
 
-  const wordQuery = useWordReport();
-  const excelQuery = useExcelReport();
-  const pdfQuery = usePdfReport(pdfParams);
+  React.useEffect(() => {
+    form.setValue('subject', getDefaultSubject(selectedReport));
+    form.setValue('body', getDefaultBody(selectedReport, fromDate, toDate));
 
-  const isLoading =
-    wordQuery.isLoading || excelQuery.isLoading || pdfQuery.isLoading;
-
-  // Определяем текущий отчет и ошибку на основе selectedReport
-  const currentReportData = React.useMemo(() => {
-    switch (selectedReport) {
-      case 'word':
-        return wordQuery;
-      case 'excel':
-        return excelQuery;
-      case 'pdf':
-        return pdfQuery;
-      default:
-        return { data: undefined, error: undefined } as Partial<
-          QueryObserverResult<ReportData, Error>
-        >;
-    }
-  }, [selectedReport, wordQuery, excelQuery, pdfQuery]);
-
-  const { data: currentReport, error: currentError } = currentReportData;
-  const isError = !!currentError;
-
-  const reportType: ReportType =
-    selectedReport === 'word' || selectedReport === 'excel'
-      ? 'depositByCreditProgram'
-      : 'depositAndCreditProgramByCurrency';
-  const reportFormat: ReportFormat =
-    selectedReport === 'pdf'
-      ? 'pdf'
-      : selectedReport === 'word'
-      ? 'word'
-      : 'excel';
+    setReport(null);
+  }, [selectedReport, fromDate, toDate, form]);
 
   const getReportTitle = (report: SelectedReport) => {
     switch (report) {
@@ -96,108 +77,296 @@ export const ReportViewer = ({
     }
   };
 
+  function getDefaultSubject(report: SelectedReport | undefined): string {
+    switch (report) {
+      case 'word':
+        return 'Отчет по вкладам по кредитным программам';
+      case 'excel':
+        return 'Excel отчет по вкладам по кредитным программам';
+      case 'pdf':
+        return 'Отчет по вкладам и кредитным программам по валютам';
+      default:
+        return 'Отчет';
+    }
+  }
+
+  function getDefaultBody(
+    report: SelectedReport | undefined,
+    fromDate?: Date,
+    toDate?: Date,
+  ): string {
+    switch (report) {
+      case 'word':
+        return 'В приложении находится отчет по вкладам по кредитным программам.';
+      case 'excel':
+        return 'В приложении находится Excel отчет по вкладам по кредитным программам.';
+      case 'pdf':
+        return `В приложении находится отчет по вкладам и кредитным программам по валютам${
+          fromDate && toDate
+            ? ` за период с ${format(fromDate, 'dd.MM.yyyy')} по ${format(
+                toDate,
+                'dd.MM.yyyy',
+              )}`
+            : ''
+        }.`;
+      default:
+        return '';
+    }
+  }
+
+  const getReportUrl = (
+    selectedReport: SelectedReport,
+    fromDate?: Date,
+    toDate?: Date,
+  ): string => {
+    switch (selectedReport) {
+      case 'word':
+        return `${API_URL}/api/Report/LoadDepositByCreditProgram`;
+      case 'excel':
+        return `${API_URL}/api/Report/LoadExcelDepositByCreditProgram`;
+      case 'pdf': {
+        if (!fromDate || !toDate) {
+          throw new Error('Необходимо выбрать даты для PDF отчета');
+        }
+        const fromDateStr = format(fromDate, 'yyyy-MM-dd');
+        const toDateStr = format(toDate, 'yyyy-MM-dd');
+        return `${API_URL}/api/Report/LoadDepositAndCreditProgramByCurrency?fromDate=${fromDateStr}&toDate=${toDateStr}`;
+      }
+      default:
+        throw new Error('Выберите тип отчета');
+    }
+  };
+
+  const getSendEmailUrl = (selectedReport: SelectedReport): string => {
+    switch (selectedReport) {
+      case 'word':
+        return `${API_URL}/api/Report/SendReportDepositByCreditProgram`;
+      case 'excel':
+        return `${API_URL}/api/Report/SendExcelReportDepositByCreditProgram`;
+      case 'pdf':
+        return `${API_URL}/api/Report/SendReportByCurrency`;
+      default:
+        throw new Error('Выберите тип отчета');
+    }
+  };
+
+  const fetchReport = async (): Promise<ReportData> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const url = getReportUrl(selectedReport, fromDate, toDate);
+      console.log(`Загружаем отчет с URL: ${url}`);
+
+      const acceptHeader =
+        selectedReport === 'pdf'
+          ? 'application/pdf'
+          : selectedReport === 'word'
+          ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: acceptHeader,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Ошибка загрузки отчета: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const blob = await response.blob();
+      console.log(
+        `Отчет загружен. Тип: ${blob.type}, размер: ${blob.size} байт`,
+      );
+
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const defaultExtension =
+        selectedReport === 'pdf'
+          ? '.pdf'
+          : selectedReport === 'word'
+          ? '.docx'
+          : '.xlsx';
+      let fileName = `report${defaultExtension}`;
+
+      if (contentDisposition && contentDisposition.includes('filename=')) {
+        fileName = contentDisposition
+          .split('filename=')[1]
+          .replace(/"/g, '')
+          .trim();
+      }
+
+      const mimeType = response.headers.get('Content-Type') || '';
+
+      const reportData = { blob, fileName, mimeType };
+      setReport(reportData);
+      return reportData;
+    } catch (error) {
+      console.error('Ошибка при загрузке отчета:', error);
+      const err =
+        error instanceof Error ? error : new Error('Неизвестная ошибка');
+      setError(err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGenerate = async () => {
     try {
-      if (selectedReport === 'pdf') {
-        if (!fromDate || !toDate) {
-          toast.error('Пожалуйста, выберите обе даты');
-          return;
-        }
-        await pdfQuery.refetch();
-      } else if (selectedReport === 'word') {
-        await wordQuery.refetch();
-      } else if (selectedReport === 'excel') {
-        await excelQuery.refetch();
-      }
-      // React Query автоматически управляет isLoading
-    } catch (error) {
-      // Ошибки обрабатываются React Query и доступны через isError/error
-      console.error(error);
-    }
-  };
-
-  const handleDownload = () => {
-    if (!currentReport) {
-      toast.error('Сначала сгенерируйте отчет');
-      return;
-    }
-
-    const url = URL.createObjectURL(currentReport.blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = currentReport.fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleSend = async () => {
-    if (!email) {
-      toast.error('Введите email');
-      return;
-    }
-
-    if (!currentReport) {
-      toast.error('Сначала сгенерируйте отчет');
-      return;
-    }
-
-    if (selectedReport === 'pdf' && (!fromDate || !toDate)) {
-      toast.error('Пожалуйста, выберите обе даты для отправки отчета');
-      return;
-    }
-
-    try {
-      const emailParams: ReportParams | undefined =
-        selectedReport === 'pdf' && fromDate && toDate
-          ? {
-              fromDate: format(fromDate, 'yyyy-MM-dd'),
-              toDate: format(toDate, 'yyyy-MM-dd'),
-            }
-          : undefined;
-
-      await sendReportByEmail(reportType, reportFormat, email, emailParams);
-      toast.success('Отчет успешно отправлен');
-      setIsSendDialogOpen(false);
-      setEmail('');
-    } catch (error) {
-      toast.error('Ошибка при отправке отчета');
-      console.error(error);
-    }
-  };
-
-  const isGenerateDisabled =
-    isLoading || (selectedReport === 'pdf' && (!fromDate || !toDate));
-
-  React.useEffect(() => {
-    if (currentReport) {
+      await fetchReport();
       toast.success('Отчет успешно загружен');
-    } else if (currentError) {
-      toast.error('Ошибка загрузки отчета: ' + currentError.message);
+    } catch (error) {
+      toast.error(
+        `Ошибка загрузки отчета: ${
+          error instanceof Error ? error.message : 'Неизвестная ошибка'
+        }`,
+      );
     }
-  }, [currentReport, currentError]);
+  };
+
+  const handleDownload = async () => {
+    try {
+      let reportData = report;
+      if (!reportData) {
+        toast.loading('Загрузка отчета...');
+        reportData = await fetchReport();
+      }
+
+      // Скачиваем отчет
+      const url = URL.createObjectURL(reportData.blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = reportData.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Отчет успешно скачан');
+    } catch (error) {
+      toast.error(
+        `Ошибка при скачивании отчета: ${
+          error instanceof Error ? error.message : 'Неизвестная ошибка'
+        }`,
+      );
+    }
+  };
+
+  const handleSendFormSubmit = async (
+    values: z.infer<typeof emailFormSchema>,
+  ) => {
+    try {
+      // Если выбран PDF отчет, проверяем наличие дат
+      if (selectedReport === 'pdf' && (!fromDate || !toDate)) {
+        toast.error('Пожалуйста, выберите даты для PDF отчета');
+        return;
+      }
+
+      setIsLoading(true);
+
+      // Формируем данные для отправки
+      const url = getSendEmailUrl(selectedReport);
+
+      // Параметры для запроса
+      const data: Record<string, string> = {
+        toEmail: values.toEmail,
+        subject: values.subject,
+        body: values.body,
+      };
+
+      // Добавляем даты для PDF отчета
+      if (selectedReport === 'pdf' && fromDate && toDate) {
+        data.fromDate = format(fromDate, 'yyyy-MM-dd');
+        data.toDate = format(toDate, 'yyyy-MM-dd');
+      }
+
+      // Отправляем запрос
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Ошибка при отправке отчета: ${response.status} ${response.statusText}\n${errorText}`,
+        );
+      }
+
+      toast.success('Отчет успешно отправлен на почту');
+      setIsSendDialogOpen(false);
+      form.reset();
+    } catch (error) {
+      console.error('Ошибка при отправке отчета:', error);
+      toast.error(
+        `Ошибка при отправке отчета: ${
+          error instanceof Error ? error.message : 'Неизвестная ошибка'
+        }`,
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Проверка, можно ли сгенерировать PDF отчет
+  const isGenerateDisabled =
+    isLoading || selectedReport !== 'pdf' || !fromDate || !toDate;
+
+  // Отображение ошибки, если она есть
+  const renderError = () => {
+    if (!error) return null;
+
+    return (
+      <div className="p-4 border border-red-300 bg-red-50 rounded-md mt-2">
+        <h3 className="text-red-700 font-semibold mb-1">Детали ошибки:</h3>
+        <p className="text-red-600 whitespace-pre-wrap break-words">
+          {error.message}
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className="w-full">
       <div className="text-lg font-semibold mb-4">
         {getReportTitle(selectedReport)}
       </div>
+
+      {/* Кнопки действий */}
       <div className="flex gap-4 mb-4">
-        <Button onClick={handleGenerate} disabled={isGenerateDisabled}>
-          {isLoading ? 'Загрузка...' : 'Сгенерировать'}
-        </Button>
-        <Button onClick={handleDownload} disabled={!currentReport || isLoading}>
-          Скачать
-        </Button>
-        <Button
-          onClick={() => setIsSendDialogOpen(true)}
-          disabled={!currentReport || isLoading}
-        >
-          Отправить
-        </Button>
+        {/* Кнопка "Сгенерировать" только для PDF с выбранными датами */}
+        {selectedReport === 'pdf' && (
+          <Button onClick={handleGenerate} disabled={isGenerateDisabled}>
+            {isLoading ? 'Загрузка...' : 'Сгенерировать'}
+          </Button>
+        )}
+
+        {/* Кнопки "Скачать" и "Отправить" только когда выбран тип отчета */}
+        {selectedReport && (
+          <>
+            <Button onClick={handleDownload} disabled={isLoading}>
+              {isLoading ? 'Загрузка...' : 'Скачать'}
+            </Button>
+
+            <Button
+              onClick={() => setIsSendDialogOpen(true)}
+              disabled={isLoading}
+            >
+              Отправить
+            </Button>
+          </>
+        )}
       </div>
 
+      {/* Календари для выбора периода для PDF отчета */}
       {selectedReport === 'pdf' && (
         <div className="flex gap-4 mb-4">
           <div className="grid gap-2">
@@ -257,40 +426,81 @@ export const ReportViewer = ({
         </div>
       )}
 
+      {/* Форма отправки отчета на почту */}
       <DialogForm
         title="Отправка отчета"
-        description="Введите email для отправки отчета"
+        description="Введите данные для отправки отчета"
         isOpen={isSendDialogOpen}
         onClose={() => setIsSendDialogOpen(false)}
-        onSubmit={handleSend}
+        onSubmit={form.handleSubmit(handleSendFormSubmit)}
       >
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Введите email"
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSendFormSubmit)}
+            className="space-y-4"
+          >
+            <FormField
+              control={form.control}
+              name="toEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email получателя</FormLabel>
+                  <FormControl>
+                    <Input placeholder="example@mail.ru" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-        </div>
+            <FormField
+              control={form.control}
+              name="subject"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Тема письма</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="body"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Текст сообщения</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit">Отправить</Button>
+          </form>
+        </Form>
       </DialogForm>
 
       <div className="mt-4">
         {isLoading && <div className="p-4">Загрузка документа...</div>}
-        {isError && (
-          <div className="p-4 text-red-500">
-            Ошибка: {currentError?.message}
+
+        {renderError()}
+
+        {!selectedReport && !isLoading && !error && (
+          <div className="p-4">Выберите тип отчета из боковой панели</div>
+        )}
+
+        {selectedReport && !report && !isLoading && !error && (
+          <div className="p-4">
+            {selectedReport === 'pdf'
+              ? 'Выберите даты и нажмите "Сгенерировать"'
+              : 'Нажмите "Скачать" для загрузки отчета'}
           </div>
         )}
-        {!currentReport && !isLoading && !isError && (
-          <div className="p-4">Выберите тип отчета и сгенерируйте его</div>
-        )}
-        {selectedReport === 'pdf' && currentReport && (
-          <PdfViewer report={currentReport} />
-        )}
+
+        {selectedReport === 'pdf' && report && <PdfViewer report={report} />}
       </div>
     </div>
   );

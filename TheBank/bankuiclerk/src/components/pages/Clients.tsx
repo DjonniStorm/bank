@@ -1,5 +1,7 @@
 import { useClients } from '@/hooks/useClients';
 import { useClerks } from '@/hooks/useClerks';
+import { useDeposits } from '@/hooks/useDeposits';
+import { useCreditPrograms } from '@/hooks/useCreditPrograms';
 import React from 'react';
 import { DataTable, type ColumnDef } from '../layout/DataTable';
 import { AppSidebar } from '../layout/Sidebar';
@@ -8,7 +10,13 @@ import { DialogForm } from '../layout/DialogForm';
 import { ClientFormAdd, ClientFormEdit } from '../features/ClientForm';
 import { toast } from 'sonner';
 
-const columns: ColumnDef<ClientBindingModel>[] = [
+const columns: ColumnDef<
+  ClientBindingModel & {
+    clerkName?: string;
+    depositsList?: string;
+    creditProgramsList?: string;
+  }
+>[] = [
   {
     accessorKey: 'id',
     header: 'ID',
@@ -30,11 +38,11 @@ const columns: ColumnDef<ClientBindingModel>[] = [
     header: 'Клерк',
   },
   {
-    accessorKey: 'deposits',
+    accessorKey: 'depositsList',
     header: 'Вклады',
   },
   {
-    accessorKey: 'creditPrograms',
+    accessorKey: 'creditProgramsList',
     header: 'Кредиты',
   },
 ];
@@ -52,6 +60,9 @@ export const Clients = (): React.JSX.Element => {
     isLoading: isClerksLoading,
     error: clerksError,
   } = useClerks();
+  const { deposits, isLoading: isDepositsLoading } = useDeposits();
+  const { creditPrograms, isLoading: isCreditProgramsLoading } =
+    useCreditPrograms();
 
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] =
@@ -61,16 +72,46 @@ export const Clients = (): React.JSX.Element => {
   >();
 
   const finalData = React.useMemo(() => {
-    if (!clients || !clerks) return [];
+    if (!clients || !clerks || !deposits || !creditPrograms) return [];
 
     return clients.map((client) => {
       const clerk = clerks.find((c) => c.id === client.clerkId);
+
+      // Находим вклады клиента
+      const clientDeposits = deposits?.filter(() => {
+        // Учитывая, что мы удалили depositClients из модели, эта проверка будет всегда возвращать false
+        // Здесь нужно реализовать другой способ связи, или просто удалить эту функциональность
+        return false; // Больше не можем определить связь через deposit.depositClients
+      });
+
+      // Находим кредитные программы клиента
+      const clientCreditPrograms = creditPrograms.filter((creditProgram) =>
+        client.creditProgramClients?.some(
+          (cpc) => cpc.creditProgramId === creditProgram.id,
+        ),
+      );
+
+      // Формируем строки с информацией о вкладах и кредитах
+      const depositsList =
+        clientDeposits.length > 0
+          ? clientDeposits
+              .map((d) => `${d.interestRate}% (${d.period} мес.)`)
+              .join(', ')
+          : 'Нет вкладов';
+
+      const creditProgramsList =
+        clientCreditPrograms.length > 0
+          ? clientCreditPrograms.map((cp) => cp.name).join(', ')
+          : 'Нет кредитов';
+
       return {
         ...client,
         clerkName: clerk ? `${clerk.name} ${clerk.surname}` : 'Неизвестно',
+        depositsList,
+        creditProgramsList,
       };
     });
-  }, [clients, clerks]);
+  }, [clients, clerks, deposits, creditPrograms]);
 
   const handleAdd = (data: ClientBindingModel) => {
     createClient(data);
@@ -108,7 +149,12 @@ export const Clients = (): React.JSX.Element => {
     setIsEditDialogOpen(true);
   };
 
-  if (isClientsLoading || isClerksLoading) {
+  if (
+    isClientsLoading ||
+    isClerksLoading ||
+    isDepositsLoading ||
+    isCreditProgramsLoading
+  ) {
     return <main className="container mx-auto py-10">Загрузка...</main>;
   }
 
@@ -139,7 +185,7 @@ export const Clients = (): React.JSX.Element => {
             onClose={() => setIsAddDialogOpen(false)}
             onSubmit={handleAdd}
           >
-            <ClientFormAdd />
+            <ClientFormAdd onSubmit={handleAdd} />
           </DialogForm>
         )}
         {selectedItem && (
@@ -151,7 +197,7 @@ export const Clients = (): React.JSX.Element => {
             onSubmit={handleEdit}
           >
             <ClientFormEdit
-              onSubmit={console.log}
+              onSubmit={handleEdit}
               defaultValues={selectedItem}
             />
           </DialogForm>

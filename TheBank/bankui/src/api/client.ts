@@ -1,6 +1,8 @@
 import { ConfigManager } from '@/lib/config';
-
+import type { MailSendInfoBindingModel } from '@/types/types';
 const API_URL = ConfigManager.loadUrl();
+// Устанавливаем прямой URL к API серверу ASP.NET
+// const API_URL = 'https://localhost:7224'; // URL API сервера ASP.NET
 
 export async function getData<T>(path: string): Promise<T[]> {
   const res = await fetch(`${API_URL}/${path}`, {
@@ -84,7 +86,7 @@ export type ReportFormat = 'word' | 'excel' | 'pdf';
 export async function sendReportByEmail(
   reportType: ReportType,
   format: ReportFormat,
-  email: string,
+  mailInfo: MailSendInfoBindingModel,
   params?: ReportParams,
 ): Promise<void> {
   const actionMap: Record<ReportType, Record<ReportFormat, string>> = {
@@ -101,13 +103,17 @@ export async function sendReportByEmail(
   };
 
   const action = actionMap[reportType][format];
+
+  // Формируем тело запроса
+  const requestBody = { ...mailInfo, ...params };
+
   const res = await fetch(`${API_URL}/api/Report/${action}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     credentials: 'include',
-    body: JSON.stringify({ email, ...params }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!res.ok) {
