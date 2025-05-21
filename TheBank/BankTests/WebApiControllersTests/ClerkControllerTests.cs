@@ -72,7 +72,7 @@ internal class ClerkControllerTests : BaseWebApiControllerTest
         // Arrange
         var model = CreateModel();
         // Act
-        var response = await HttpClient.PostAsJsonAsync("/api/clerks", model);
+        var response = await HttpClient.PostAsJsonAsync("/api/clerks/register", model);
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
         AssertElement(BankDbContext.GetClerkFromDatabase(model.Id!), model);
@@ -85,7 +85,7 @@ internal class ClerkControllerTests : BaseWebApiControllerTest
         var model = CreateModel();
         BankDbContext.InsertClerkToDatabaseAndReturn(id: model.Id);
         // Act
-        var response = await HttpClient.PostAsJsonAsync("/api/clerks", model);
+        var response = await HttpClient.PostAsJsonAsync("/api/clerks/register", model);
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }
@@ -94,7 +94,7 @@ internal class ClerkControllerTests : BaseWebApiControllerTest
     public async Task Post_WhenSendEmptyData_ShouldBadRequest_Test()
     {
         // Act
-        var response = await HttpClient.PostAsync("/api/clerks", MakeContent(string.Empty));
+        var response = await HttpClient.PostAsync("/api/clerks/register", MakeContent(string.Empty));
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }

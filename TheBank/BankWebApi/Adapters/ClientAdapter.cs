@@ -32,7 +32,7 @@ public class ClientAdapter : IClientAdapter
 
             // Mapping for Deposit
             cfg.CreateMap<DepositDataModel, DepositViewModel>()
-        .ForMember(dest => dest.DepositClients, opt => opt.MapFrom(src => src.Currencies)); // Adjust if Currencies is meant to map to DepositClients
+        .ForMember(dest => dest.DepositCurrencies, opt => opt.MapFrom(src => src.Currencies)); // Adjust if Currencies is meant to map to DepositClients
 
             // Mapping for ClientCreditProgram
             cfg.CreateMap<ClientCreditProgramBindingModel, ClientCreditProgramDataModel>();
