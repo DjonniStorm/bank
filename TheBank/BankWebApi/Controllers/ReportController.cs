@@ -8,16 +8,10 @@ namespace BankWebApi.Controllers;
 [Authorize]
 [Route("api/[controller]/[action]")]
 [ApiController]
-public class ReportController : ControllerBase
+public class ReportController(IReportAdapter adapter) : ControllerBase
 {
-    private readonly IReportAdapter _adapter;
-    private readonly EmailService _emailService;
-
-    public ReportController(IReportAdapter adapter)
-    {
-        _adapter = adapter;
-        _emailService = EmailService.CreateYandexService();
-    }
+    private readonly IReportAdapter _adapter = adapter;
+    private readonly EmailService _emailService = EmailService.CreateYandexService();
 
     [HttpGet]
     [Consumes("application/json")]

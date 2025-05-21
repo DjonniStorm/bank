@@ -10,7 +10,7 @@ internal class BaseStorageContractTest
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        BankDbContext = new BankDbContext(new ConfigurationDatabase());
+        BankDbContext = new BankDbContext(new Infrastructure.ConfigurationDatabase());
 
         BankDbContext.Database.EnsureDeleted();
         BankDbContext.Database.EnsureCreated();

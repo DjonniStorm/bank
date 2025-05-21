@@ -1,5 +1,6 @@
 import {
   getData,
+  getReport,
   getSingleData,
   postData,
   postLoginData,
@@ -128,4 +129,9 @@ export const storekeepersApi = {
   logout: () => postData('api/storekeepers/logout', {}),
   getCurrentUser: () =>
     getSingleData<StorekeeperBindingModel>('api/storekeepers/me'),
+};
+
+//Reports API
+export const reportsApi = {
+  loadClientsByCreditProgram: () => getReport('path'),
 };

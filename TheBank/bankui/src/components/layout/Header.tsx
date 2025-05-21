@@ -18,7 +18,6 @@ import {
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { useAuthStore } from '@/store/workerStore';
-import { useStorekeepers } from '@/hooks/useStorekeepers';
 
 type NavOptionValue = {
   name: string;
@@ -69,6 +68,16 @@ const navOptions = [
         id: 1,
         name: 'Просмотреть',
         link: '/storekeepers',
+      },
+    ],
+  },
+  {
+    name: 'Отчеты',
+    options: [
+      {
+        id: 1,
+        name: 'Выгрузить отчеты',
+        link: '/reports',
       },
     ],
   },

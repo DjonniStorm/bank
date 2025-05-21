@@ -15,6 +15,7 @@ import { Storekeepers } from './components/pages/Storekeepers.tsx';
 import { Periods } from './components/pages/Periods.tsx';
 import { Toaster } from './components/ui/sonner.tsx';
 import { Profile } from './components/pages/Profile.tsx';
+import { Reports } from './components/pages/Reports.tsx';
 
 const routes = createBrowserRouter([
   {
@@ -40,6 +41,10 @@ const routes = createBrowserRouter([
       {
         path: '/profile',
         element: <Profile />,
+      },
+      {
+        path: '/reports',
+        element: <Reports />,
       },
     ],
     errorElement: <p>бля пизда рулям</p>,
