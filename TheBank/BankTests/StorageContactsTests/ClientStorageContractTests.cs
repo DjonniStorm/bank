@@ -32,7 +32,7 @@ internal class ClientStorageContractTests : BaseStorageContractTest
         _periodId = BankDbContext.InsertPeriodToDatabaseAndReturn(storekeeperId: _storekeeperId).Id;
         _creditProgramId = BankDbContext
             .InsertCreditProgramToDatabaseAndReturn(
-                storeleeperId: _storekeeperId,
+                storekeeperId: _storekeeperId,
                 periodId: _periodId
             )
             .Id;

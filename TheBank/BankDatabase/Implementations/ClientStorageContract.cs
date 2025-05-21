@@ -57,7 +57,11 @@ internal class ClientStorageContract : IClientStorageContract
     {
         try
         {
-            var query = _dbContext.Clients.Include(x => x.Clerk).AsQueryable();
+            var query = _dbContext.Clients
+                .Include(x => x.Clerk)
+                .Include(x => x.CreditProgramClients)
+                .Include(x => x.DepositClients)
+                .AsQueryable();
             if (clerkId is not null)
             {
                 query = query.Where(x => x.ClerkId == clerkId);

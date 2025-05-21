@@ -19,8 +19,18 @@ internal class DepositStorageContract : IDepositStorageContract
         var config = new MapperConfiguration(cfg =>
         {
             cfg.CreateMap<Clerk, ClerkDataModel>();
-            cfg.CreateMap<Deposit, DepositDataModel>();
-            cfg.CreateMap<DepositDataModel, Deposit>();
+            cfg.CreateMap<Deposit, DepositDataModel>()
+                .ForMember(dest => dest.Currencies, opt => opt.MapFrom(src => src.DepositCurrencies));
+            cfg.CreateMap<DepositDataModel, Deposit>()
+                .ForMember(dest => dest.DepositCurrencies, opt => opt.MapFrom(src => src.Currencies));
+            cfg.CreateMap<DepositCurrency, DepositCurrencyDataModel>()
+                .ForMember(dest => dest.DepositId, opt => opt.MapFrom(src => src.DepositId))
+                .ForMember(dest => dest.CurrencyId, opt => opt.MapFrom(src => src.CurrencyId));
+            cfg.CreateMap<DepositCurrencyDataModel, DepositCurrency>()
+                .ForMember(dest => dest.DepositId, opt => opt.MapFrom(src => src.DepositId))
+                .ForMember(dest => dest.CurrencyId, opt => opt.MapFrom(src => src.CurrencyId))
+                .ForMember(dest => dest.Deposit, opt => opt.Ignore())
+                .ForMember(dest => dest.Currency, opt => opt.Ignore());
             cfg.CreateMap<Replenishment, ReplenishmentDataModel>();
         });
         _mapper = new Mapper(config);
@@ -29,7 +39,10 @@ internal class DepositStorageContract : IDepositStorageContract
     {
         try
         {
-            var query = _dbContext.Deposits.Include(x => x.Clerk).AsQueryable();
+            var query = _dbContext.Deposits
+                .Include(x => x.Clerk)
+                .Include(x => x.DepositCurrencies)
+                .AsQueryable();
             if (clerkId is not null)
             {
                 query = query.Where(x => x.ClerkId == clerkId);
