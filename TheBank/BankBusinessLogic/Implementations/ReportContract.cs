@@ -67,23 +67,11 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             }
         }
 
-        var stream = _baseWordBuilder
+        return _baseWordBuilder
             .AddHeader("Клиенты по кредитным программам")
             .AddParagraph($"Сформировано на дату {DateTime.Now}")
             .AddTable([3000, 3000, 3000, 3000], tableRows)
             .Build();
-
-        try
-        {
-            _mailWorker.sendYandex();
-            _logger.LogInformation("Report sent via email successfully");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to send report via email");
-        }
-
-        return stream;
     }
 
     public async Task<List<ClientsByDepositDataModel>> GetDataClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
