@@ -57,7 +57,11 @@ internal class ClientStorageContract : IClientStorageContract
     {
         try
         {
-            var query = _dbContext.Clients.Include(x => x.Clerk).AsQueryable();
+            var query = _dbContext.Clients
+                .Include(x => x.Clerk)
+                .Include(x => x.CreditProgramClients)
+                .Include(x => x.DepositClients)
+                .AsQueryable();
             if (clerkId is not null)
             {
                 query = query.Where(x => x.ClerkId == clerkId);
@@ -131,6 +135,23 @@ internal class ClientStorageContract : IClientStorageContract
         {
             _dbContext.ChangeTracker.Clear();
             throw new ElementExistsException($"Surname {clientDataModel.Surname}");
+        }
+        catch (Exception ex)
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw new StorageException(ex.Message);
+        }
+    }
+
+    public async Task<List<ClientDataModel>> GetListAsync(DateTime startDate, DateTime endDate, CancellationToken ct)
+    {
+        try
+        {
+            var clients = await _dbContext.Clients
+                .Include(x => x.Clerk)
+                .ToListAsync(ct);
+
+            return clients.Select(x => _mapper.Map<ClientDataModel>(x)).ToList();
         }
         catch (Exception ex)
         {

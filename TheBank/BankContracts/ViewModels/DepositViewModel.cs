@@ -1,4 +1,6 @@
-﻿namespace BankContracts.ViewModels;
+﻿using BankContracts.BindingModels;
+
+namespace BankContracts.ViewModels;
 
 /// <summary>
 /// модель представления для вклада
@@ -15,6 +17,6 @@ public class DepositViewModel
 
     public required string ClerkId { get; set; }
 
-    public required List<DepositClientViewModel>? DepositClients { get; set; }
+    public required List<DepositCurrencyBindingModel>? DepositCurrencies { get; set; }
 
 }

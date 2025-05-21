@@ -42,7 +42,9 @@ internal class CreditProgramStorageContract : ICreditProgramStorageContract
     {
         try
         {
-            var query = _dbContext.CreditPrograms.AsQueryable();
+            var query = _dbContext.CreditPrograms
+                .Include(x => x.CurrencyCreditPrograms)
+                .AsQueryable();
             if (storekeeperId is not null)
             {
                 query = query.Where(x => x.StorekeeperId == storekeeperId);
@@ -54,6 +56,23 @@ internal class CreditProgramStorageContract : ICreditProgramStorageContract
             return [.. query.Select(x => _mapper.Map<CreditProgramDataModel>(x))];
         }
         catch (Exception ex) 
+        {
+            _dbContext.ChangeTracker.Clear();
+            throw new StorageException(ex.Message);
+        }
+    }
+
+    public async Task<List<CreditProgramDataModel>> GetListAsync(DateTime startDate, DateTime endDate, CancellationToken ct)
+    {
+        try
+        {
+            var query = _dbContext.CreditPrograms.AsQueryable();
+            //query = query.Where(x => x.CreatedDate >= startDate && x.CreatedDate <= endDate);
+
+            var creditPrograms = await query.ToListAsync(ct);
+            return creditPrograms.Select(x => _mapper.Map<CreditProgramDataModel>(x)).ToList();
+        }
+        catch (Exception ex)
         {
             _dbContext.ChangeTracker.Clear();
             throw new StorageException(ex.Message);

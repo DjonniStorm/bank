@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
+    <PackageReference Include="MailKit" Version="4.12.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
+    <PackageReference Include="PdfSharp.MigraDoc.Standard" Version="1.51.15" />
   </ItemGroup>
 
   <ItemGroup>
