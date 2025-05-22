@@ -28,17 +28,26 @@ export const ReportSidebar = ({
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild onClick={onWordClick}>
-                <span>отчет word КЛАДОВЩИКА</span>
+                <span>
+                  <img src="/icons/word.svg" alt="word-icon" />
+                  отчет word КЛАДОВЩИКА
+                </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild onClick={onExcelClick}>
-                <span>отчет excel КЛАДОВЩИКА</span>
+                <span>
+                  <img src="/icons/excel.svg" alt="excel-icon" />
+                  отчет excel КЛАДОВЩИКА
+                </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild onClick={onPdfClick}>
-                <span>отчет pdf КЛАДОВЩИКА</span>
+                <span className="p-5">
+                  <img src="/icons/pdf.svg" alt="pdf-icon" />
+                  отчет pdf КЛАДОВЩИКА
+                </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
