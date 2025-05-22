@@ -75,6 +75,7 @@ export const Currencies = (): React.JSX.Element => {
   >();
 
   const handleAdd = (data: CurrencyBindingModel) => {
+    console.log('add', data);
     createCurrency(data);
     setIsAddDialogOpen(false);
   };
@@ -85,6 +86,7 @@ export const Currencies = (): React.JSX.Element => {
         ...selectedItem,
         ...data,
       });
+      console.log('edit', data);
       setIsEditDialogOpen(false);
       setSelectedItem(undefined);
     }
@@ -132,6 +134,7 @@ export const Currencies = (): React.JSX.Element => {
           description="Добавьте новую валюту"
           isOpen={isAddDialogOpen}
           onClose={() => setIsAddDialogOpen(false)}
+          onSubmit={handleAdd}
         >
           <CurrencyFormAdd onSubmit={handleAdd} />
         </DialogForm>

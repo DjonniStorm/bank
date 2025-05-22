@@ -143,8 +143,14 @@ export const ReportViewer = ({
         return `${API_URL}/api/Report/SendReportDepositByCreditProgram`;
       case 'excel':
         return `${API_URL}/api/Report/SendExcelReportDepositByCreditProgram`;
-      case 'pdf':
-        return `${API_URL}/api/Report/SendReportByCurrency`;
+      case 'pdf': {
+        if (!fromDate || !toDate) {
+          throw new Error('Необходимо выбрать даты для PDF отчета');
+        }
+        const fromDateStr = format(fromDate, 'yyyy-MM-dd');
+        const toDateStr = format(toDate, 'yyyy-MM-dd');
+        return `${API_URL}/api/Report/SendReportByCurrency?fromDate=${fromDateStr}&toDate=${toDateStr}`;
+      }
       default:
         throw new Error('Выберите тип отчета');
     }
@@ -232,7 +238,15 @@ export const ReportViewer = ({
   const handleDownload = async () => {
     try {
       let reportData = report;
-      if (!reportData) {
+      // Для PDF всегда делаем новый запрос с актуальными датами
+      if (selectedReport === 'pdf') {
+        if (!fromDate || !toDate) {
+          toast.error('Пожалуйста, выберите даты для PDF отчета');
+          return;
+        }
+        toast.loading('Загрузка отчета...');
+        reportData = await fetchReport();
+      } else if (!reportData) {
         toast.loading('Загрузка отчета...');
         reportData = await fetchReport();
       }
@@ -278,12 +292,6 @@ export const ReportViewer = ({
         body: values.body,
       };
 
-      // Добавляем даты для PDF отчета
-      if (selectedReport === 'pdf' && fromDate && toDate) {
-        data.fromDate = format(fromDate, 'yyyy-MM-dd');
-        data.toDate = format(toDate, 'yyyy-MM-dd');
-      }
-
       // Отправляем запрос
       const response = await fetch(url, {
         method: 'POST',
@@ -316,9 +324,9 @@ export const ReportViewer = ({
     }
   };
 
-  // Проверка, можно ли сгенерировать PDF отчет
-  const isGenerateDisabled =
-    isLoading || selectedReport !== 'pdf' || !fromDate || !toDate;
+  // Проверка, можно ли сгенерировать/скачать/отправить PDF отчет
+  const isPdfActionDisabled =
+    selectedReport === 'pdf' && (!fromDate || !toDate || isLoading);
 
   // Отображение ошибки, если она есть
   const renderError = () => {
@@ -344,7 +352,7 @@ export const ReportViewer = ({
       <div className="flex gap-4 mb-4">
         {/* Кнопка "Сгенерировать" только для PDF с выбранными датами */}
         {selectedReport === 'pdf' && (
-          <Button onClick={handleGenerate} disabled={isGenerateDisabled}>
+          <Button onClick={handleGenerate} disabled={isPdfActionDisabled}>
             {isLoading ? 'Загрузка...' : 'Сгенерировать'}
           </Button>
         )}
@@ -352,13 +360,16 @@ export const ReportViewer = ({
         {/* Кнопки "Скачать" и "Отправить" только когда выбран тип отчета */}
         {selectedReport && (
           <>
-            <Button onClick={handleDownload} disabled={isLoading}>
+            <Button
+              onClick={handleDownload}
+              disabled={isPdfActionDisabled || isLoading}
+            >
               {isLoading ? 'Загрузка...' : 'Скачать'}
             </Button>
 
             <Button
               onClick={() => setIsSendDialogOpen(true)}
-              disabled={isLoading}
+              disabled={isPdfActionDisabled || isLoading}
             >
               Отправить
             </Button>

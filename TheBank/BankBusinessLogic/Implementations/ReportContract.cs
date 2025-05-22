@@ -72,7 +72,7 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         return _baseWordBuilder
             .AddHeader("Клиенты по кредитным программам")
             .AddParagraph($"Сформировано на дату {DateTime.Now}")
-            .AddTable([25, 25, 25, 25], tableRows)
+            .AddTable([100, 100, 100, 100], tableRows)
             .Build();
     }
 
@@ -328,7 +328,7 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         return _baseWordBuilder
             .AddHeader("Вклады по кредитным программам")
             .AddParagraph($"Сформировано на дату {DateTime.Now}")
-            .AddTable([25, 25, 25, 25], tableRows)
+            .AddTable([2000, 2000, 2000, 2000], tableRows)
             .Build();
     }
 

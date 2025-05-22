@@ -94,6 +94,7 @@ export const CreditPrograms = (): React.JSX.Element => {
   >();
 
   const handleAdd = (data: CreditProgramBindingModel) => {
+    console.log('add', data);
     createCreditProgram(data);
     setIsAddDialogOpen(false);
   };
@@ -104,6 +105,7 @@ export const CreditPrograms = (): React.JSX.Element => {
         ...selectedItem,
         ...data,
       });
+      console.log('edit', data);
       setIsEditDialogOpen(false);
       setSelectedItem(undefined);
     }
