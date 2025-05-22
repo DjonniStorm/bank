@@ -72,6 +72,186 @@ internal class CreditProgramStorageContractTests : BaseStorageContractTest
     }
 
     [Test]
+    public void Try_GetList_WithCurrencyRelations_Test()
+    {
+        // Создаем storekeeper и сохраняем его
+        var uniqueId = Guid.NewGuid();
+        var storekeeper = BankDbContext.InsertStorekeeperToDatabaseAndReturn(
+            login: $"storekeeper_{uniqueId}",
+            email: $"storekeeper_{uniqueId}@email.com",
+            phone: $"+7-777-777-{uniqueId.ToString().Substring(0, 4)}"
+        );
+        BankDbContext.SaveChanges();
+
+        // Проверяем, что storekeeper действительно сохранен
+        var savedStorekeeper = BankDbContext.Storekeepers.FirstOrDefault(s => s.Id == storekeeper.Id);
+        Assert.That(savedStorekeeper, Is.Not.Null, "Storekeeper не был сохранен в базе данных");
+        var storekeeperId = savedStorekeeper.Id;
+
+        // Создаем несколько валют
+        var currency1Id = BankDbContext.InsertCurrencyToDatabaseAndReturn(storekeeperId: storekeeperId, abbreviation: "USD").Id;
+        var currency2Id = BankDbContext.InsertCurrencyToDatabaseAndReturn(storekeeperId: storekeeperId, abbreviation: "EUR").Id;
+
+        // Создаем кредитную программу с двумя валютами
+        var creditProgram = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            storekeeperId: storekeeperId,
+            periodId: _periodId,
+            creditProgramCurrency: [
+                (currency1Id, Guid.NewGuid().ToString()),
+                (currency2Id, Guid.NewGuid().ToString())
+            ]
+        );
+
+        var list = _storageContract.GetList();
+        Assert.That(list, Is.Not.Null);
+        Assert.That(list, Has.Count.EqualTo(1));
+        
+        var result = list.First();
+        Assert.That(result.Currencies, Is.Not.Null);
+        Assert.That(result.Currencies, Has.Count.EqualTo(2));
+        Assert.That(result.Currencies.Select(c => c.CurrencyId), Does.Contain(currency1Id));
+        Assert.That(result.Currencies.Select(c => c.CurrencyId), Does.Contain(currency2Id));
+    }
+
+    [Test]
+    public void Try_AddElement_WithCurrencyRelations_Test()
+    {
+        // Создаем storekeeper и сохраняем его
+        var uniqueId = Guid.NewGuid();
+        var storekeeper = BankDbContext.InsertStorekeeperToDatabaseAndReturn(
+            login: $"storekeeper_{uniqueId}",
+            email: $"storekeeper_{uniqueId}@email.com",
+            phone: $"+7-777-777-{uniqueId.ToString().Substring(0, 4)}"
+        );
+        BankDbContext.SaveChanges();
+
+        // Проверяем, что storekeeper действительно сохранен
+        var savedStorekeeper = BankDbContext.Storekeepers.FirstOrDefault(s => s.Id == storekeeper.Id);
+        Assert.That(savedStorekeeper, Is.Not.Null, "Storekeeper не был сохранен в базе данных");
+        var storekeeperId = savedStorekeeper.Id;
+
+        // Создаем валюту
+        var currencyId = BankDbContext.InsertCurrencyToDatabaseAndReturn(storekeeperId: storekeeperId).Id;
+
+        // Создаем модель с валютой
+        var creditProgram = CreateModel(
+            name: "unique name",
+            periodId: _periodId,
+            storekeeperId: storekeeperId,
+            currency: [
+                new CreditProgramCurrencyDataModel(Guid.NewGuid().ToString(), currencyId)
+            ]
+        );
+
+        _storageContract.AddElement(creditProgram);
+
+        var result = BankDbContext.GetCreditProgramFromDatabase(creditProgram.Id);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.CurrencyCreditPrograms, Is.Not.Null);
+        Assert.That(result.CurrencyCreditPrograms, Has.Count.EqualTo(1));
+        Assert.That(result.CurrencyCreditPrograms.First().CurrencyId, Is.EqualTo(currencyId));
+    }
+
+    [Test]
+    public void Try_UpdElement_WithCurrencyRelations_Test()
+    {
+        // Создаем storekeeper и сохраняем его
+        var uniqueId = Guid.NewGuid();
+        var storekeeper = BankDbContext.InsertStorekeeperToDatabaseAndReturn(
+            login: $"storekeeper_{uniqueId}",
+            email: $"storekeeper_{uniqueId}@email.com",
+            phone: $"+7-777-777-{uniqueId.ToString().Substring(0, 4)}"
+        );
+        BankDbContext.SaveChanges();
+
+        // Проверяем, что storekeeper действительно сохранен
+        var savedStorekeeper = BankDbContext.Storekeepers.FirstOrDefault(s => s.Id == storekeeper.Id);
+        Assert.That(savedStorekeeper, Is.Not.Null, "Storekeeper не был сохранен в базе данных");
+        var storekeeperId = savedStorekeeper.Id;
+
+        // Создаем две валюты
+        var currency1Id = BankDbContext.InsertCurrencyToDatabaseAndReturn(storekeeperId: storekeeperId).Id;
+        var currency2Id = BankDbContext.InsertCurrencyToDatabaseAndReturn(storekeeperId: storekeeperId).Id;
+
+        // Создаем кредитную программу с одной валютой
+        var creditProgram = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            storekeeperId: storekeeperId,
+            periodId: _periodId,
+            creditProgramCurrency: [(currency1Id, Guid.NewGuid().ToString())]
+        );
+
+        // Обновляем программу, добавляя вторую валюту
+        var updatedModel = CreateModel(
+            id: creditProgram.Id,
+            name: creditProgram.Name,
+            periodId: _periodId,
+            storekeeperId: storekeeperId,
+            currency: [
+                new CreditProgramCurrencyDataModel(creditProgram.Id, currency1Id),
+                new CreditProgramCurrencyDataModel(creditProgram.Id, currency2Id)
+            ]
+        );
+
+        _storageContract.UpdElement(updatedModel);
+
+        var result = BankDbContext.GetCreditProgramFromDatabase(creditProgram.Id);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.CurrencyCreditPrograms, Is.Not.Null);
+        Assert.That(result.CurrencyCreditPrograms, Has.Count.EqualTo(2));
+        Assert.That(result.CurrencyCreditPrograms.Select(c => c.CurrencyId), Does.Contain(currency1Id));
+        Assert.That(result.CurrencyCreditPrograms.Select(c => c.CurrencyId), Does.Contain(currency2Id));
+    }
+
+    [Test]
+    public void Try_UpdElement_RemoveCurrencyRelations_Test()
+    {
+        // Создаем storekeeper и сохраняем его
+        var uniqueId = Guid.NewGuid();
+        var storekeeper = BankDbContext.InsertStorekeeperToDatabaseAndReturn(
+            login: $"storekeeper_{uniqueId}",
+            email: $"storekeeper_{uniqueId}@email.com",
+            phone: $"+7-777-777-{uniqueId.ToString().Substring(0, 4)}"
+        );
+        BankDbContext.SaveChanges();
+
+        // Проверяем, что storekeeper действительно сохранен
+        var savedStorekeeper = BankDbContext.Storekeepers.FirstOrDefault(s => s.Id == storekeeper.Id);
+        Assert.That(savedStorekeeper, Is.Not.Null, "Storekeeper не был сохранен в базе данных");
+        var storekeeperId = savedStorekeeper.Id;
+
+        // Создаем две валюты
+        var currency1Id = BankDbContext.InsertCurrencyToDatabaseAndReturn(storekeeperId: storekeeperId).Id;
+        var currency2Id = BankDbContext.InsertCurrencyToDatabaseAndReturn(storekeeperId: storekeeperId).Id;
+
+        // Создаем кредитную программу с двумя валютами
+        var creditProgram = BankDbContext.InsertCreditProgramToDatabaseAndReturn(
+            storekeeperId: storekeeperId,
+            periodId: _periodId,
+            creditProgramCurrency: [
+                (currency1Id, Guid.NewGuid().ToString()),
+                (currency2Id, Guid.NewGuid().ToString())
+            ]
+        );
+
+        // Обновляем программу, оставляя только одну валюту
+        var updatedModel = CreateModel(
+            id: creditProgram.Id,
+            name: creditProgram.Name,
+            periodId: _periodId,
+            storekeeperId: storekeeperId,
+            currency: [new CreditProgramCurrencyDataModel(creditProgram.Id, currency1Id)]
+        );
+
+        _storageContract.UpdElement(updatedModel);
+
+        var result = BankDbContext.GetCreditProgramFromDatabase(creditProgram.Id);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.CurrencyCreditPrograms, Is.Not.Null);
+        Assert.That(result.CurrencyCreditPrograms, Has.Count.EqualTo(1));
+        Assert.That(result.CurrencyCreditPrograms.First().CurrencyId, Is.EqualTo(currency1Id));
+    }
+
+    [Test]
     public void Try_GetElementById_WhenHaveRecord_Test()
     {
         var creditProgram = BankDbContext.InsertCreditProgramToDatabaseAndReturn(

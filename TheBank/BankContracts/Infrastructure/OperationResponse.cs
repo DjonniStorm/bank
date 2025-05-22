@@ -58,4 +58,8 @@ public class OperationResponse
     protected static TResult InternalServerError<TResult>(string? errorMessage = null)
         where TResult : OperationResponse, new() =>
         new() { StatusCode = HttpStatusCode.InternalServerError, Result = errorMessage };
+
+    protected static TResult Unauthorized<TResult>(string? errorMessage = null)
+        where TResult : OperationResponse, new() =>
+        new() { StatusCode = HttpStatusCode.Unauthorized, Result = errorMessage };
 }

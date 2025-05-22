@@ -18,7 +18,12 @@ internal class DepositStorageContractTests : BaseStorageContractTest
     public void SetUp()
     {
         _storageContract = new DepositStorageContract(BankDbContext);
-        _clerkId = BankDbContext.InsertClerkToDatabaseAndReturn().Id;
+        var uniqueId = Guid.NewGuid();
+        _clerkId = BankDbContext.InsertClerkToDatabaseAndReturn(
+            login: $"clerk_{uniqueId}",
+            email: $"clerk_{uniqueId}@email.com",
+            phone: $"+7-777-777-{uniqueId.ToString().Substring(0, 4)}"
+        ).Id;
     }
 
     [TearDown]
@@ -90,6 +95,131 @@ internal class DepositStorageContractTests : BaseStorageContractTest
         Assert.That(
             () => _storageContract.UpdElement(CreateModel(clerkId: _clerkId)),
             Throws.TypeOf<ElementNotFoundException>()
+        );
+    }
+
+    [Test]
+    public void Try_GetList_ByClerkId_Test()
+    {
+        var uniqueId1 = Guid.NewGuid();
+        var uniqueId2 = Guid.NewGuid();
+        var clerkId1 = BankDbContext.InsertClerkToDatabaseAndReturn(
+            email: $"clerk1_{uniqueId1}@email.com",
+            login: $"clerk1_{uniqueId1}",
+            phone: $"+7-777-777-{uniqueId1.ToString().Substring(0, 4)}"
+        ).Id;
+        var clerkId2 = BankDbContext.InsertClerkToDatabaseAndReturn(
+            email: $"clerk2_{uniqueId2}@email.com",
+            login: $"clerk2_{uniqueId2}",
+            phone: $"+7-777-777-{uniqueId2.ToString().Substring(0, 4)}"
+        ).Id;
+        
+        BankDbContext.InsertDepositToDatabaseAndReturn(clerkId: clerkId1);
+        BankDbContext.InsertDepositToDatabaseAndReturn(clerkId: clerkId1);
+        BankDbContext.InsertDepositToDatabaseAndReturn(clerkId: clerkId2);
+
+        var list = _storageContract.GetList(clerkId1);
+        Assert.That(list, Is.Not.Null);
+        Assert.That(list, Has.Count.EqualTo(2));
+        Assert.That(list.All(x => x.ClerkId == clerkId1), Is.True);
+    }
+
+    [Test]
+    public void Try_GetElementByInterestRate_WhenHaveRecord_Test()
+    {
+        var deposit = BankDbContext.InsertDepositToDatabaseAndReturn(clerkId: _clerkId, interestRate: 15.5f);
+        var result = _storageContract.GetElementByInterestRate(15.5f);
+        Assert.That(result, Is.Not.Null);
+        AssertElement(result, deposit);
+    }
+
+    [Test]
+    public void Try_GetElementByInterestRate_WhenNoRecord_Test()
+    {
+        var result = _storageContract.GetElementByInterestRate(15.5f);
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public void Try_AddElement_WhenHaveRecordWithSameInterestRate_Test()
+    {
+        // Создаем первый депозит с определенной процентной ставкой
+        var deposit1 = CreateModel(clerkId: _clerkId, interestRate: 10.5f);
+        _storageContract.AddElement(deposit1);
+
+        // Создаем второй депозит с такой же процентной ставкой
+        var deposit2 = CreateModel(clerkId: _clerkId, interestRate: 10.5f);
+        
+        // Проверяем, что можно добавить депозит с такой же процентной ставкой
+        _storageContract.AddElement(deposit2);
+        var result = BankDbContext.GetDepositFromDatabase(deposit2.Id);
+        Assert.That(result, Is.Not.Null);
+        AssertElement(result, deposit2);
+    }
+
+    [Test]
+    public void Try_UpdElement_WithCurrencies_Test()
+    {
+        // Создаем валюты
+        var storekeeperId = BankDbContext.InsertStorekeeperToDatabaseAndReturn(
+            login: $"storekeeper_{Guid.NewGuid()}",
+            email: $"storekeeper_{Guid.NewGuid()}@email.com",
+            phone: $"+7-777-777-{Guid.NewGuid().ToString().Substring(0, 4)}"
+        ).Id;
+        
+        var currency1 = BankDbContext.InsertCurrencyToDatabaseAndReturn(
+            abbreviation: "USD",
+            storekeeperId: storekeeperId
+        );
+        var currency2 = BankDbContext.InsertCurrencyToDatabaseAndReturn(
+            abbreviation: "EUR",
+            storekeeperId: storekeeperId
+        );
+
+        // Создаем депозит
+        var deposit = BankDbContext.InsertDepositToDatabaseAndReturn(clerkId: _clerkId);
+        
+        // Обновляем депозит с валютами
+        var updatedDeposit = CreateModel(
+            id: deposit.Id,
+            clerkId: _clerkId,
+            deposits: new List<DepositCurrencyDataModel>
+            {
+                new(deposit.Id, currency1.Id),
+                new(deposit.Id, currency2.Id)
+            }
+        );
+        
+        _storageContract.UpdElement(updatedDeposit);
+        var result = BankDbContext.GetDepositFromDatabase(deposit.Id);
+        Assert.That(result.DepositCurrencies, Has.Count.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Try_GetListAsync_ByDateRange_Test()
+    {
+        var startDate = DateTime.Now.AddDays(-1);
+        var endDate = DateTime.Now.AddDays(1);
+        
+        var deposit = BankDbContext.InsertDepositToDatabaseAndReturn(clerkId: _clerkId);
+        
+        var list = await _storageContract.GetListAsync(startDate, endDate, CancellationToken.None);
+        Assert.That(list, Is.Not.Null);
+        Assert.That(list, Has.Count.EqualTo(1));
+        AssertElement(list.First(), deposit);
+    }
+
+    [Test]
+    public void Try_AddElement_WhenDatabaseError_Test()
+    {
+        var deposit = CreateModel(clerkId: _clerkId);
+        // Симулируем ошибку базы данных, пытаясь добавить депозит с несуществующим ID клерка
+        var nonExistentClerkId = Guid.NewGuid().ToString();
+        var depositWithInvalidClerk = CreateModel(clerkId: nonExistentClerkId);
+        
+        Assert.That(
+            () => _storageContract.AddElement(depositWithInvalidClerk),
+            Throws.TypeOf<StorageException>()
         );
     }
 

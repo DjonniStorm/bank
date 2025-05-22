@@ -2,7 +2,7 @@
 
 namespace BankDatabase.Models;
 
-class Storekeeper
+public class Storekeeper
 {
     public required string Id { get; set; }
 

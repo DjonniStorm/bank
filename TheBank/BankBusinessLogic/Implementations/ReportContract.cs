@@ -72,7 +72,7 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         return _baseWordBuilder
             .AddHeader("Клиенты по кредитным программам")
             .AddParagraph($"Сформировано на дату {DateTime.Now}")
-            .AddTable([3000, 3000, 3000, 3000], tableRows)
+            .AddTable([100, 100, 100, 100], tableRows)
             .Build();
     }
 
@@ -90,20 +90,20 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         {
             for (int i = 0; i < program.ClientSurname.Count; i++)
             {
-                tableRows.Add(new string[]
-                {
+                tableRows.Add(
+                [
                     program.CreditProgramName,
                     program.ClientSurname[i],
                     program.ClientName[i],
                     program.ClientBalance[i].ToString("N2")
-                });
+                ]);
             }
         }
 
         return _baseExcelBuilder
             .AddHeader("Клиенты по кредитным программам", 0, 4)
             .AddParagraph($"Сформировано на дату {DateTime.Now}", 0)
-            .AddTable([3000, 3000, 3000, 3000], tableRows)
+            .AddTable([25, 25, 25, 25], tableRows)
             .Build();
     }
 
@@ -169,21 +169,21 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
 
         foreach (var client in data)
         {
-            tableRows.Add(new string[]
-            {
+            tableRows.Add(
+            [
                 client.ClientSurname,
                 client.ClientName,
                 client.ClientBalance.ToString("N2"),
                 client.DepositRate.ToString("N2"),
                 $"{client.DepositPeriod} мес.",
                 $"{client.FromPeriod.ToShortDateString()} - {client.ToPeriod.ToShortDateString()}"
-            });
+            ]);
         }
 
         return _basePdfBuilder
             .AddHeader("Клиенты по вкладам")
             .AddParagraph($"за период с {dateStart.ToShortDateString()} по {dateFinish.ToShortDateString()}")
-            .AddTable([80, 80, 80, 80, 80, 80], tableRows)
+            .AddTable([25, 25, 25, 25, 25, 25], tableRows)
             .Build();
     }
 
@@ -229,23 +229,54 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
 
         foreach (var currency in data)
         {
+            // Вывод информации по кредитным программам
             for (int i = 0; i < currency.CreditProgramName.Count; i++)
             {
-                tableRows.Add(new string[]
+                // Вычисляем индекс депозита, если есть соответствующие
+                string depositRate = "—";
+                string depositPeriod = "—";
+
+                // Проверяем, есть ли депозиты для этой валюты и не вышли ли мы за границы массива
+                if (currency.DepositRate.Count > 0)
                 {
+                    // Берем индекс по модулю, чтобы не выйти за границы массива
+                    int depositIndex = i % currency.DepositRate.Count;
+                    depositRate = currency.DepositRate[depositIndex].ToString("N2");
+                    depositPeriod = $"{currency.DepositPeriod[depositIndex]} мес.";
+                }
+
+                // Добавляем строку в таблицу
+                tableRows.Add(
+                [
                     currency.CurrencyName,
                     currency.CreditProgramName[i],
                     currency.CreditProgramMaxCost[i].ToString("N2"),
-                    currency.DepositRate[i].ToString("N2"),
-                    $"{currency.DepositPeriod[i]} мес."
-                });
+                    depositRate,
+                    depositPeriod
+                ]);
+            }
+
+            // Если есть депозиты, но нет кредитных программ, добавляем строки только с депозитами
+            if (currency.CreditProgramName.Count == 0 && currency.DepositRate.Count > 0)
+            {
+                for (int j = 0; j < currency.DepositRate.Count; j++)
+                {
+                    tableRows.Add(
+                    [
+                        currency.CurrencyName,
+                        "—",
+                        "—",
+                        currency.DepositRate[j].ToString("N2"),
+                        $"{currency.DepositPeriod[j]} мес."
+                    ]);
+                }
             }
         }
 
         return _basePdfBuilder
             .AddHeader("Вклады и кредитные программы по валютам")
             .AddParagraph($"за период с {dateStart.ToShortDateString()} по {dateFinish.ToShortDateString()}")
-            .AddTable([80, 100, 80, 80, 80], tableRows)
+            .AddTable([25, 30, 25, 25, 25], tableRows)
             .Build();
     }
 
@@ -284,20 +315,20 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         {
             for (int i = 0; i < program.DepositRate.Count; i++)
             {
-                tableRows.Add(new string[]
-                {
+                tableRows.Add(
+                [
                     program.CreditProgramName,
                     program.DepositRate[i].ToString("N2"),
                     program.DepositCost[i].ToString("N2"),
                     program.DepositPeriod[i].ToString()
-                });
+                ]);
             }
         }
 
         return _baseWordBuilder
             .AddHeader("Вклады по кредитным программам")
             .AddParagraph($"Сформировано на дату {DateTime.Now}")
-            .AddTable([3000, 3000, 3000, 3000], tableRows)
+            .AddTable([2000, 2000, 2000, 2000], tableRows)
             .Build();
     }
 
@@ -315,20 +346,20 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         {
             for (int i = 0; i < program.DepositRate.Count; i++)
             {
-                tableRows.Add(new string[]
-                {
+                tableRows.Add(
+                [
                     program.CreditProgramName,
                     program.DepositRate[i].ToString("N2"),
                     program.DepositCost[i].ToString("N2"),
                     program.DepositPeriod[i].ToString()
-                });
+                ]);
             }
         }
 
         return _baseExcelBuilder
             .AddHeader("Вклады по кредитным программам", 0, 4)
             .AddParagraph($"Сформировано на дату {DateTime.Now}", 0)
-            .AddTable([3000, 3000, 3000, 3000], tableRows)
+            .AddTable([25, 25, 25, 25], tableRows)
             .Build();
     }
 }

@@ -24,13 +24,25 @@ public class ClientAdapter : IClientAdapter
         _logger = logger;
         var config = new MapperConfiguration(cfg =>
         {
+            // Mapping for Client
             cfg.CreateMap<ClientBindingModel, ClientDataModel>();
-            cfg.CreateMap<DepositDataModel, DepositViewModel>();
+            cfg.CreateMap<ClientDataModel, ClientViewModel>()
+        .ForMember(dest => dest.DepositClients, opt => opt.MapFrom(src => src.DepositClients))
+        .ForMember(dest => dest.CreditProgramClients, opt => opt.MapFrom(src => src.CreditProgramClients));
+
+            // Mapping for Deposit
+            cfg.CreateMap<DepositDataModel, DepositViewModel>()
+        .ForMember(dest => dest.DepositCurrencies, opt => opt.MapFrom(src => src.Currencies)); // Adjust if Currencies is meant to map to DepositClients
+
+            // Mapping for ClientCreditProgram
             cfg.CreateMap<ClientCreditProgramBindingModel, ClientCreditProgramDataModel>();
             cfg.CreateMap<ClientCreditProgramDataModel, ClientCreditProgramViewModel>();
+
+            // Mapping for DepositClient
             cfg.CreateMap<DepositClientBindingModel, DepositClientDataModel>();
             cfg.CreateMap<DepositClientDataModel, DepositClientViewModel>();
         });
+
         _mapper = new Mapper(config);
     }
     

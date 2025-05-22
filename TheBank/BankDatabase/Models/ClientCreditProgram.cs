@@ -1,6 +1,8 @@
-﻿namespace BankDatabase.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-class ClientCreditProgram
+namespace BankDatabase.Models;
+
+public class ClientCreditProgram
 {
     public required string ClientId { get; set; }
 

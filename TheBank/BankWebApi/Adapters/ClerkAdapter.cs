@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BankBusinessLogic.Implementations;
 using BankContracts.AdapterContracts;
 using BankContracts.AdapterContracts.OperationResponses;
 using BankContracts.BindingModels;
@@ -6,6 +7,7 @@ using BankContracts.BusinessLogicContracts;
 using BankContracts.DataModels;
 using BankContracts.Exceptions;
 using BankContracts.ViewModels;
+using BankWebApi.Infrastructure;
 
 namespace BankWebApi.Adapters;
 
@@ -13,11 +15,13 @@ public class ClerkAdapter : IClerkAdapter
 {
     private readonly IClerkBusinessLogicContract _clerkBusinessLogicContract;
 
+    private readonly IJwtProvider _jwtProvider;
+    
     private readonly ILogger _logger;
 
     private readonly Mapper _mapper;
 
-    public ClerkAdapter(IClerkBusinessLogicContract clerkBusinessLogicContract, ILogger logger)
+    public ClerkAdapter(IClerkBusinessLogicContract clerkBusinessLogicContract, ILogger logger, IJwtProvider jwtProvider)
     {
         _clerkBusinessLogicContract = clerkBusinessLogicContract;
         _logger = logger;
@@ -27,6 +31,7 @@ public class ClerkAdapter : IClerkAdapter
             cfg.CreateMap<ClerkDataModel, ClerkViewModel>();
         });
         _mapper = new Mapper(config);
+        _jwtProvider = jwtProvider;
     }
 
     public ClerkOperationResponse GetList()
@@ -168,6 +173,32 @@ public class ClerkAdapter : IClerkAdapter
         {
             _logger.LogError(ex, "Exception");
             return ClerkOperationResponse.InternalServerError(ex.Message);
+        }
+    }
+
+    public ClerkOperationResponse Login(LoginBindingModel clerkModel, out string token)
+    {
+        token = string.Empty;
+        try
+        {
+            var clerk = _clerkBusinessLogicContract.GetClerkByData(clerkModel.Login);
+
+
+            var result = clerkModel.Password == clerk.Password;
+
+            if (!result)
+            {
+                return ClerkOperationResponse.Unauthorized("Password are incorrect");
+            }
+
+            token = _jwtProvider.GenerateToken(clerk);
+
+            return ClerkOperationResponse.OK(_mapper.Map<ClerkViewModel>(clerk));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in Login");
+            return ClerkOperationResponse.InternalServerError($"Exception in Login {ex.Message}");
         }
     }
 }

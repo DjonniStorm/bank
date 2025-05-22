@@ -7,6 +7,8 @@ using BankContracts.BusinessLogicContracts;
 using BankContracts.DataModels;
 using BankContracts.Exceptions;
 using BankContracts.ViewModels;
+using BankWebApi.Infrastructure;
+using System.Buffers;
 
 namespace BankWebApi.Adapters;
 
@@ -14,11 +16,13 @@ public class StorekeeperAdapter : IStorekeeperAdapter
 {
     private readonly IStorekeeperBusinessLogicContract _storekeeperBusinessLogicContract;
 
+    private readonly IJwtProvider _jwtProvider;
+
     private readonly ILogger _logger;
 
     private readonly Mapper _mapper;
 
-    public StorekeeperAdapter(IStorekeeperBusinessLogicContract storekeeperBusinessLogicContract, ILogger logger)
+    public StorekeeperAdapter(IStorekeeperBusinessLogicContract storekeeperBusinessLogicContract, IJwtProvider jwtProvider, ILogger logger)
     {
         _storekeeperBusinessLogicContract = storekeeperBusinessLogicContract;
         _logger = logger;
@@ -28,6 +32,7 @@ public class StorekeeperAdapter : IStorekeeperAdapter
             cfg.CreateMap<StorekeeperDataModel, StorekeeperViewModel>();
         });
         _mapper = new Mapper(config);
+        _jwtProvider = jwtProvider;
     }
     
     public StorekeeperOperationResponse GetList()
@@ -119,7 +124,7 @@ public class StorekeeperAdapter : IStorekeeperAdapter
         {
             _logger.LogError(ex, "StorageException");
             return StorekeeperOperationResponse.BadRequest(
-                $"Error while working with data storage: {ex.InnerException!.Message}"
+                $"Error while working with data storage: {ex.InnerException?.Message}"
             );
         }
         catch (Exception ex)
@@ -170,5 +175,31 @@ public class StorekeeperAdapter : IStorekeeperAdapter
             _logger.LogError(ex, "Exception");
             return StorekeeperOperationResponse.InternalServerError(ex.Message);
         }
-    } 
+    }
+
+    public StorekeeperOperationResponse Login(LoginBindingModel storekeeperAuth, out string token)
+    {
+        token = string.Empty;
+        try
+        {
+            var storekeeper = _storekeeperBusinessLogicContract.GetStorekeeperByData(storekeeperAuth.Login);
+
+
+            var result = storekeeperAuth.Password == storekeeper.Password;
+
+            if (!result)
+            {
+                return StorekeeperOperationResponse.Unauthorized("Password are incorrect");
+            }
+
+            token = _jwtProvider.GenerateToken(storekeeper);
+            
+            return StorekeeperOperationResponse.OK(_mapper.Map<StorekeeperViewModel>(storekeeper));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception in Login");
+            return StorekeeperOperationResponse.InternalServerError($"Exception in Login {ex.Message}");
+        }
+    }
 }

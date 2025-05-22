@@ -2,7 +2,7 @@
 
 namespace BankDatabase.Models;
 
-class Period
+public class Period
 {
     public required string Id { get; set; }
 

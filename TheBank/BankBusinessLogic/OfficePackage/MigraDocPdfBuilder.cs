@@ -56,7 +56,7 @@ public class MigraDocPdfBuilder : BasePdfBuilder
         // Добавляем столбцы с заданной шириной
         foreach (var width in columnsWidths)
         {
-            var widthInCm = width / 28.35;
+            var widthInCm = width / 10.35;
             var column = table.AddColumn(Unit.FromCentimeter(widthInCm));
             column.Format.Alignment = ParagraphAlignment.Left;
         }

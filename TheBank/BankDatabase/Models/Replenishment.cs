@@ -2,7 +2,7 @@
 
 namespace BankDatabase.Models;
 
-class Replenishment
+public class Replenishment
 {
     public required string Id { get; set; }
 

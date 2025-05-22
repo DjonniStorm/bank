@@ -8,6 +8,9 @@ public class StorekeeperOperationResponse : OperationResponse
     public static StorekeeperOperationResponse OK(List<StorekeeperViewModel> data) =>
         OK<StorekeeperOperationResponse, List<StorekeeperViewModel>>(data);
 
+    public static StorekeeperOperationResponse OK(string token) =>
+        OK<StorekeeperOperationResponse, string>(token);
+
     public static StorekeeperOperationResponse OK(StorekeeperViewModel data) =>
         OK<StorekeeperOperationResponse, StorekeeperViewModel>(data);
 
@@ -21,4 +24,7 @@ public class StorekeeperOperationResponse : OperationResponse
 
     public static StorekeeperOperationResponse InternalServerError(string message) =>
         InternalServerError<StorekeeperOperationResponse>(message);
+
+    public static StorekeeperOperationResponse Unauthorized(string message) =>
+        Unauthorized<StorekeeperOperationResponse>(message);
 }

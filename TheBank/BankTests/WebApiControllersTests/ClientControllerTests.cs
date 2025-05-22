@@ -34,7 +34,7 @@ internal class ClientControllerTests : BaseWebApiControllerTest
         var client1 = BankDbContext.InsertClientToDatabaseAndReturn(name: "Иван", surname: "Иванов", clerkId: _clerk.Id);
         var client2 = BankDbContext.InsertClientToDatabaseAndReturn(name: "Петр", surname: "Петров", clerkId: _clerk.Id);
         // Act
-        var response = await HttpClient.GetAsync("/api/clients/getrecords");
+        var response = await HttpClient.GetAsync("/api/clients/getallrecords");
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var data = await GetModelFromResponseAsync<List<ClientViewModel>>(response);
@@ -48,7 +48,7 @@ internal class ClientControllerTests : BaseWebApiControllerTest
     public async Task GetList_WhenNoRecords_ShouldSuccess_Test()
     {
         // Act
-        var response = await HttpClient.GetAsync("/api/clients/getrecords");
+        var response = await HttpClient.GetAsync("/api/clients/getallrecords");
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var data = await GetModelFromResponseAsync<List<ClientViewModel>>(response);
@@ -81,7 +81,7 @@ internal class ClientControllerTests : BaseWebApiControllerTest
     public async Task Post_ShouldSuccess_Test()
     {
         // Arrange
-        var model = CreateModel();
+        var model = CreateModel(clerkId: _clerk.Id);
         // Act
         var response = await HttpClient.PostAsJsonAsync("/api/clients/register", model);
         // Assert
@@ -114,7 +114,7 @@ internal class ClientControllerTests : BaseWebApiControllerTest
     public async Task Put_ShouldSuccess_Test()
     {
         // Arrange
-        var model = CreateModel();
+        var model = CreateModel(name: "slava", surname: "fomichev", balance: 1_000_000, clerkId: _clerk.Id);
         BankDbContext.InsertClientToDatabaseAndReturn(id: model.Id, clerkId: _clerk.Id);
         // Act
         var response = await HttpClient.PutAsJsonAsync("/api/clients/changeinfo", model);

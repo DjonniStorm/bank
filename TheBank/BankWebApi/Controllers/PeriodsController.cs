@@ -1,7 +1,6 @@
 ﻿using BankContracts.AdapterContracts;
 using BankContracts.BindingModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankWebApi.Controllers;
@@ -10,7 +9,7 @@ namespace BankWebApi.Controllers;
 [Route("api/[controller]/[action]")]
 [ApiController]
 [Produces("application/json")]
-public class PeriodController(IPeriodAdapter adapter) : ControllerBase
+public class PeriodsController(IPeriodAdapter adapter) : ControllerBase
 {
     private readonly IPeriodAdapter _adapter = adapter;
 

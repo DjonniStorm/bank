@@ -1,6 +1,6 @@
 ﻿namespace BankDatabase.Models;
 
-class CreditProgramCurrency
+public class CreditProgramCurrency
 {
     public required string CreditProgramId { get; set; }
 

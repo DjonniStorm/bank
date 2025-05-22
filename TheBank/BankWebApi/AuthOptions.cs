@@ -9,6 +9,7 @@ namespace BankWebApi;
 /// </summary>
 public class AuthOptions
 {
+    public const string CookieName = "bank";
     public const string ISSUER = "Bank_AuthServer"; // издатель токена
     public const string AUDIENCE = "Bank_AuthClient"; // потребитель токена
     const string KEY = "banksuperpupersecret_secretsecretsecretkey!";   // ключ для шифрации

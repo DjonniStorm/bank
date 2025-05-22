@@ -29,12 +29,11 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Bank API", Version = "v1" });
 
-    // Включение XML-комментариев (если они есть)
+    // Р’РєР»СЋС‡РµРЅРёРµ XML-РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ (РµСЃР»Рё РѕРЅРё РµСЃС‚СЊ)
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
 
-    // Поддержка JWT-аутентификации в Swagger UI
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
@@ -79,13 +78,33 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
 
             ValidateIssuerSigningKey = true,
+
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies[AuthOptions.CookieName];
+
+                return Task.CompletedTask;
+            }
         };
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:26312", "http://localhost:3654")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddSingleton<IConfigurationDatabase, ConfigurationDatabase>();
-// бизнес логика
+builder.Services.AddSingleton<IConfigurationDatabase, BankWebApi.Infrastructure.ConfigurationDatabase>();
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 builder.Services.AddTransient<IClerkBusinessLogicContract, ClerkBusinessLogicContract>();
 builder.Services.AddTransient<IPeriodBusinessLogicContract, PeriodBusinessLogicContract>();
 builder.Services.AddTransient<IDepositBusinessLogicContract, DepositBusinessLogicContract>();
@@ -94,7 +113,7 @@ builder.Services.AddTransient<ICreditProgramBusinessLogicContract, CreditProgram
 builder.Services.AddTransient<ICurrencyBusinessLogicContract, CurrencyBusinessLogicContract>();
 builder.Services.AddTransient<IStorekeeperBusinessLogicContract, StorekeeperBusinessLogicContract>();
 builder.Services.AddTransient<IReplenishmentBusinessLogicContract, ReplenishmentBusinessLogicContract>();
-// бд
+// пїЅпїЅ
 builder.Services.AddTransient<BankDbContext>();
 builder.Services.AddTransient<IClerkStorageContract, ClerkStorageContract>();
 builder.Services.AddTransient<IPeriodStorageContract, PeriodStorageContract>();
@@ -104,7 +123,7 @@ builder.Services.AddTransient<ICreditProgramStorageContract, CreditProgramStorag
 builder.Services.AddTransient<ICurrencyStorageContract, CurrencyStorageContract>();
 builder.Services.AddTransient<IStorekeeperStorageContract, StorekeeperStorageContract>();
 builder.Services.AddTransient<IReplenishmentStorageContract, ReplenishmentStorageContract>();
-// адаптеры
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 builder.Services.AddTransient<IClerkAdapter, ClerkAdapter>();
 builder.Services.AddTransient<IPeriodAdapter, PeriodAdapter>();
 builder.Services.AddTransient<IDepositAdapter, DepositAdapter>();
@@ -118,6 +137,8 @@ builder.Services.AddTransient<IReportAdapter, ReportAdapter>();
 builder.Services.AddTransient<BaseWordBuilder, OpenXmlWordBuilder>();
 builder.Services.AddTransient<BaseExcelBuilder, OpenXmlExcelBuilder>();
 builder.Services.AddTransient<BasePdfBuilder, MigraDocPdfBuilder>();
+// shit
+builder.Services.AddTransient<IJwtProvider, JwtProvider>();
 
 var app = builder.Build();
 
@@ -129,7 +150,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bank API V1");
-        c.RoutePrefix = "swagger"; // Swagger UI будет доступен по /swagger
+        c.RoutePrefix = "swagger"; // Swagger UI пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ /swagger
     });
 }
 if (app.Environment.IsProduction())
@@ -141,11 +162,19 @@ if (app.Environment.IsProduction())
         dbContext.Database.Migrate();
     }
 }
-
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
+
+app.UseCookiePolicy(new CookiePolicyOptions
+{
+    HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always,
+    Secure = app.Environment.IsProduction() ? CookieSecurePolicy.Always : CookieSecurePolicy.None
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+// СЌС‚Рѕ РґР»СЏ С‚РµСЃС‚РѕРІ
 app.Map("/login/{username}", (string username) =>
 {
     return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(

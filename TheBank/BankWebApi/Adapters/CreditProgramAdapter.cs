@@ -54,7 +54,7 @@ public class CreditProgramAdapter : ICreditProgramAdapter
         {
             _logger.LogError(ex, "StorageException");
             return CreditProgramOperationResponse.InternalServerError(
-                $"Error while working with data storage:{ex.InnerException!.Message}"
+                $"Error while working with data storage:{ex.InnerException?.Message}"
             );
         }
         catch (Exception ex)
@@ -86,7 +86,7 @@ public class CreditProgramAdapter : ICreditProgramAdapter
         {
             _logger.LogError(ex, "StorageException");
             return CreditProgramOperationResponse.InternalServerError(
-                $"Error while working with data storage: {ex.InnerException!.Message}"
+                $"Error while working with data storage: {ex.InnerException?.Message}"
             );
         }
         catch (Exception ex)
@@ -122,7 +122,7 @@ public class CreditProgramAdapter : ICreditProgramAdapter
         {
             _logger.LogError(ex, "StorageException");
             return CreditProgramOperationResponse.BadRequest(
-                $"Error while working with data storage: {ex.InnerException!.Message}"
+                $"Error while working with data storage: {ex.InnerException?.Message}"
             );
         }
         catch (Exception ex)
@@ -164,7 +164,7 @@ public class CreditProgramAdapter : ICreditProgramAdapter
         {
             _logger.LogError(ex, "StorageException");
             return CreditProgramOperationResponse.BadRequest(
-                $"Error while working with data storage: {ex.InnerException!.Message}"
+                $"Error while working with data storage: {ex.InnerException?.Message}"
             );
         }
         catch (Exception ex)
@@ -195,7 +195,7 @@ public class CreditProgramAdapter : ICreditProgramAdapter
         {
             _logger.LogError(ex, "StorageException");
             return CreditProgramOperationResponse.InternalServerError(
-                $"Error while working with data storage:{ex.InnerException!.Message}"
+                $"Error while working with data storage:{ex.InnerException?.Message}"
             );
         }
         catch (Exception ex)
@@ -226,7 +226,7 @@ public class CreditProgramAdapter : ICreditProgramAdapter
         {
             _logger.LogError(ex, "StorageException");
             return CreditProgramOperationResponse.InternalServerError(
-                $"Error while working with data storage:{ex.InnerException!.Message}"
+                $"Error while working with data storage:{ex.InnerException?.Message}"
             );
         }
         catch (Exception ex)
