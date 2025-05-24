@@ -36,16 +36,12 @@ public class ReportAdapter : IReportAdapter
         return ReportOperationResponse.OK(stream, fileName);
     }
 
-    public async Task<ReportOperationResponse> CreateDocumentClientsByCreditProgramAsync(CancellationToken ct)
+    public async Task<ReportOperationResponse> CreateDocumentClientsByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         try
         {
-            return SendStream(await _reportContract.CreateDocumentClientsByCreditProgramAsync(ct), "clientbycreditprogram.docx");
-        }
-        catch (IncorrectDatesException ex)
-        {
-            _logger.LogError(ex, "IncorrectDatesException");
-            return ReportOperationResponse.BadRequest($"Incorrect dates: {ex.Message}");
+            return SendStream(await _reportContract.CreateDocumentClientsByCreditProgramAsync(creditProgramIds, ct),
+                "clientsbycreditprogram.docx");
         }
         catch (InvalidOperationException ex)
         {
@@ -60,21 +56,16 @@ public class ReportAdapter : IReportAdapter
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception");
-            return
-            ReportOperationResponse.InternalServerError(ex.Message);
+            return ReportOperationResponse.InternalServerError(ex.Message);
         }
     }
 
-    public async Task<ReportOperationResponse> CreateExcelDocumentClientsByCreditProgramAsync(CancellationToken ct)
+    public async Task<ReportOperationResponse> CreateExcelDocumentClientsByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         try
         {
-            return SendStream(await _reportContract.CreateExcelDocumentClientsByCreditProgramAsync(ct), "clientbycreditprogram.xlsx");
-        }
-        catch (IncorrectDatesException ex)
-        {
-            _logger.LogError(ex, "IncorrectDatesException");
-            return ReportOperationResponse.BadRequest($"Incorrect dates: {ex.Message}");
+            return SendStream(await _reportContract.CreateExcelDocumentClientsByCreditProgramAsync(creditProgramIds, ct),
+                "clientsbycreditprogram.xlsx");
         }
         catch (InvalidOperationException ex)
         {
@@ -89,8 +80,7 @@ public class ReportAdapter : IReportAdapter
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception");
-            return
-            ReportOperationResponse.InternalServerError(ex.Message);
+            return ReportOperationResponse.InternalServerError(ex.Message);
         }
     }
 
@@ -154,11 +144,11 @@ public class ReportAdapter : IReportAdapter
         }
     }
 
-    public async Task<ReportOperationResponse> CreateDocumentDepositByCreditProgramAsync(CancellationToken ct)
+    public async Task<ReportOperationResponse> CreateDocumentDepositByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         try
         {
-            return SendStream(await _reportContract.CreateDocumentDepositByCreditProgramAsync(ct), "depositbycreditprogram.docx");
+            return SendStream(await _reportContract.CreateDocumentDepositByCreditProgramAsync(creditProgramIds, ct), "depositbycreditprogram.docx");
         }
         catch (IncorrectDatesException ex)
         {
@@ -187,11 +177,11 @@ public class ReportAdapter : IReportAdapter
         }
     }
 
-    public async Task<ReportOperationResponse> CreateExcelDocumentDepositByCreditProgramAsync(CancellationToken ct)
+    public async Task<ReportOperationResponse> CreateExcelDocumentDepositByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         try
         {
-            return SendStream(await _reportContract.CreateExcelDocumentDepositByCreditProgramAsync(ct), "depositbycreditprogram.xlsx");
+            return SendStream(await _reportContract.CreateExcelDocumentDepositByCreditProgramAsync(creditProgramIds, ct), "depositbycreditprogram.xlsx");
         }
         catch (IncorrectDatesException ex)
         {
@@ -216,21 +206,16 @@ public class ReportAdapter : IReportAdapter
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception");
-            return
-            ReportOperationResponse.InternalServerError(ex.Message);
+            return ReportOperationResponse.InternalServerError(ex.Message);
         }
     }
 
-    public async Task<ReportOperationResponse> GetDataClientsByCreditProgramAsync(CancellationToken ct)
+    public async Task<ReportOperationResponse> GetDataClientsByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         try
         {
-            return ReportOperationResponse.OK([.. (await _reportContract.GetDataClientsByCreditProgramAsync(ct)).Select(x => _mapper.Map<ClientsByCreditProgramViewModel>(x))]);
-        }
-        catch (IncorrectDatesException ex)
-        {
-            _logger.LogError(ex, "IncorrectDatesException");
-            return ReportOperationResponse.BadRequest($"Incorrect dates: {ex.Message}");
+            return ReportOperationResponse.OK((await _reportContract.GetDataClientsByCreditProgramAsync(creditProgramIds, ct))
+                .Select(x => _mapper.Map<ClientsByCreditProgramViewModel>(x)).ToList());
         }
         catch (InvalidOperationException ex)
         {
@@ -245,8 +230,7 @@ public class ReportAdapter : IReportAdapter
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception");
-            return
-            ReportOperationResponse.InternalServerError(ex.Message);
+            return ReportOperationResponse.InternalServerError(ex.Message);
         }
     }
 
@@ -310,11 +294,11 @@ public class ReportAdapter : IReportAdapter
         }
     }
 
-    public async Task<ReportOperationResponse> GetDataDepositByCreditProgramAsync(CancellationToken ct)
+    public async Task<ReportOperationResponse> GetDataDepositByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         try
         {
-            return ReportOperationResponse.OK([.. (await _reportContract.GetDataDepositByCreditProgramAsync(ct)).Select(x => _mapper.Map<DepositByCreditProgramViewModel>(x))]);
+            return ReportOperationResponse.OK([.. (await _reportContract.GetDataDepositByCreditProgramAsync(creditProgramIds, ct)).Select(x => _mapper.Map<DepositByCreditProgramViewModel>(x))]);
         }
         catch (IncorrectDatesException ex)
         {
@@ -334,8 +318,7 @@ public class ReportAdapter : IReportAdapter
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception");
-            return
-            ReportOperationResponse.InternalServerError(ex.Message);
+            return ReportOperationResponse.InternalServerError(ex.Message);
         }
     }
 }

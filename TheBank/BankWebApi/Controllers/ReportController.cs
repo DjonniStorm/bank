@@ -21,27 +21,23 @@ public class ReportController : ControllerBase
 
     [HttpGet]
     [Consumes("application/json")]
-    public async Task<IActionResult> GetClientByCreditProgram(CancellationToken ct)
+    public async Task<IActionResult> GetClientByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken ct)
     {
-        return (await
-        _adapter.GetDataClientsByCreditProgramAsync(ct)).GetResponse(Request, Response);
-    }
-
-
-    [HttpGet]
-    [Consumes("application/octet-stream")]
-    public async Task<IActionResult> LoadClientsByCreditProgram(CancellationToken cancellationToken)
-    {
-        return (await
-        _adapter.CreateDocumentClientsByCreditProgramAsync(cancellationToken)).GetResponse(Request, Response);
+        return (await _adapter.GetDataClientsByCreditProgramAsync(creditProgramIds, ct)).GetResponse(Request, Response);
     }
 
     [HttpGet]
     [Consumes("application/octet-stream")]
-    public async Task<IActionResult> LoadExcelClientByCreditProgram(CancellationToken cancellationToken)
+    public async Task<IActionResult> LoadClientsByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken cancellationToken)
     {
-        return (await
-        _adapter.CreateExcelDocumentClientsByCreditProgramAsync(cancellationToken)).GetResponse(Request, Response);
+        return (await _adapter.CreateDocumentClientsByCreditProgramAsync(creditProgramIds, cancellationToken)).GetResponse(Request, Response);
+    }
+
+    [HttpGet]
+    [Consumes("application/octet-stream")]
+    public async Task<IActionResult> LoadExcelClientByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken cancellationToken)
+    {
+        return (await _adapter.CreateExcelDocumentClientsByCreditProgramAsync(creditProgramIds, cancellationToken)).GetResponse(Request, Response);
     }
 
     [HttpGet]
@@ -61,23 +57,23 @@ public class ReportController : ControllerBase
 
     [HttpGet]
     [Consumes("application/json")]
-    public async Task<IActionResult> GetDepositByCreditProgram(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetDepositByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken cancellationToken)
     {
-        return (await _adapter.GetDataDepositByCreditProgramAsync(cancellationToken)).GetResponse(Request, Response);
+        return (await _adapter.GetDataDepositByCreditProgramAsync(creditProgramIds, cancellationToken)).GetResponse(Request, Response);
     }
 
     [HttpGet]
     [Consumes("application/octet-stream")]
-    public async Task<IActionResult> LoadDepositByCreditProgram(CancellationToken cancellationToken)
+    public async Task<IActionResult> LoadDepositByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken cancellationToken)
     {
-        return (await _adapter.CreateDocumentDepositByCreditProgramAsync(cancellationToken)).GetResponse(Request, Response);
+        return (await _adapter.CreateDocumentDepositByCreditProgramAsync(creditProgramIds, cancellationToken)).GetResponse(Request, Response);
     }
 
     [HttpGet]
     [Consumes("application/octet-stream")]
-    public async Task<IActionResult> LoadExcelDepositByCreditProgram(CancellationToken cancellationToken)
+    public async Task<IActionResult> LoadExcelDepositByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken cancellationToken)
     {
-        return (await _adapter.CreateExcelDocumentDepositByCreditProgramAsync(cancellationToken)).GetResponse(Request, Response);
+        return (await _adapter.CreateExcelDocumentDepositByCreditProgramAsync(creditProgramIds, cancellationToken)).GetResponse(Request, Response);
     }
 
     [HttpGet]
@@ -96,11 +92,11 @@ public class ReportController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendReportByCreditProgram(string email, CancellationToken ct)
+    public async Task<IActionResult> SendReportByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
     {
         try
         {
-            var report = await _adapter.CreateDocumentClientsByCreditProgramAsync(ct);
+            var report = await _adapter.CreateDocumentClientsByCreditProgramAsync(creditProgramIds, ct);
             var response = report.GetResponse(Request, Response);
             
             if (response is FileStreamResult fileResult)
@@ -201,11 +197,11 @@ public class ReportController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendExcelReportByCreditProgram(string email, CancellationToken ct)
+    public async Task<IActionResult> SendExcelReportByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
     {
         try
         {
-            var report = await _adapter.CreateExcelDocumentClientsByCreditProgramAsync(ct);
+            var report = await _adapter.CreateExcelDocumentClientsByCreditProgramAsync(creditProgramIds, ct);
             var response = report.GetResponse(Request, Response);
             
             if (response is FileStreamResult fileResult)
@@ -236,11 +232,11 @@ public class ReportController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendReportDepositByCreditProgram(string email, CancellationToken ct)
+    public async Task<IActionResult> SendReportDepositByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
     {
         try
         {
-            var report = await _adapter.CreateDocumentDepositByCreditProgramAsync(ct);
+            var report = await _adapter.CreateDocumentDepositByCreditProgramAsync(creditProgramIds, ct);
             var response = report.GetResponse(Request, Response);
             
             if (response is FileStreamResult fileResult)
@@ -271,11 +267,11 @@ public class ReportController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SendExcelReportDepositByCreditProgram(string email, CancellationToken ct)
+    public async Task<IActionResult> SendExcelReportDepositByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
     {
         try
         {
-            var report = await _adapter.CreateExcelDocumentDepositByCreditProgramAsync(ct);
+            var report = await _adapter.CreateExcelDocumentDepositByCreditProgramAsync(creditProgramIds, ct);
             var response = report.GetResponse(Request, Response);
             
             if (response is FileStreamResult fileResult)
