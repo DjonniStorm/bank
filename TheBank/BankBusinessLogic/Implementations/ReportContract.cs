@@ -24,6 +24,12 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
     private static readonly string[] clientsByDepositHeader = ["Фамилия", "Имя", "Баланс", "Ставка", "Срок", "Период"];
     private static readonly string[] currencyHeader = ["Валюта", "Кредитная программа", "Макс. сумма", "Ставка", "Срок"];
 
+    /// <summary>
+    /// Получения данных для отчета Клиента по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public async Task<List<ClientsByCreditProgramDataModel>> GetDataClientsByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Get data ClientsByCreditProgram");
@@ -49,6 +55,13 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             }).ToList();
     }
 
+    /// <summary>
+    /// Создание word отчета Клиента по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<Stream> CreateDocumentClientsByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Create report ClientsByCreditProgram");
@@ -80,6 +93,13 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             .Build();
     }
 
+    /// <summary>
+    /// Создание excel отчета Клиенты по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<Stream> CreateExcelDocumentClientsByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Create Excel report ClientsByCreditProgram");
@@ -111,6 +131,15 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             .Build();
     }
 
+    /// <summary>
+    /// Получение данных для отчета Клиента по Депозитам 
+    /// </summary>
+    /// <param name="dateStart"></param>
+    /// <param name="dateFinish"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<List<ClientsByDepositDataModel>> GetDataClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
     {
         _logger.LogInformation("Get data ClientsByDeposit from {dateStart} to {dateFinish}", dateStart, dateFinish);
@@ -159,6 +188,15 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         return result;
     }
 
+
+    /// <summary>
+    /// Создание pdf отчета Клиента по Депозитам
+    /// </summary>
+    /// <param name="dateStart"></param>
+    /// <param name="dateFinish"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<Stream> CreateDocumentClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
     {
         _logger.LogInformation("Create report ClientsByDeposit from {dateStart} to {dateFinish}", dateStart, dateFinish);
@@ -191,6 +229,15 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             .Build();
     }
 
+
+    /// <summary>
+    /// Получение данных для отчета Депозиты и Кредитные программы по Валютам
+    /// </summary>
+    /// <param name="dateStart"></param>
+    /// <param name="dateFinish"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public async Task<List<CreditProgramAndDepositByCurrencyDataModel>> GetDataDepositAndCreditProgramByCurrencyAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
     {
         _logger.LogInformation("Get data DepositAndCreditProgramByCurrency from {dateStart} to {dateFinish}", dateStart, dateFinish);
@@ -219,6 +266,15 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         }).ToList();
     }
 
+
+    /// <summary>
+    /// Создание pdf отчета Депозиты и Кредитные программы по Валютам
+    /// </summary>
+    /// <param name="dateStart"></param>
+    /// <param name="dateFinish"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<Stream> CreateDocumentDepositAndCreditProgramByCurrencyAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
     {
         _logger.LogInformation("Create report DepositAndCreditProgramByCurrency from {dateStart} to {dateFinish}", dateStart, dateFinish);
@@ -253,6 +309,14 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             .Build();
     }
 
+
+    /// <summary>
+    /// Получение данных для отчета Депозиты по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<List<DepositByCreditProgramDataModel>> GetDataDepositByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Get data DepositByCreditProgram");
@@ -277,6 +341,14 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         }).ToList();
     }
 
+
+    /// <summary>
+    /// Создание word отчета Депозиты по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<Stream> CreateDocumentDepositByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Create report DepositByCreditProgram");
@@ -308,6 +380,13 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             .Build();
     }
 
+    /// <summary>
+    ///  Создание excel отчета Депозиты по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<Stream> CreateExcelDocumentDepositByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Create Excel report DepositByCreditProgram");
