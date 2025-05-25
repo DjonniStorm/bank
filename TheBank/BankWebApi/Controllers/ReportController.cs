@@ -18,14 +18,24 @@ public class ReportController : ControllerBase
         _adapter = adapter;
         _emailService = EmailService.CreateYandexService();
     }
-
+    /// <summary>
+    /// Получение данных Клиента по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     [HttpGet]
     [Consumes("application/json")]
     public async Task<IActionResult> GetClientByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken ct)
     {
         return (await _adapter.GetDataClientsByCreditProgramAsync(creditProgramIds, ct)).GetResponse(Request, Response);
     }
-
+    /// <summary>
+    /// Отчет word Клиента по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     [Consumes("application/octet-stream")]
     public async Task<IActionResult> LoadClientsByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken cancellationToken)
@@ -33,6 +43,12 @@ public class ReportController : ControllerBase
         return (await _adapter.CreateDocumentClientsByCreditProgramAsync(creditProgramIds, cancellationToken)).GetResponse(Request, Response);
     }
 
+    /// <summary>
+    /// Отчет excel Клиента по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     [Consumes("application/octet-stream")]
     public async Task<IActionResult> LoadExcelClientByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken cancellationToken)
@@ -40,6 +56,13 @@ public class ReportController : ControllerBase
         return (await _adapter.CreateExcelDocumentClientsByCreditProgramAsync(creditProgramIds, cancellationToken)).GetResponse(Request, Response);
     }
 
+    /// <summary>
+    /// Получение данных Клиента по Вкладам
+    /// </summary>
+    /// <param name="fromDate"></param>
+    /// <param name="toDate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     [Consumes("application/json")]
     public async Task<IActionResult> GetClientByDeposit(DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
@@ -47,6 +70,13 @@ public class ReportController : ControllerBase
         return (await _adapter.GetDataClientsByDepositAsync(fromDate, toDate, cancellationToken)).GetResponse(Request, Response);
     }
 
+    /// <summary>
+    /// Отчет word Клиента по Вкладам
+    /// </summary>
+    /// <param name="fromDate"></param>
+    /// <param name="toDate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     [Consumes("application/octet-stream")]
     public async Task<IActionResult> LoadClientsByDeposit(DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
@@ -55,6 +85,12 @@ public class ReportController : ControllerBase
         toDate, cancellationToken)).GetResponse(Request, Response);
     }
 
+    /// <summary>
+    /// Получение данных Вклада по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     [Consumes("application/json")]
     public async Task<IActionResult> GetDepositByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken cancellationToken)
@@ -62,6 +98,12 @@ public class ReportController : ControllerBase
         return (await _adapter.GetDataDepositByCreditProgramAsync(creditProgramIds, cancellationToken)).GetResponse(Request, Response);
     }
 
+    /// <summary>
+    /// Отчет word Вклада по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     [Consumes("application/octet-stream")]
     public async Task<IActionResult> LoadDepositByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken cancellationToken)
@@ -69,6 +111,12 @@ public class ReportController : ControllerBase
         return (await _adapter.CreateDocumentDepositByCreditProgramAsync(creditProgramIds, cancellationToken)).GetResponse(Request, Response);
     }
 
+    /// <summary>
+    /// Отчет excel Вклада по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     [Consumes("application/octet-stream")]
     public async Task<IActionResult> LoadExcelDepositByCreditProgram([FromQuery] List<string>? creditProgramIds, CancellationToken cancellationToken)
@@ -76,6 +124,13 @@ public class ReportController : ControllerBase
         return (await _adapter.CreateExcelDocumentDepositByCreditProgramAsync(creditProgramIds, cancellationToken)).GetResponse(Request, Response);
     }
 
+    /// <summary>
+    /// Получение данных Вклада и Кредитных программам по Валютам
+    /// </summary>
+    /// <param name="fromDate"></param>
+    /// <param name="toDate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     [Consumes("application/json")]
     public async Task<IActionResult> GetDepositAndCreditProgramByCurrency(DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
@@ -84,6 +139,13 @@ public class ReportController : ControllerBase
         cancellationToken)).GetResponse(Request, Response);
     }
 
+    /// <summary>
+    /// Отчет pdf Вклада и Кредитных программам по Валютам
+    /// </summary>
+    /// <param name="fromDate"></param>
+    /// <param name="toDate"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     [Consumes("application/octet-stream")]
     public async Task<IActionResult> LoadDepositAndCreditProgramByCurrency(DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
@@ -91,6 +153,13 @@ public class ReportController : ControllerBase
         return (await _adapter.CreateDocumentDepositAndCreditProgramByCurrencyAsync(fromDate, toDate, cancellationToken)).GetResponse(Request, Response);
     }
 
+    /// <summary>
+    /// Отправка word отчета Клиентов по Кредитным программам
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> SendReportByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
     {
@@ -126,6 +195,14 @@ public class ReportController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Отправка pdf отчета Клиентов по Валютам
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="fromDate"></param>
+    /// <param name="toDate"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> SendReportByDeposit(string email, DateTime fromDate, DateTime toDate, CancellationToken ct)
     {
@@ -161,6 +238,14 @@ public class ReportController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Отправка pdf отчета Вкладов и Кредитных программ по Валютам
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="fromDate"></param>
+    /// <param name="toDate"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> SendReportByCurrency(string email, DateTime fromDate, DateTime toDate, CancellationToken ct)
     {
@@ -196,6 +281,13 @@ public class ReportController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Отправка excel отчета Клиентов по Кредитных программ 
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> SendExcelReportByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
     {
@@ -231,6 +323,13 @@ public class ReportController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Отправка word отчета Вкладов по Кредитных программ 
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> SendReportDepositByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
     {
@@ -266,6 +365,13 @@ public class ReportController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Отправка excel отчета Вкладов по Кредитных программ
+    /// </summary>
+    /// <param name="email"></param>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> SendExcelReportDepositByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
     {
