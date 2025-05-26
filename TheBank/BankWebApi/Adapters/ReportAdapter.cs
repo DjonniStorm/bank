@@ -88,8 +88,7 @@ public class ReportAdapter : IReportAdapter
     {
         try
         {
-            return SendStream(await _reportContract.CreateDocumentClientsByDepositAsync(dateStart, dateFinish, ct),
-            "clientbydeposit.pdf");
+            return SendStream(await _reportContract.CreateDocumentClientsByDepositAsync(dateStart, dateFinish, ct), "clientbydeposit.pdf");
         }
         catch (IncorrectDatesException ex)
         {

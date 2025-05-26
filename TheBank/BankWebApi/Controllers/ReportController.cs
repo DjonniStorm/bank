@@ -8,16 +8,11 @@ namespace BankWebApi.Controllers;
 [Authorize]
 [Route("api/[controller]/[action]")]
 [ApiController]
-public class ReportController : ControllerBase
+public class ReportController(IReportAdapter adapter) : ControllerBase
 {
-    private readonly IReportAdapter _adapter;
-    private readonly EmailService _emailService;
+    private readonly IReportAdapter _adapter = adapter;
+    private readonly EmailService _emailService = EmailService.CreateYandexService();
 
-    public ReportController(IReportAdapter adapter)
-    {
-        _adapter = adapter;
-        _emailService = EmailService.CreateYandexService();
-    }
     /// <summary>
     /// Получение данных Клиента по Кредитным программам
     /// </summary>
@@ -81,8 +76,7 @@ public class ReportController : ControllerBase
     [Consumes("application/octet-stream")]
     public async Task<IActionResult> LoadClientsByDeposit(DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
     {
-        return (await _adapter.CreateDocumentClientsByDepositAsync(fromDate,
-        toDate, cancellationToken)).GetResponse(Request, Response);
+        return (await _adapter.CreateDocumentClientsByDepositAsync(fromDate,toDate, cancellationToken)).GetResponse(Request, Response);
     }
 
     /// <summary>
@@ -126,6 +120,7 @@ public class ReportController : ControllerBase
 
     /// <summary>
     /// Получение данных Вклада и Кредитных программам по Валютам
+    /// кладовщик pdf
     /// </summary>
     /// <param name="fromDate"></param>
     /// <param name="toDate"></param>
@@ -135,12 +130,12 @@ public class ReportController : ControllerBase
     [Consumes("application/json")]
     public async Task<IActionResult> GetDepositAndCreditProgramByCurrency(DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
     {
-        return (await _adapter.GetDataDepositAndCreditProgramByCurrencyAsync(fromDate, toDate,
-        cancellationToken)).GetResponse(Request, Response);
+        return (await _adapter.GetDataDepositAndCreditProgramByCurrencyAsync(fromDate, toDate, cancellationToken)).GetResponse(Request, Response);
     }
 
     /// <summary>
     /// Отчет pdf Вклада и Кредитных программам по Валютам
+    /// кладовщик pdf
     /// </summary>
     /// <param name="fromDate"></param>
     /// <param name="toDate"></param>
@@ -240,6 +235,7 @@ public class ReportController : ControllerBase
 
     /// <summary>
     /// Отправка pdf отчета Вкладов и Кредитных программ по Валютам
+    /// кладовщик pdf
     /// </summary>
     /// <param name="email"></param>
     /// <param name="fromDate"></param>
