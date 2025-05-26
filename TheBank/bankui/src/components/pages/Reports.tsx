@@ -91,6 +91,7 @@ export const Reports = (): React.JSX.Element => {
     creditProgramIds: string[],
   ) => {
     try {
+      console.log('cpIds>>', creditProgramIds);
       const blob =
         fileFormat === 'doc'
           ? await reportsApi.getWordReport(creditProgramIds)
