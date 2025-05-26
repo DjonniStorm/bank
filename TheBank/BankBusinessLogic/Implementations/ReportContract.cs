@@ -24,17 +24,27 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
     private static readonly string[] clientsByDepositHeader = ["Фамилия", "Имя", "Баланс", "Ставка", "Срок", "Период"];
     private static readonly string[] currencyHeader = ["Валюта", "Кредитная программа", "Макс. сумма", "Ставка", "Срок"];
 
-    public async Task<List<ClientsByCreditProgramDataModel>> GetDataClientsByCreditProgramAsync(CancellationToken ct)
+    /// <summary>
+    /// Получения данных для отчета Клиента по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    public async Task<List<ClientsByCreditProgramDataModel>> GetDataClientsByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Get data ClientsByCreditProgram");
         var clients = await Task.Run(() => _clientStorage.GetList(), ct);
         var creditPrograms = await Task.Run(() => _creditProgramStorage.GetList(), ct);
         var currencies = await Task.Run(() => _currencyStorage.GetList(), ct);
 
-        return creditPrograms
+        var filteredPrograms = creditPrograms
             .Where(cp => cp.Currencies.Any()) // Проверяем, что у кредитной программы есть связанные валюты
+            .Where(cp => creditProgramIds == null || creditProgramIds.Contains(cp.Id));
+
+        return filteredPrograms
             .Select(cp => new ClientsByCreditProgramDataModel
             {
+                CreditProgramId = cp.Id,
                 CreditProgramName = cp.Name,
                 ClientSurname = clients.Where(c => c.CreditProgramClients.Any(cpc => cpc.CreditProgramId == cp.Id))
                     .Select(c => c.Surname).ToList(),
@@ -45,10 +55,17 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             }).ToList();
     }
 
-    public async Task<Stream> CreateDocumentClientsByCreditProgramAsync(CancellationToken ct)
+    /// <summary>
+    /// Создание word отчета Клиента по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async Task<Stream> CreateDocumentClientsByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Create report ClientsByCreditProgram");
-        var data = await GetDataClientsByCreditProgramAsync(ct) ?? throw new InvalidOperationException("No found data");
+        var data = await GetDataClientsByCreditProgramAsync(creditProgramIds, ct) ?? throw new InvalidOperationException("No found data");
 
         var tableRows = new List<string[]>
         {
@@ -76,10 +93,17 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             .Build();
     }
 
-    public async Task<Stream> CreateExcelDocumentClientsByCreditProgramAsync(CancellationToken ct)
+    /// <summary>
+    /// Создание excel отчета Клиенты по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async Task<Stream> CreateExcelDocumentClientsByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Create Excel report ClientsByCreditProgram");
-        var data = await GetDataClientsByCreditProgramAsync(ct) ?? throw new InvalidOperationException("No found data");
+        var data = await GetDataClientsByCreditProgramAsync(creditProgramIds, ct) ?? throw new InvalidOperationException("No found data");
 
         var tableRows = new List<string[]>
         {
@@ -107,6 +131,15 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             .Build();
     }
 
+    /// <summary>
+    /// Получение данных для отчета Клиента по Депозитам 
+    /// </summary>
+    /// <param name="dateStart"></param>
+    /// <param name="dateFinish"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<List<ClientsByDepositDataModel>> GetDataClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
     {
         _logger.LogInformation("Get data ClientsByDeposit from {dateStart} to {dateFinish}", dateStart, dateFinish);
@@ -155,6 +188,15 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         return result;
     }
 
+
+    /// <summary>
+    /// Создание pdf отчета Клиента по Депозитам
+    /// </summary>
+    /// <param name="dateStart"></param>
+    /// <param name="dateFinish"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<Stream> CreateDocumentClientsByDepositAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
     {
         _logger.LogInformation("Create report ClientsByDeposit from {dateStart} to {dateFinish}", dateStart, dateFinish);
@@ -187,6 +229,15 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             .Build();
     }
 
+
+    /// <summary>
+    /// Получение данных для отчета Депозиты и Кредитные программы по Валютам
+    /// </summary>
+    /// <param name="dateStart"></param>
+    /// <param name="dateFinish"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public async Task<List<CreditProgramAndDepositByCurrencyDataModel>> GetDataDepositAndCreditProgramByCurrencyAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
     {
         _logger.LogInformation("Get data DepositAndCreditProgramByCurrency from {dateStart} to {dateFinish}", dateStart, dateFinish);
@@ -215,6 +266,15 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         }).ToList();
     }
 
+
+    /// <summary>
+    /// Создание pdf отчета Депозиты и Кредитные программы по Валютам
+    /// </summary>
+    /// <param name="dateStart"></param>
+    /// <param name="dateFinish"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<Stream> CreateDocumentDepositAndCreditProgramByCurrencyAsync(DateTime dateStart, DateTime dateFinish, CancellationToken ct)
     {
         _logger.LogInformation("Create report DepositAndCreditProgramByCurrency from {dateStart} to {dateFinish}", dateStart, dateFinish);
@@ -280,7 +340,15 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             .Build();
     }
 
-    public async Task<List<DepositByCreditProgramDataModel>> GetDataDepositByCreditProgramAsync(CancellationToken ct)
+
+    /// <summary>
+    /// Получение данных для отчета Депозиты по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async Task<List<DepositByCreditProgramDataModel>> GetDataDepositByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Get data DepositByCreditProgram");
         var deposits = await Task.Run(() => _depositStorage.GetList(), ct);
@@ -292,7 +360,10 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             throw new InvalidOperationException("No deposits with currencies found");
         }
 
-        return creditPrograms.Select(cp => new DepositByCreditProgramDataModel
+        var filteredPrograms = creditPrograms
+            .Where(cp => creditProgramIds == null || creditProgramIds.Contains(cp.Id));
+
+        return filteredPrograms.Select(cp => new DepositByCreditProgramDataModel
         {
             CreditProgramName = cp.Name,
             DepositRate = deposits.Select(d => d.InterestRate).ToList(),
@@ -301,10 +372,18 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         }).ToList();
     }
 
-    public async Task<Stream> CreateDocumentDepositByCreditProgramAsync(CancellationToken ct)
+
+    /// <summary>
+    /// Создание word отчета Депозиты по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async Task<Stream> CreateDocumentDepositByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Create report DepositByCreditProgram");
-        var data = await GetDataDepositByCreditProgramAsync(ct) ?? throw new InvalidOperationException("No found data");
+        var data = await GetDataDepositByCreditProgramAsync(creditProgramIds, ct) ?? throw new InvalidOperationException("No found data");
 
         var tableRows = new List<string[]>
         {
@@ -332,10 +411,17 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             .Build();
     }
 
-    public async Task<Stream> CreateExcelDocumentDepositByCreditProgramAsync(CancellationToken ct)
+    /// <summary>
+    ///  Создание excel отчета Депозиты по Кредитным программам
+    /// </summary>
+    /// <param name="creditProgramIds"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async Task<Stream> CreateExcelDocumentDepositByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Create Excel report DepositByCreditProgram");
-        var data = await GetDataDepositByCreditProgramAsync(ct) ?? throw new InvalidOperationException("No found data");
+        var data = await GetDataDepositByCreditProgramAsync(creditProgramIds, ct) ?? throw new InvalidOperationException("No found data");
 
         var tableRows = new List<string[]>
         {

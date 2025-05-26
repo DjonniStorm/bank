@@ -13,7 +13,7 @@ using System.Text;
 namespace BankTests.ReportContractTests;
 
 [TestFixture]
-internal class ReportContractTestss
+internal class ReportContractTests
 {
     private ReportContract _reportContract;
     private Mock<IClientStorageContract> _clientStorage;
@@ -65,10 +65,35 @@ internal class ReportContractTestss
                new DepositDataModel("d1", 5, 1000, 12, "cl", new List<DepositCurrencyDataModel>())
             });
 
-        var result = await _reportContract.GetDataDepositByCreditProgramAsync(ct);
+        var result = await _reportContract.GetDataDepositByCreditProgramAsync(null, ct);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Count, Is.GreaterThanOrEqualTo(0));
+    }
+
+    [Test]
+    public async Task GetDataDepositByCreditProgramAsync_WithFilter_ReturnsFilteredData()
+    {
+        var ct = CancellationToken.None;
+        var creditProgramIds = new List<string> { "1" };
+        
+        _creditProgramStorage.Setup(x => x.GetList(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(new List<CreditProgramDataModel>
+            {
+               new CreditProgramDataModel("1", "Программа 1", 100, 200, "sk", "p", new List<CreditProgramCurrencyDataModel> { new() { CurrencyId = "1" } }),
+               new CreditProgramDataModel("2", "Программа 2", 100, 200, "sk", "p", new List<CreditProgramCurrencyDataModel> { new() { CurrencyId = "1" } })
+            });
+        _depositStorage.Setup(x => x.GetList(It.IsAny<string>()))
+            .Returns(new List<DepositDataModel>
+            {
+               new DepositDataModel("d1", 5, 1000, 12, "cl", new List<DepositCurrencyDataModel> { new() { CurrencyId = "1" } })
+            });
+
+        var result = await _reportContract.GetDataDepositByCreditProgramAsync(creditProgramIds, ct);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result[0].CreditProgramName, Is.EqualTo("Программа 1"));
     }
 
     [Test]
@@ -78,12 +103,12 @@ internal class ReportContractTestss
         _creditProgramStorage.Setup(x => x.GetList(It.IsAny<string>(), It.IsAny<string>()))
             .Returns(new List<CreditProgramDataModel>
             {
-                new CreditProgramDataModel("1", "Программа 1", 100, 200, "sk", "p", new List<CreditProgramCurrencyDataModel>())
+                new CreditProgramDataModel("1", "Программа 1", 100, 200, "sk", "p", new List<CreditProgramCurrencyDataModel> { new() { CurrencyId = "1" } })
             });
         _depositStorage.Setup(x => x.GetList(It.IsAny<string>()))
             .Returns(new List<DepositDataModel>
             {
-                new DepositDataModel("d1", 5, 1000, 12, "cl", new List<DepositCurrencyDataModel>())
+                new DepositDataModel("d1", 5, 1000, 12, "cl", new List<DepositCurrencyDataModel> { new() { CurrencyId = "1" } })
             });
 
         _baseWordBuilder.Setup(x => x.AddHeader(It.IsAny<string>())).Returns(_baseWordBuilder.Object);
@@ -91,7 +116,7 @@ internal class ReportContractTestss
         _baseWordBuilder.Setup(x => x.AddTable(It.IsAny<int[]>(), It.IsAny<List<string[]>>())).Returns(_baseWordBuilder.Object);
         _baseWordBuilder.Setup(x => x.Build()).Returns(new MemoryStream(Encoding.UTF8.GetBytes("test")));
 
-        var stream = await _reportContract.CreateDocumentDepositByCreditProgramAsync(ct);
+        var stream = await _reportContract.CreateDocumentDepositByCreditProgramAsync(new List<string> { "1" }, ct);
 
         Assert.That(stream, Is.Not.Null);
         _baseWordBuilder.Verify(x => x.AddHeader(It.IsAny<string>()), Times.Once);
@@ -168,6 +193,35 @@ internal class ReportContractTestss
         _creditProgramStorage.Setup(x => x.GetList(It.IsAny<string>(), It.IsAny<string>()))
             .Returns(new List<CreditProgramDataModel>
             {
+                new CreditProgramDataModel("1", "Программа 1", 100, 200, "sk", "p", new List<CreditProgramCurrencyDataModel> { new() { CurrencyId = "1" } })
+            });
+        _depositStorage.Setup(x => x.GetList(It.IsAny<string>()))
+            .Returns(new List<DepositDataModel>
+            {
+                new DepositDataModel("d1", 5, 1000, 12, "cl", new List<DepositCurrencyDataModel> { new() { CurrencyId = "1" } })
+            });
+
+        _baseExcelBuilder.Setup(x => x.AddHeader(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>())).Returns(_baseExcelBuilder.Object);
+        _baseExcelBuilder.Setup(x => x.AddParagraph(It.IsAny<string>(), It.IsAny<int>())).Returns(_baseExcelBuilder.Object);
+        _baseExcelBuilder.Setup(x => x.AddTable(It.IsAny<int[]>(), It.IsAny<List<string[]>>())).Returns(_baseExcelBuilder.Object);
+        _baseExcelBuilder.Setup(x => x.Build()).Returns(new MemoryStream(Encoding.UTF8.GetBytes("test")));
+
+        var stream = await _reportContract.CreateExcelDocumentDepositByCreditProgramAsync(new List<string> { "1" }, ct);
+
+        Assert.That(stream, Is.Not.Null);
+        _baseExcelBuilder.Verify(x => x.AddHeader(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.Once);
+        _baseExcelBuilder.Verify(x => x.AddParagraph(It.IsAny<string>(), It.IsAny<int>()), Times.Once);
+        _baseExcelBuilder.Verify(x => x.AddTable(It.IsAny<int[]>(), It.IsAny<List<string[]>>()), Times.Once);
+        _baseExcelBuilder.Verify(x => x.Build(), Times.Once);
+    }
+
+    [Test]
+    public async Task GetDataDepositByCreditProgramAsync_NoCurrencies_ThrowsException()
+    {
+        var ct = CancellationToken.None;
+        _creditProgramStorage.Setup(x => x.GetList(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(new List<CreditProgramDataModel>
+            {
                 new CreditProgramDataModel("1", "Программа 1", 100, 200, "sk", "p", new List<CreditProgramCurrencyDataModel>())
             });
         _depositStorage.Setup(x => x.GetList(It.IsAny<string>()))
@@ -176,17 +230,7 @@ internal class ReportContractTestss
                 new DepositDataModel("d1", 5, 1000, 12, "cl", new List<DepositCurrencyDataModel>())
             });
 
-        _baseExcelBuilder.Setup(x => x.AddHeader(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>())).Returns(_baseExcelBuilder.Object);
-        _baseExcelBuilder.Setup(x => x.AddParagraph(It.IsAny<string>(), It.IsAny<int>())).Returns(_baseExcelBuilder.Object);
-        _baseExcelBuilder.Setup(x => x.AddTable(It.IsAny<int[]>(), It.IsAny<List<string[]>>())).Returns(_baseExcelBuilder.Object);
-        _baseExcelBuilder.Setup(x => x.Build()).Returns(new MemoryStream(Encoding.UTF8.GetBytes("test")));
-
-        var stream = await _reportContract.CreateExcelDocumentDepositByCreditProgramAsync(ct);
-
-        Assert.That(stream, Is.Not.Null);
-        _baseExcelBuilder.Verify(x => x.AddHeader(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.Once);
-        _baseExcelBuilder.Verify(x => x.AddParagraph(It.IsAny<string>(), It.IsAny<int>()), Times.Once);
-        _baseExcelBuilder.Verify(x => x.AddTable(It.IsAny<int[]>(), It.IsAny<List<string[]>>()), Times.Once);
-        _baseExcelBuilder.Verify(x => x.Build(), Times.Once);
+        Assert.ThrowsAsync<InvalidOperationException>(() => 
+            _reportContract.GetDataDepositByCreditProgramAsync(null, ct));
     }
 }
