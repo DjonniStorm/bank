@@ -243,13 +243,13 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     /// Отправка pdf отчета Вкладов и Кредитных программ по Валютам
     /// кладовщик pdf
     /// </summary>
-    /// <param name="email"></param>
+    /// <param name="mailInfo"></param>
     /// <param name="fromDate"></param>
     /// <param name="toDate"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<IActionResult> SendReportByCurrency(string email, DateTime fromDate, DateTime toDate, CancellationToken ct)
+    public async Task<IActionResult> SendReportByCurrency([FromBody] DepositReportMailSendInfoBindingModel mailInfo, DateTime fromDate, DateTime toDate, CancellationToken ct)
     {
         try
         {
@@ -267,9 +267,9 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
                 }
 
                 await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Отчет по вкладам и кредитным программам по валютам",
-                    body: $"<h1>Отчет по вкладам и кредитным программам по валютам</h1><p>Отчет за период с {fromDate:dd.MM.yyyy} по {toDate:dd.MM.yyyy}</p>",
+                    toEmail: mailInfo.Email,
+                    subject: mailInfo.Subject,
+                    body: mailInfo.Body,
                     attachmentPath: tempPathWithExtension
                 );
 
@@ -333,16 +333,15 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     /// <summary>
     /// Отправка word отчета Вкладов по Кредитных программ 
     /// </summary>
-    /// <param name="email"></param>
-    /// <param name="creditProgramIds"></param>
+    /// <param name="mailInfo"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<IActionResult> SendReportDepositByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
+    public async Task<IActionResult> SendReportDepositByCreditProgram([FromBody] CreditProgramReportMailSendInfoBindingModel mailInfo, CancellationToken ct)
     {
         try
         {
-            var report = await _adapter.CreateDocumentDepositByCreditProgramAsync(creditProgramIds, ct);
+            var report = await _adapter.CreateDocumentDepositByCreditProgramAsync(mailInfo.CreditProgramIds, ct);
             var response = report.GetResponse(Request, Response);
 
             if (response is FileStreamResult fileResult)
@@ -356,9 +355,9 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
                 }
 
                 await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Отчет по вкладам по кредитным программам",
-                    body: "<h1>Отчет по вкладам по кредитным программам</h1><p>В приложении находится отчет по вкладам по кредитным программам.</p>",
+                    toEmail: mailInfo.Email,
+                    subject: mailInfo.Subject,
+                    body: mailInfo.Body,
                     attachmentPath: tempPathWithExtension
                 );
 
@@ -378,16 +377,15 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     /// <summary>
     /// Отправка excel отчета Вкладов по Кредитных программ
     /// </summary>
-    /// <param name="email"></param>
-    /// <param name="creditProgramIds"></param>
+    /// <param name="mailInfo"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<IActionResult> SendExcelReportDepositByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
+    public async Task<IActionResult> SendExcelReportDepositByCreditProgram([FromBody] CreditProgramReportMailSendInfoBindingModel mailInfo, CancellationToken ct)
     {
         try
         {
-            var report = await _adapter.CreateExcelDocumentDepositByCreditProgramAsync(creditProgramIds, ct);
+            var report = await _adapter.CreateExcelDocumentDepositByCreditProgramAsync(mailInfo.CreditProgramIds, ct);
             var response = report.GetResponse(Request, Response);
 
             if (response is FileStreamResult fileResult)
@@ -401,9 +399,9 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
                 }
 
                 await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Excel отчет по вкладам по кредитным программам",
-                    body: "<h1>Excel отчет по вкладам по кредитным программам</h1><p>В приложении находится Excel отчет по вкладам по кредитным программам.</p>",
+                    toEmail: mailInfo.Email,
+                    subject: mailInfo.Subject,
+                    body: mailInfo.Body,
                     attachmentPath: tempPathWithExtension
                 );
 

@@ -4,15 +4,11 @@ import { ReportViewer } from '../features/ReportViewer';
 import { reportsApi } from '@/api/reports';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { EmailDialog } from '@/components/ui/EmailDialog';
+import type {
+  CreditProgramReportMailSendInfoBindingModel,
+  DepositReportMailSendInfoBindingModel,
+} from '@/types/types';
 
 type ReportCategory = 'pdf' | 'word-excel' | null;
 type FileFormat = 'doc' | 'xls';
@@ -26,7 +22,7 @@ export const Reports = (): React.JSX.Element => {
     mimeType: string;
   } | null>(null);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = React.useState(false);
-  const [email, setEmail] = React.useState('');
+  const [isEmailLoading, setIsEmailLoading] = React.useState(false);
   const [pendingEmailAction, setPendingEmailAction] = React.useState<
     | {
         type: 'pdf';
@@ -125,48 +121,58 @@ export const Reports = (): React.JSX.Element => {
     setIsEmailDialogOpen(true);
   };
 
-  const handleEmailSubmit = async () => {
-    if (!email.trim()) {
-      toast.error('Пожалуйста, введите email');
-      return;
-    }
-
+  const handleEmailSubmit = async (emailData: {
+    email: string;
+    subject: string;
+    body: string;
+  }) => {
     if (!pendingEmailAction) {
       toast.error('Нет данных для отправки');
       return;
     }
 
+    setIsEmailLoading(true);
     try {
       if (pendingEmailAction.type === 'pdf') {
         const { fromDate, toDate } = pendingEmailAction.data;
+        const mailInfo: DepositReportMailSendInfoBindingModel = {
+          email: emailData.email,
+          toEmail: emailData.email,
+          subject: emailData.subject,
+          body: emailData.body,
+          fromDate: format(fromDate, 'yyyy-MM-dd'),
+          toDate: format(toDate, 'yyyy-MM-dd'),
+        };
         await reportsApi.sendPdfReportByEmail(
-          email,
+          mailInfo,
           format(fromDate, 'yyyy-MM-dd'),
           format(toDate, 'yyyy-MM-dd'),
         );
       } else {
         const { format: fileFormat, creditProgramIds } =
           pendingEmailAction.data;
+        const mailInfo: CreditProgramReportMailSendInfoBindingModel = {
+          email: emailData.email,
+          toEmail: emailData.email,
+          subject: emailData.subject,
+          body: emailData.body,
+          creditProgramIds,
+        };
         if (fileFormat === 'doc') {
-          await reportsApi.sendWordReportByEmail({
-            toEmail: email,
-            creditProgramIds,
-          });
+          await reportsApi.sendWordReportByEmail(mailInfo);
         } else {
-          await reportsApi.sendExcelReportByEmail({
-            toEmail: email,
-            creditProgramIds,
-          });
+          await reportsApi.sendExcelReportByEmail(mailInfo);
         }
       }
 
       toast.success('Отчет успешно отправлен на email');
       setIsEmailDialogOpen(false);
-      setEmail('');
       setPendingEmailAction(null);
     } catch (error) {
       toast.error('Ошибка при отправке отчета на email');
       console.error(error);
+    } finally {
+      setIsEmailLoading(false);
     }
   };
 
@@ -197,38 +203,35 @@ export const Reports = (): React.JSX.Element => {
         />
       </div>
 
-      <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Отправка отчета на email</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email адрес</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="example@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsEmailDialogOpen(false);
-                  setEmail('');
-                  setPendingEmailAction(null);
-                }}
-              >
-                Отмена
-              </Button>
-              <Button onClick={handleEmailSubmit}>Отправить</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <EmailDialog
+        isOpen={isEmailDialogOpen}
+        onClose={() => {
+          setIsEmailDialogOpen(false);
+          setPendingEmailAction(null);
+        }}
+        onSubmit={handleEmailSubmit}
+        isLoading={isEmailLoading}
+        defaultSubject={
+          pendingEmailAction?.type === 'pdf'
+            ? 'Отчет по вкладам и кредитным программам по валютам'
+            : pendingEmailAction?.data.format === 'doc'
+            ? 'Word отчет по вкладам по кредитным программам'
+            : 'Excel отчет по вкладам по кредитным программам'
+        }
+        defaultBody={
+          pendingEmailAction?.type === 'pdf'
+            ? `Отчет по вкладам и кредитным программам по валютам за период с ${
+                pendingEmailAction.data.fromDate
+                  ? format(pendingEmailAction.data.fromDate, 'dd.MM.yyyy')
+                  : ''
+              } по ${
+                pendingEmailAction.data.toDate
+                  ? format(pendingEmailAction.data.toDate, 'dd.MM.yyyy')
+                  : ''
+              }`
+            : 'В приложении находится отчет по вкладам по кредитным программам.'
+        }
+      />
     </>
   );
 };

@@ -1,11 +1,10 @@
 import { ConfigManager } from '@/lib/config';
+import type {
+  CreditProgramReportMailSendInfoBindingModel,
+  DepositReportMailSendInfoBindingModel,
+} from '@/types/types';
 
 const API_URL = ConfigManager.loadUrl();
-
-interface SendEmailRequest {
-  toEmail: string;
-  creditProgramIds?: string[];
-}
 
 export const reportsApi = {
   // PDF отчеты
@@ -26,7 +25,7 @@ export const reportsApi = {
   },
 
   sendPdfReportByEmail: async (
-    toEmail: string,
+    mailInfo: DepositReportMailSendInfoBindingModel,
     fromDate: string,
     toDate: string,
   ) => {
@@ -38,9 +37,7 @@ export const reportsApi = {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          email: toEmail,
-        }),
+        body: JSON.stringify(mailInfo),
       },
     );
     if (!res.ok) {
@@ -69,7 +66,9 @@ export const reportsApi = {
     return res.blob();
   },
 
-  sendWordReportByEmail: async (request: SendEmailRequest) => {
+  sendWordReportByEmail: async (
+    mailInfo: CreditProgramReportMailSendInfoBindingModel,
+  ) => {
     const res = await fetch(
       `${API_URL}/api/Report/SendReportDepositByCreditProgram`,
       {
@@ -78,10 +77,7 @@ export const reportsApi = {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          email: request.toEmail,
-          creditProgramIds: request.creditProgramIds,
-        }),
+        body: JSON.stringify(mailInfo),
       },
     );
     if (!res.ok) {
@@ -109,7 +105,9 @@ export const reportsApi = {
     return res.blob();
   },
 
-  sendExcelReportByEmail: async (request: SendEmailRequest) => {
+  sendExcelReportByEmail: async (
+    mailInfo: CreditProgramReportMailSendInfoBindingModel,
+  ) => {
     const res = await fetch(
       `${API_URL}/api/Report/SendExcelReportDepositByCreditProgram`,
       {
@@ -118,10 +116,7 @@ export const reportsApi = {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          email: request.toEmail,
-          creditProgramIds: request.creditProgramIds,
-        }),
+        body: JSON.stringify(mailInfo),
       },
     );
     if (!res.ok) {
