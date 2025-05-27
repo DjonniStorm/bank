@@ -16,14 +16,14 @@ export const ReportSidebar = ({
   onReset,
 }: ReportSidebarProps) => {
   return (
-    <div className="w-64 border-r bg-muted/10 p-4">
+    <div className="w-70 border-r bg-muted/10 p-4">
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold mb-3">Категории отчетов</h3>
           <div className="space-y-2">
             <Button
               variant={selectedCategory === 'deposits' ? 'default' : 'outline'}
-              className="w-full justify-start"
+              className="w-full"
               onClick={() => onCategorySelect('deposits')}
             >
               Отчеты по депозитам
@@ -32,7 +32,7 @@ export const ReportSidebar = ({
               variant={
                 selectedCategory === 'creditPrograms' ? 'default' : 'outline'
               }
-              className="w-full justify-start"
+              className="w-full text-wrap p-5"
               onClick={() => onCategorySelect('creditPrograms')}
             >
               Отчеты по кредитным программам

@@ -191,11 +191,13 @@ export const Reports = (): React.JSX.Element => {
     type: string,
     data: Record<string, unknown>,
     email: string,
+    subject: string,
+    body: string,
   ) => {
     if (type === 'deposits-pdf') {
       const { fromDate, toDate } = data as { fromDate: string; toDate: string };
       sendDepositsPdfReport(
-        { fromDate, toDate, email },
+        { fromDate, toDate, email, subject, body },
         {
           onSuccess: () => {
             toast.success(`PDF отчет успешно отправлен на ${email}`);
@@ -209,7 +211,7 @@ export const Reports = (): React.JSX.Element => {
     } else if (type === 'creditPrograms-word') {
       const { creditProgramIds } = data as { creditProgramIds: string[] };
       sendCreditProgramsWordReport(
-        { creditProgramIds, email },
+        { creditProgramIds, email, subject, body },
         {
           onSuccess: () => {
             toast.success(`Word отчет успешно отправлен на ${email}`);
@@ -223,7 +225,7 @@ export const Reports = (): React.JSX.Element => {
     } else if (type === 'creditPrograms-excel') {
       const { creditProgramIds } = data as { creditProgramIds: string[] };
       sendCreditProgramsExcelReport(
-        { creditProgramIds, email },
+        { creditProgramIds, email, subject, body },
         {
           onSuccess: () => {
             toast.success(`Excel отчет успешно отправлен на ${email}`);

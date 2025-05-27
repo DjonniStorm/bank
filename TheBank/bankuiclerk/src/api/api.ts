@@ -149,10 +149,16 @@ export const reportsApi = {
       `api/Report/GetClientByDeposit?fromDate=${fromDate}&toDate=${toDate}`,
     ),
 
-  sendDepositsPdfReport: (fromDate: string, toDate: string, email: string) =>
+  sendDepositsPdfReport: (
+    fromDate: string,
+    toDate: string,
+    email: string,
+    subject: string,
+    body: string,
+  ) =>
     postEmailData(
       `api/Report/SendReportByDeposit?fromDate=${fromDate}&toDate=${toDate}`,
-      { email },
+      { email, subject, body },
     ),
 
   // Word отчеты по кредитным программам
@@ -166,9 +172,16 @@ export const reportsApi = {
       )}`,
     ),
 
-  sendCreditProgramsWordReport: (creditProgramIds: string[], email: string) =>
+  sendCreditProgramsWordReport: (
+    creditProgramIds: string[],
+    email: string,
+    subject: string,
+    body: string,
+  ) =>
     postEmailData('api/Report/SendReportByCreditProgram', {
       email,
+      subject,
+      body,
       creditProgramIds,
     }),
 
@@ -178,9 +191,16 @@ export const reportsApi = {
       `api/Report/LoadExcelClientByCreditProgram?${creditProgramIds}`,
     ),
 
-  sendCreditProgramsExcelReport: (creditProgramIds: string[], email: string) =>
+  sendCreditProgramsExcelReport: (
+    creditProgramIds: string[],
+    email: string,
+    subject: string,
+    body: string,
+  ) =>
     postEmailData('api/Report/SendExcelReportByCreditProgram', {
       email,
+      subject,
+      body,
       creditProgramIds,
     }),
 };

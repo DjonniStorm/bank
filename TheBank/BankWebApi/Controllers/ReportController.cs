@@ -1,5 +1,6 @@
 ﻿using BankBusinessLogic.Implementations;
 using BankContracts.AdapterContracts;
+using BankContracts.BindingModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -76,7 +77,7 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     [Consumes("application/octet-stream")]
     public async Task<IActionResult> LoadClientsByDeposit(DateTime fromDate, DateTime toDate, CancellationToken cancellationToken)
     {
-        return (await _adapter.CreateDocumentClientsByDepositAsync(fromDate,toDate, cancellationToken)).GetResponse(Request, Response);
+        return (await _adapter.CreateDocumentClientsByDepositAsync(fromDate, toDate, cancellationToken)).GetResponse(Request, Response);
     }
 
     /// <summary>
@@ -151,34 +152,36 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     /// <summary>
     /// Отправка word отчета Клиентов по Кредитным программам
     /// </summary>
-    /// <param name="email"></param>
-    /// <param name="creditProgramIds"></param>
+    /// <param name="mailInfo"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<IActionResult> SendReportByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
+    public async Task<IActionResult> SendReportByCreditProgram([FromBody] CreditProgramReportMailSendInfoBindingModel mailInfo, CancellationToken ct)
     {
         try
         {
-            var report = await _adapter.CreateDocumentClientsByCreditProgramAsync(creditProgramIds, ct);
+            var report = await _adapter.CreateDocumentClientsByCreditProgramAsync(mailInfo.CreditProgramIds, ct);
             var response = report.GetResponse(Request, Response);
-            
+
             if (response is FileStreamResult fileResult)
             {
                 var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
+                var tempPathWithExtension = Path.ChangeExtension(tempPath, ".docx");
+
+                using (var fileStream = new FileStream(tempPathWithExtension, FileMode.Create))
                 {
                     await fileResult.FileStream.CopyToAsync(fileStream);
                 }
 
                 await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Отчет по клиентам по кредитным программам",
-                    body: "<h1>Отчет по клиентам по кредитным программам</h1><p>В приложении находится отчет по клиентам по кредитным программам.</p>",
-                    attachmentPath: tempPath
+                    toEmail: mailInfo.Email,
+                    subject: mailInfo.Subject,
+                    body: mailInfo.Body,
+                    attachmentPath: tempPathWithExtension
                 );
 
                 System.IO.File.Delete(tempPath);
+                System.IO.File.Delete(tempPathWithExtension);
                 return Ok("Отчет успешно отправлен на почту");
             }
 
@@ -191,37 +194,40 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     }
 
     /// <summary>
-    /// Отправка pdf отчета Клиентов по Валютам
+    /// Отправка pdf отчета Клиентов по Депозитам
     /// </summary>
-    /// <param name="email"></param>
+    /// <param name="mailInfo"></param>
     /// <param name="fromDate"></param>
     /// <param name="toDate"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<IActionResult> SendReportByDeposit(string email, DateTime fromDate, DateTime toDate, CancellationToken ct)
+    public async Task<IActionResult> SendReportByDeposit([FromBody] DepositReportMailSendInfoBindingModel mailInfo, DateTime fromDate, DateTime toDate, CancellationToken ct)
     {
         try
         {
             var report = await _adapter.CreateDocumentClientsByDepositAsync(fromDate, toDate, ct);
             var response = report.GetResponse(Request, Response);
-            
+
             if (response is FileStreamResult fileResult)
             {
                 var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
+                var tempPathWithExtension = Path.ChangeExtension(tempPath, ".pdf");
+
+                using (var fileStream = new FileStream(tempPathWithExtension, FileMode.Create))
                 {
                     await fileResult.FileStream.CopyToAsync(fileStream);
                 }
 
                 await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Отчет по клиентам по вкладам",
-                    body: $"<h1>Отчет по клиентам по вкладам</h1><p>Отчет за период с {fromDate:dd.MM.yyyy} по {toDate:dd.MM.yyyy}</p>",
-                    attachmentPath: tempPath
+                    toEmail: mailInfo.Email,
+                    subject: mailInfo.Subject,
+                    body: mailInfo.Body,
+                    attachmentPath: tempPathWithExtension
                 );
 
                 System.IO.File.Delete(tempPath);
+                System.IO.File.Delete(tempPathWithExtension);
                 return Ok("Отчет успешно отправлен на почту");
             }
 
@@ -249,11 +255,13 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
         {
             var report = await _adapter.CreateDocumentDepositAndCreditProgramByCurrencyAsync(fromDate, toDate, ct);
             var response = report.GetResponse(Request, Response);
-            
+
             if (response is FileStreamResult fileResult)
             {
                 var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
+                var tempPathWithExtension = Path.ChangeExtension(tempPath, ".pdf");
+
+                using (var fileStream = new FileStream(tempPathWithExtension, FileMode.Create))
                 {
                     await fileResult.FileStream.CopyToAsync(fileStream);
                 }
@@ -262,10 +270,11 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
                     toEmail: email,
                     subject: "Отчет по вкладам и кредитным программам по валютам",
                     body: $"<h1>Отчет по вкладам и кредитным программам по валютам</h1><p>Отчет за период с {fromDate:dd.MM.yyyy} по {toDate:dd.MM.yyyy}</p>",
-                    attachmentPath: tempPath
+                    attachmentPath: tempPathWithExtension
                 );
 
                 System.IO.File.Delete(tempPath);
+                System.IO.File.Delete(tempPathWithExtension);
                 return Ok("Отчет успешно отправлен на почту");
             }
 
@@ -278,36 +287,38 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
     }
 
     /// <summary>
-    /// Отправка excel отчета Клиентов по Кредитных программ 
+    /// Отправка excel отчета Клиентов по Кредитным программам 
     /// </summary>
-    /// <param name="email"></param>
-    /// <param name="creditProgramIds"></param>
+    /// <param name="mailInfo"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<IActionResult> SendExcelReportByCreditProgram(string email, [FromQuery] List<string>? creditProgramIds, CancellationToken ct)
+    public async Task<IActionResult> SendExcelReportByCreditProgram([FromBody] CreditProgramReportMailSendInfoBindingModel mailInfo, CancellationToken ct)
     {
         try
         {
-            var report = await _adapter.CreateExcelDocumentClientsByCreditProgramAsync(creditProgramIds, ct);
+            var report = await _adapter.CreateExcelDocumentClientsByCreditProgramAsync(mailInfo.CreditProgramIds, ct);
             var response = report.GetResponse(Request, Response);
-            
+
             if (response is FileStreamResult fileResult)
             {
                 var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
+                var tempPathWithExtension = Path.ChangeExtension(tempPath, ".xlsx");
+
+                using (var fileStream = new FileStream(tempPathWithExtension, FileMode.Create))
                 {
                     await fileResult.FileStream.CopyToAsync(fileStream);
                 }
 
                 await _emailService.SendReportAsync(
-                    toEmail: email,
-                    subject: "Excel отчет по клиентам по кредитным программам",
-                    body: "<h1>Excel отчет по клиентам по кредитным программам</h1><p>В приложении находится Excel отчет по клиентам по кредитным программам.</p>",
-                    attachmentPath: tempPath
+                    toEmail: mailInfo.Email,
+                    subject: mailInfo.Subject,
+                    body: mailInfo.Body,
+                    attachmentPath: tempPathWithExtension
                 );
 
                 System.IO.File.Delete(tempPath);
+                System.IO.File.Delete(tempPathWithExtension);
                 return Ok("Excel отчет успешно отправлен на почту");
             }
 
@@ -333,11 +344,13 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
         {
             var report = await _adapter.CreateDocumentDepositByCreditProgramAsync(creditProgramIds, ct);
             var response = report.GetResponse(Request, Response);
-            
+
             if (response is FileStreamResult fileResult)
             {
                 var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
+                var tempPathWithExtension = Path.ChangeExtension(tempPath, ".docx");
+
+                using (var fileStream = new FileStream(tempPathWithExtension, FileMode.Create))
                 {
                     await fileResult.FileStream.CopyToAsync(fileStream);
                 }
@@ -346,10 +359,11 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
                     toEmail: email,
                     subject: "Отчет по вкладам по кредитным программам",
                     body: "<h1>Отчет по вкладам по кредитным программам</h1><p>В приложении находится отчет по вкладам по кредитным программам.</p>",
-                    attachmentPath: tempPath
+                    attachmentPath: tempPathWithExtension
                 );
 
                 System.IO.File.Delete(tempPath);
+                System.IO.File.Delete(tempPathWithExtension);
                 return Ok("Отчет успешно отправлен на почту");
             }
 
@@ -375,11 +389,13 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
         {
             var report = await _adapter.CreateExcelDocumentDepositByCreditProgramAsync(creditProgramIds, ct);
             var response = report.GetResponse(Request, Response);
-            
+
             if (response is FileStreamResult fileResult)
             {
                 var tempPath = Path.GetTempFileName();
-                using (var fileStream = new FileStream(tempPath, FileMode.Create))
+                var tempPathWithExtension = Path.ChangeExtension(tempPath, ".xlsx");
+
+                using (var fileStream = new FileStream(tempPathWithExtension, FileMode.Create))
                 {
                     await fileResult.FileStream.CopyToAsync(fileStream);
                 }
@@ -388,10 +404,11 @@ public class ReportController(IReportAdapter adapter) : ControllerBase
                     toEmail: email,
                     subject: "Excel отчет по вкладам по кредитным программам",
                     body: "<h1>Excel отчет по вкладам по кредитным программам</h1><p>В приложении находится Excel отчет по вкладам по кредитным программам.</p>",
-                    attachmentPath: tempPath
+                    attachmentPath: tempPathWithExtension
                 );
 
                 System.IO.File.Delete(tempPath);
+                System.IO.File.Delete(tempPathWithExtension);
                 return Ok("Excel отчет успешно отправлен на почту");
             }
 

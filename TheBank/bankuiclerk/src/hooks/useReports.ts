@@ -28,11 +28,22 @@ export const useReports = () => {
         fromDate,
         toDate,
         email,
+        subject,
+        body,
       }: {
         fromDate: string;
         toDate: string;
         email: string;
-      }) => reportsApi.sendDepositsPdfReport(fromDate, toDate, email),
+        subject: string;
+        body: string;
+      }) =>
+        reportsApi.sendDepositsPdfReport(
+          fromDate,
+          toDate,
+          email,
+          subject,
+          body,
+        ),
     });
 
   // Word отчеты по кредитным программам
@@ -63,10 +74,20 @@ export const useReports = () => {
     mutationFn: ({
       creditProgramIds,
       email,
+      subject,
+      body,
     }: {
       creditProgramIds: string[];
       email: string;
-    }) => reportsApi.sendCreditProgramsWordReport(creditProgramIds, email),
+      subject: string;
+      body: string;
+    }) =>
+      reportsApi.sendCreditProgramsWordReport(
+        creditProgramIds,
+        email,
+        subject,
+        body,
+      ),
   });
 
   // Excel отчеты по кредитным программам
@@ -89,10 +110,20 @@ export const useReports = () => {
     mutationFn: ({
       creditProgramIds,
       email,
+      subject,
+      body,
     }: {
       creditProgramIds: string[];
       email: string;
-    }) => reportsApi.sendCreditProgramsExcelReport(creditProgramIds, email),
+      subject: string;
+      body: string;
+    }) =>
+      reportsApi.sendCreditProgramsExcelReport(
+        creditProgramIds,
+        email,
+        subject,
+        body,
+      ),
   });
 
   return {

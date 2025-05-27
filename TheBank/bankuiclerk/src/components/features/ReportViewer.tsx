@@ -35,6 +35,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { PdfViewer } from './PdfViewer';
+import { EmailDialog } from './EmailDialog';
 import { useCreditPrograms } from '@/hooks/useCreditPrograms';
 import type { ReportCategory } from './ReportSidebar';
 
@@ -69,6 +70,8 @@ interface ReportViewerProps {
     type: string,
     data: Record<string, unknown>,
     email: string,
+    subject: string,
+    body: string,
   ) => void;
   pdfReport: { blob: Blob; fileName: string; mimeType: string } | null;
   isLoading: boolean;
@@ -83,6 +86,15 @@ export const ReportViewer = ({
   isLoading,
 }: ReportViewerProps) => {
   const { creditPrograms } = useCreditPrograms();
+
+  // Состояние для EmailDialog
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = React.useState(false);
+  const [emailDialogData, setEmailDialogData] = React.useState<{
+    type: string;
+    data: Record<string, unknown>;
+    defaultSubject: string;
+    defaultBody: string;
+  } | null>(null);
 
   // Формы для разных типов отчетов
   const depositsForm = useForm<DepositsReportForm>({
@@ -112,15 +124,20 @@ export const ReportViewer = ({
     });
   };
 
-  const handleSendDepositsEmail = (data: DepositsReportForm, email: string) => {
-    onSendEmail(
-      'deposits-pdf',
-      {
+  const handleSendDepositsEmail = (data: DepositsReportForm) => {
+    setEmailDialogData({
+      type: 'deposits-pdf',
+      data: {
         fromDate: format(data.fromDate, 'yyyy-MM-dd'),
         toDate: format(data.toDate, 'yyyy-MM-dd'),
       },
-      email,
-    );
+      defaultSubject: 'Отчет по депозитам',
+      defaultBody: `Отчет по депозитам за период с ${format(
+        data.fromDate,
+        'dd.MM.yyyy',
+      )} по ${format(data.toDate, 'dd.MM.yyyy')}.`,
+    });
+    setIsEmailDialogOpen(true);
   };
 
   // Обработчики для отчетов по кредитным программам
@@ -132,17 +149,21 @@ export const ReportViewer = ({
     });
   };
 
-  const handleSendCreditProgramsEmail = (
-    data: CreditProgramsReportForm,
-    email: string,
-  ) => {
-    onSendEmail(
-      `creditPrograms-${data.format}`,
-      {
+  const handleSendCreditProgramsEmail = (data: CreditProgramsReportForm) => {
+    const selectedPrograms = data.creditProgramIds
+      .map((id) => creditPrograms?.find((p) => p.id === id)?.name)
+      .filter(Boolean)
+      .join(', ');
+
+    setEmailDialogData({
+      type: `creditPrograms-${data.format}`,
+      data: {
         creditProgramIds: data.creditProgramIds,
       },
-      email,
-    );
+      defaultSubject: `Отчет по кредитным программам (${data.format.toUpperCase()})`,
+      defaultBody: `Отчет по кредитным программам: ${selectedPrograms}.`,
+    });
+    setIsEmailDialogOpen(true);
   };
 
   // Проверка валидности форм
@@ -173,6 +194,23 @@ export const ReportViewer = ({
       (id) => id !== creditProgramId,
     );
     creditProgramsForm.setValue('creditProgramIds', newValues);
+  };
+
+  // Обработчик отправки email
+  const handleEmailSubmit = (emailData: {
+    email: string;
+    subject: string;
+    body: string;
+  }) => {
+    if (emailDialogData) {
+      onSendEmail(
+        emailDialogData.type,
+        emailDialogData.data,
+        emailData.email,
+        emailData.subject,
+        emailData.body,
+      );
+    }
   };
 
   if (!category) {
@@ -314,12 +352,7 @@ export const ReportViewer = ({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={depositsForm.handleSubmit((data) => {
-                    const email = prompt('Введите email для отправки:');
-                    if (email) {
-                      handleSendDepositsEmail(data, email);
-                    }
-                  })}
+                  onClick={depositsForm.handleSubmit(handleSendDepositsEmail)}
                   disabled={!isDepositsFormValid || isLoading}
                   className="flex items-center gap-2"
                 >
@@ -459,23 +492,39 @@ export const ReportViewer = ({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={creditProgramsForm.handleSubmit((data) => {
-                    const email = prompt('Введите email для отправки:');
-                    if (email) {
-                      handleSendCreditProgramsEmail(data, email);
-                    }
-                  })}
+                  onClick={creditProgramsForm.handleSubmit(
+                    handleSendCreditProgramsEmail,
+                  )}
                   disabled={!isCreditProgramsFormValid || isLoading}
-                  className="flex items-center gap-2"
+                  className="flex flex-col items-center gap-1 h-auto py-2 px-3 min-w-[100px]"
                 >
                   <Mail className="h-4 w-4" />
-                  Отправить на почту
+                  <span className="text-xs leading-tight text-center">
+                    Отправить на почту
+                  </span>
                 </Button>
               </div>
             </form>
           </Form>
         </div>
       )}
+
+      {/* Email Dialog */}
+      <EmailDialog
+        isOpen={isEmailDialogOpen}
+        onClose={() => setIsEmailDialogOpen(false)}
+        onSubmit={handleEmailSubmit}
+        isLoading={isLoading}
+        title={emailDialogData?.defaultSubject || 'Отправить отчет на почту'}
+        description="Заполните данные для отправки отчета"
+        defaultSubject={
+          emailDialogData?.defaultSubject || 'Отчет из банковской системы'
+        }
+        defaultBody={
+          emailDialogData?.defaultBody ||
+          'Во вложении находится запрошенный отчет.'
+        }
+      />
     </div>
   );
 };
