@@ -77,12 +77,10 @@ export const Clients = (): React.JSX.Element => {
     return clients.map((client) => {
       const clerk = clerks.find((c) => c.id === client.clerkId);
 
-      // Находим вклады клиента
-      const clientDeposits = deposits?.filter(() => {
-        // Учитывая, что мы удалили depositClients из модели, эта проверка будет всегда возвращать false
-        // Здесь нужно реализовать другой способ связи, или просто удалить эту функциональность
-        return false; // Больше не можем определить связь через deposit.depositClients
-      });
+      const clientDeposits =
+        deposits?.filter((deposit) =>
+          client.depositClients?.some((dc) => dc.depositId === deposit.id),
+        ) || [];
 
       // Находим кредитные программы клиента
       const clientCreditPrograms = creditPrograms.filter((creditProgram) =>
@@ -91,12 +89,9 @@ export const Clients = (): React.JSX.Element => {
         ),
       );
 
-      // Формируем строки с информацией о вкладах и кредитах
       const depositsList =
-        clientDeposits.length > 0
-          ? clientDeposits
-              .map((d) => `${d.interestRate}% (${d.period} мес.)`)
-              .join(', ')
+        clientDeposits && clientDeposits.length > 0
+          ? clientDeposits.map((d) => `Вклад ${d.interestRate}%`).join(', ')
           : 'Нет вкладов';
 
       const creditProgramsList =

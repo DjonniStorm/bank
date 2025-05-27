@@ -50,8 +50,8 @@ export const reportsApi = {
 
   // Word отчеты
   getWordReport: async (creditProgramIds: string[]) => {
-    const idsParam = creditProgramIds.reduce((prev, curr) => {
-      return (prev += `&creditProgramIds=${curr}`);
+    const idsParam = creditProgramIds.reduce((prev, curr, index) => {
+      return (prev += `${index === 0 ? '' : '&'}creditProgramIds=${curr}`);
     }, '');
     console.log('idsParam', idsParam);
     const res = await fetch(
@@ -91,11 +91,11 @@ export const reportsApi = {
 
   // Excel отчеты
   getExcelReport: async (creditProgramIds: string[]) => {
-    const idsParam = creditProgramIds.reduce((prev, curr) => {
-      return (prev += `&creditProgramIds=${curr}`);
+    const idsParam = creditProgramIds.reduce((prev, curr, index) => {
+      return (prev += `${index === 0 ? '' : '&'}creditProgramIds=${curr}`);
     }, '');
     const res = await fetch(
-      `${API_URL}/api/Report/LoadExcelDepositByCreditProgram?creditProgramIds=${idsParam}`,
+      `${API_URL}/api/Report/LoadExcelDepositByCreditProgram?${idsParam}`,
       {
         credentials: 'include',
         headers: {

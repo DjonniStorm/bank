@@ -1,0 +1,74 @@
+### Отчет Word КЛЕРКА: Клиенты по кредитным программам
+GET /api/Report/LoadClientsByCreditProgram?creditProgramIds={{creditProgramIds}} HTTP/1.1
+Host: localhost
+Content-Type: application/octet-stream
+Authorization: Bearer {{token}}
+# Поля: CreditProgramName, ClientSurname, ClientName, ClientBalance
+# Примечание: Скачивает Word-отчет о клиентах по выбранным кредитным программам.
+
+### Отчет Excel КЛЕРКА: Клиенты по кредитным программам
+GET /api/Report/LoadExcelClientByCreditProgram?creditProgramIds={{creditProgramIds}} HTTP/1.1
+Host: localhost
+Content-Type: application/octet-stream
+Authorization: Bearer {{token}}
+# Поля: CreditProgramName, ClientSurname, ClientName, ClientBalance
+# Примечание: Скачивает Excel-отчет о клиентах по выбранным кредитным программам.
+
+### Отчет PDF КЛЕРКА: Клиенты по вкладам
+GET /api/Report/LoadClientsByDeposit?fromDate={{fromDate}}&toDate={{toDate}} HTTP/1.1
+Host: localhost
+Content-Type: application/octet-stream
+Authorization: Bearer {{token}}
+# Поля: ClientSurname, ClientName, ClientBalance, DepositRate, DepositPeriod, FromPeriod, ToPeriod
+# Примечание: Скачивает PDF-отчет о клиентах по вкладам за период. Добавить фильтрацию по currencyIds в GetDataClientsByDepositAsync.
+
+### Получение данных КЛЕРКА: Клиенты по кредитным программам (JSON)
+GET /api/Report/GetClientByCreditProgram?creditProgramIds={{creditProgramIds}} HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Authorization: Bearer {{token}}
+# Поля: CreditProgramId, CreditProgramName, ClientSurname, ClientName, ClientBalance
+# Примечание: Возвращает данные для отображения на странице.
+
+### Получение данных КЛЕРКА: Клиенты по вкладам (JSON)
+GET /api/Report/GetClientByDeposit?fromDate={{fromDate}}&toDate={{toDate}} HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Authorization: Bearer {{token}}
+# Поля: ClientSurname, ClientName, ClientBalance, DepositRate, DepositPeriod, FromPeriod, ToPeriod
+# Примечание: Возвращает данные для отображения на странице. Добавить фильтрацию по currencyIds в GetDataClientsByDepositAsync.
+
+### Отправка Word КЛЕРКА по email: Клиенты по кредитным программам
+POST /api/Report/SendReportByCreditProgram HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Authorization: Bearer {{token}}
+{
+  "email": "{{email}}",
+  "creditProgramIds": {{creditProgramIds}}
+}
+# Поля: CreditProgramName, ClientSurname, ClientName, ClientBalance
+# Примечание: Отправляет Word-отчет по email.
+
+### Отправка Excel КЛЕРКА по email: Клиенты по кредитным программам
+POST /api/Report/SendExcelReportByCreditProgram HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Authorization: Bearer {{token}}
+{
+  "email": "{{email}}",
+  "creditProgramIds": {{creditProgramIds}}
+}
+# Поля: CreditProgramName, ClientSurname, ClientName, ClientBalance
+# Примечание: Отправляет Excel-отчет по email.
+
+### Отправка PDF КЛЕРКА по email: Клиенты по вкладам
+POST /api/Report/SendReportByDeposit?fromDate={{fromDate}}&toDate={{toDate}} HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Authorization: Bearer {{token}}
+{
+  "email": "{{email}}"
+}
+# Поля: ClientSurname, ClientName, ClientBalance, DepositRate, DepositPeriod, FromPeriod, ToPeriod
+# Примечание: Отправляет PDF-отчет по email. Добавить фильтрацию по currencyIds в GetDataClientsByDepositAsync.

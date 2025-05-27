@@ -28,7 +28,7 @@ public class OperationResponse
         }
         if (Result is Stream stream)
         {
-            return new FileStreamResult(stream, "application/octetstream")
+            return new FileStreamResult(stream, "application/octet-stream")
             {
                 FileDownloadName = FileName
             };
