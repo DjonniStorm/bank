@@ -4,6 +4,8 @@ import {
   postData,
   postLoginData,
   putData,
+  getFileData,
+  postEmailData,
 } from './client';
 import type {
   ClientBindingModel,
@@ -132,4 +134,73 @@ export const storekeepersApi = {
   logout: () => postData('api/storekeepers/logout', {}),
   getCurrentUser: () =>
     getSingleData<StorekeeperBindingModel>('api/storekeepers/me'),
+};
+
+// Reports API
+export const reportsApi = {
+  // PDF отчеты по депозитам
+  getDepositsPdfReport: (fromDate: string, toDate: string) =>
+    getFileData(
+      `api/Report/LoadClientsByDeposit?fromDate=${fromDate}&toDate=${toDate}`,
+    ),
+
+  getDepositsDataReport: (fromDate: string, toDate: string) =>
+    getData(
+      `api/Report/GetClientByDeposit?fromDate=${fromDate}&toDate=${toDate}`,
+    ),
+
+  sendDepositsPdfReport: (
+    fromDate: string,
+    toDate: string,
+    email: string,
+    subject: string,
+    body: string,
+  ) =>
+    postEmailData(
+      `api/Report/SendReportByDeposit?fromDate=${fromDate}&toDate=${toDate}`,
+      { email, subject, body },
+    ),
+
+  // Word отчеты по кредитным программам
+  getCreditProgramsWordReport: (creditProgramIds: string) =>
+    getFileData(`api/Report/LoadClientsByCreditProgram?${creditProgramIds}`),
+
+  getCreditProgramsDataReport: (creditProgramIds: string[]) =>
+    getData(
+      `api/Report/GetClientByCreditProgram?creditProgramIds=${creditProgramIds.join(
+        ',',
+      )}`,
+    ),
+
+  sendCreditProgramsWordReport: (
+    creditProgramIds: string[],
+    email: string,
+    subject: string,
+    body: string,
+  ) =>
+    postEmailData('api/Report/SendReportByCreditProgram', {
+      email,
+      subject,
+      body,
+      creditProgramIds,
+    }),
+
+  // Excel отчеты по кредитным программам
+  getCreditProgramsExcelReport: (creditProgramIds: string) =>
+    getFileData(
+      `api/Report/LoadExcelClientByCreditProgram?${creditProgramIds}`,
+    ),
+
+  sendCreditProgramsExcelReport: (
+    creditProgramIds: string[],
+    email: string,
+    subject: string,
+    body: string,
+  ) =>
+    postEmailData('api/Report/SendExcelReportByCreditProgram', {
+      email,
+      subject,
+      body,
+      creditProgramIds,
+    }),
 };

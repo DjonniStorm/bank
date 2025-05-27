@@ -9,32 +9,14 @@ export default defineConfig({
   server: {
     port: 26312,
     cors: true,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
-    fs: {
-      allow: ['..', './public'],
-    },
+  },
+
+  define: {
+    global: 'globalThis',
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      'pdfjs-dist': path.resolve(
-        __dirname,
-        './node_modules/pdfjs-dist/build/pdf',
-      ),
-    },
-  },
-  optimizeDeps: {
-    include: ['react-pdf', 'pdfjs-dist'],
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          pdfjs: ['pdfjs-dist'],
-        },
-      },
     },
   },
 });

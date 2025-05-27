@@ -33,13 +33,16 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
     public async Task<List<ClientsByCreditProgramDataModel>> GetDataClientsByCreditProgramAsync(List<string>? creditProgramIds, CancellationToken ct)
     {
         _logger.LogInformation("Get data ClientsByCreditProgram");
+        if (creditProgramIds is null || creditProgramIds.Count == 0)
+        {
+            return [];
+        }
         var clients = await Task.Run(() => _clientStorage.GetList(), ct);
         var creditPrograms = await Task.Run(() => _creditProgramStorage.GetList(), ct);
         var currencies = await Task.Run(() => _currencyStorage.GetList(), ct);
 
         var filteredPrograms = creditPrograms
-            .Where(cp => cp.Currencies.Any()) // Проверяем, что у кредитной программы есть связанные валюты
-            .Where(cp => creditProgramIds == null || creditProgramIds.Contains(cp.Id));
+            .Where(cp => creditProgramIds.Contains(cp.Id));
 
         return filteredPrograms
             .Select(cp => new ClientsByCreditProgramDataModel
@@ -76,20 +79,20 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
         {
             for (int i = 0; i < program.ClientSurname.Count; i++)
             {
-                tableRows.Add(new string[]
-                {
+                tableRows.Add(
+                [
                     program.CreditProgramName,
                     program.ClientSurname[i],
                     program.ClientName[i],
                     program.ClientBalance[i].ToString("N2")
-                });
+                ]);
             }
         }
 
         return _baseWordBuilder
             .AddHeader("Клиенты по кредитным программам")
             .AddParagraph($"Сформировано на дату {DateTime.Now}")
-            .AddTable([100, 100, 100, 100], tableRows)
+            .AddTable([2000, 2000, 2000, 2000], tableRows)
             .Build();
     }
 
@@ -180,10 +183,10 @@ public class ReportContract(IClientStorageContract clientStorage, ICurrencyStora
             }
         }
 
-        if (!result.Any())
-        {
-            throw new InvalidOperationException("No clients with deposits found");
-        }
+        //if (!result.Any())
+        //{
+        //    throw new InvalidOperationException("No clients with deposits found");
+        //}
 
         return result;
     }

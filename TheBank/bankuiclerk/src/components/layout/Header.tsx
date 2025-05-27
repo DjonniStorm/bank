@@ -71,6 +71,16 @@ const navOptions = [
       },
     ],
   },
+  {
+    name: 'Отчеты',
+    options: [
+      {
+        id: 1,
+        name: 'Выгрузить отчеты',
+        link: '/reports',
+      },
+    ],
+  },
 ];
 
 export const Header = (): React.JSX.Element => {

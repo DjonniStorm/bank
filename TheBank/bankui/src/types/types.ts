@@ -108,3 +108,21 @@ export interface MailSendInfoBindingModel {
   body: string;
   attachmentPath?: string;
 }
+
+export interface ReportMailSendInfoBindingModel
+  extends MailSendInfoBindingModel {
+  email: string;
+  subject: string;
+  body: string;
+}
+
+export interface CreditProgramReportMailSendInfoBindingModel
+  extends ReportMailSendInfoBindingModel {
+  creditProgramIds: string[];
+}
+
+export interface DepositReportMailSendInfoBindingModel
+  extends ReportMailSendInfoBindingModel {
+  fromDate: string;
+  toDate: string;
+}

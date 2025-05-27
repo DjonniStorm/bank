@@ -1,518 +1,342 @@
 import React from 'react';
-import type { SelectedReport } from '../pages/Reports';
-import { Button } from '../ui/button';
 import { PdfViewer } from './PdfViewer';
-import { DialogForm } from '../layout/DialogForm';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { toast } from 'sonner';
-import { Calendar } from '../ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { CalendarIcon, FileText, FileSpreadsheet } from 'lucide-react';
+import { ru } from 'date-fns/locale';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+
+import { useCreditPrograms } from '@/hooks/useCreditPrograms';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '../ui/form';
-import { ConfigManager } from '@/lib/config';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-type ReportViewerProps = {
-  selectedReport: SelectedReport;
-};
+type ReportCategory = 'pdf' | 'word-excel' | null;
+type FileFormat = 'doc' | 'xls';
 
-type ReportData = { blob: Blob; fileName: string; mimeType: string };
-
-const emailFormSchema = z.object({
-  toEmail: z.string().email({ message: 'Введите корректный email' }),
-  subject: z.string().min(1, { message: 'Тема обязательна' }),
-  body: z.string().min(1, { message: 'Текст сообщения обязателен' }),
-});
-
-const API_URL = ConfigManager.loadUrl();
+interface ReportViewerProps {
+  selectedCategory: ReportCategory;
+  onGeneratePdf: (fromDate: Date, toDate: Date) => void;
+  onDownloadPdf: (fromDate: Date, toDate: Date) => void;
+  onSendPdfEmail: (fromDate: Date, toDate: Date) => void;
+  onDownloadWordExcel: (format: FileFormat, creditProgramIds: string[]) => void;
+  onSendWordExcelEmail: (
+    format: FileFormat,
+    creditProgramIds: string[],
+  ) => void;
+  pdfReport?: { blob: Blob; fileName: string; mimeType: string } | null;
+}
 
 export const ReportViewer = ({
-  selectedReport,
+  selectedCategory,
+  onGeneratePdf,
+  onDownloadPdf,
+  onSendPdfEmail,
+  onDownloadWordExcel,
+  onSendWordExcelEmail,
+  pdfReport,
 }: ReportViewerProps): React.JSX.Element => {
-  const [isSendDialogOpen, setIsSendDialogOpen] = React.useState(false);
-  const [fromDate, setFromDate] = React.useState<Date | undefined>(undefined);
-  const [toDate, setToDate] = React.useState<Date | undefined>(undefined);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<Error | null>(null);
-  const [report, setReport] = React.useState<ReportData | null>(null);
+  const { creditPrograms } = useCreditPrograms();
 
-  const form = useForm<z.infer<typeof emailFormSchema>>({
-    resolver: zodResolver(emailFormSchema),
-    defaultValues: {
-      toEmail: '',
-      subject: getDefaultSubject(selectedReport),
-      body: getDefaultBody(selectedReport, fromDate, toDate),
-    },
-  });
+  const [fromDate, setFromDate] = React.useState<Date>();
+  const [toDate, setToDate] = React.useState<Date>();
+  const [fileFormat, setFileFormat] = React.useState<FileFormat>('doc');
+  const [selectedCreditProgramIds, setSelectedCreditProgramIds] =
+    React.useState<string[]>([]);
 
-  React.useEffect(() => {
-    form.setValue('subject', getDefaultSubject(selectedReport));
-    form.setValue('body', getDefaultBody(selectedReport, fromDate, toDate));
+  const isPdfDatesValid = fromDate && toDate;
+  const isWordExcelDataValid = selectedCreditProgramIds.length > 0;
 
-    setReport(null);
-  }, [selectedReport, fromDate, toDate, form]);
-
-  const getReportTitle = (report: SelectedReport) => {
-    switch (report) {
-      case 'word':
-        return 'Отчет Word по вкладам по кредитным программам';
-      case 'excel':
-        return 'Отчет Excel по вкладам по кредитным программам';
-      case 'pdf':
-        return 'Отчет PDF по вкладам и кредитным программам по валютам';
-      default:
-        return 'Выберите тип отчета';
-    }
+  const handleCreditProgramSelect = (creditProgramId: string) => {
+    setSelectedCreditProgramIds((prev) => {
+      if (prev.includes(creditProgramId)) {
+        return prev.filter((id) => id !== creditProgramId);
+      } else {
+        return [...prev, creditProgramId];
+      }
+    });
   };
 
-  function getDefaultSubject(report: SelectedReport | undefined): string {
-    switch (report) {
-      case 'word':
-        return 'Отчет по вкладам по кредитным программам';
-      case 'excel':
-        return 'Excel отчет по вкладам по кредитным программам';
-      case 'pdf':
-        return 'Отчет по вкладам и кредитным программам по валютам';
-      default:
-        return 'Отчет';
-    }
-  }
-
-  function getDefaultBody(
-    report: SelectedReport | undefined,
-    fromDate?: Date,
-    toDate?: Date,
-  ): string {
-    switch (report) {
-      case 'word':
-        return 'В приложении находится отчет по вкладам по кредитным программам.';
-      case 'excel':
-        return 'В приложении находится Excel отчет по вкладам по кредитным программам.';
-      case 'pdf':
-        return `В приложении находится отчет по вкладам и кредитным программам по валютам${
-          fromDate && toDate
-            ? ` за период с ${format(fromDate, 'dd.MM.yyyy')} по ${format(
-                toDate,
-                'dd.MM.yyyy',
-              )}`
-            : ''
-        }.`;
-      default:
-        return '';
-    }
-  }
-
-  const getReportUrl = (
-    selectedReport: SelectedReport,
-    fromDate?: Date,
-    toDate?: Date,
-  ): string => {
-    switch (selectedReport) {
-      case 'word':
-        return `${API_URL}/api/Report/LoadDepositByCreditProgram`;
-      case 'excel':
-        return `${API_URL}/api/Report/LoadExcelDepositByCreditProgram`;
-      case 'pdf': {
-        if (!fromDate || !toDate) {
-          throw new Error('Необходимо выбрать даты для PDF отчета');
-        }
-        const fromDateStr = format(fromDate, 'yyyy-MM-dd');
-        const toDateStr = format(toDate, 'yyyy-MM-dd');
-        return `${API_URL}/api/Report/LoadDepositAndCreditProgramByCurrency?fromDate=${fromDateStr}&toDate=${toDateStr}`;
-      }
-      default:
-        throw new Error('Выберите тип отчета');
-    }
-  };
-
-  const getSendEmailUrl = (selectedReport: SelectedReport): string => {
-    switch (selectedReport) {
-      case 'word':
-        return `${API_URL}/api/Report/SendReportDepositByCreditProgram`;
-      case 'excel':
-        return `${API_URL}/api/Report/SendExcelReportDepositByCreditProgram`;
-      case 'pdf': {
-        if (!fromDate || !toDate) {
-          throw new Error('Необходимо выбрать даты для PDF отчета');
-        }
-        const fromDateStr = format(fromDate, 'yyyy-MM-dd');
-        const toDateStr = format(toDate, 'yyyy-MM-dd');
-        return `${API_URL}/api/Report/SendReportByCurrency?fromDate=${fromDateStr}&toDate=${toDateStr}`;
-      }
-      default:
-        throw new Error('Выберите тип отчета');
-    }
-  };
-
-  const fetchReport = async (): Promise<ReportData> => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const url = getReportUrl(selectedReport, fromDate, toDate);
-      console.log(`Загружаем отчет с URL: ${url}`);
-
-      const acceptHeader =
-        selectedReport === 'pdf'
-          ? 'application/pdf'
-          : selectedReport === 'word'
-          ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-          : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Accept: acceptHeader,
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Ошибка загрузки отчета: ${response.status} ${response.statusText}`,
-        );
-      }
-
-      const blob = await response.blob();
-      console.log(
-        `Отчет загружен. Тип: ${blob.type}, размер: ${blob.size} байт`,
-      );
-
-      const contentDisposition = response.headers.get('Content-Disposition');
-      const defaultExtension =
-        selectedReport === 'pdf'
-          ? '.pdf'
-          : selectedReport === 'word'
-          ? '.docx'
-          : '.xlsx';
-      let fileName = `report${defaultExtension}`;
-
-      if (contentDisposition && contentDisposition.includes('filename=')) {
-        fileName = contentDisposition
-          .split('filename=')[1]
-          .replace(/"/g, '')
-          .trim();
-      }
-
-      const mimeType = response.headers.get('Content-Type') || '';
-
-      const reportData = { blob, fileName, mimeType };
-      setReport(reportData);
-      return reportData;
-    } catch (error) {
-      console.error('Ошибка при загрузке отчета:', error);
-      const err =
-        error instanceof Error ? error : new Error('Неизвестная ошибка');
-      setError(err);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGenerate = async () => {
-    try {
-      await fetchReport();
-      toast.success('Отчет успешно загружен');
-    } catch (error) {
-      toast.error(
-        `Ошибка загрузки отчета: ${
-          error instanceof Error ? error.message : 'Неизвестная ошибка'
-        }`,
-      );
-    }
-  };
-
-  const handleDownload = async () => {
-    try {
-      let reportData = report;
-      // Для PDF всегда делаем новый запрос с актуальными датами
-      if (selectedReport === 'pdf') {
-        if (!fromDate || !toDate) {
-          toast.error('Пожалуйста, выберите даты для PDF отчета');
-          return;
-        }
-        toast.loading('Загрузка отчета...');
-        reportData = await fetchReport();
-      } else if (!reportData) {
-        toast.loading('Загрузка отчета...');
-        reportData = await fetchReport();
-      }
-
-      // Скачиваем отчет
-      const url = URL.createObjectURL(reportData.blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = reportData.fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success('Отчет успешно скачан');
-    } catch (error) {
-      toast.error(
-        `Ошибка при скачивании отчета: ${
-          error instanceof Error ? error.message : 'Неизвестная ошибка'
-        }`,
-      );
-    }
-  };
-
-  const handleSendFormSubmit = async (
-    values: z.infer<typeof emailFormSchema>,
-  ) => {
-    try {
-      // Если выбран PDF отчет, проверяем наличие дат
-      if (selectedReport === 'pdf' && (!fromDate || !toDate)) {
-        toast.error('Пожалуйста, выберите даты для PDF отчета');
-        return;
-      }
-
-      setIsLoading(true);
-
-      // Формируем данные для отправки
-      const url = getSendEmailUrl(selectedReport);
-
-      // Параметры для запроса
-      const data: Record<string, string> = {
-        toEmail: values.toEmail,
-        subject: values.subject,
-        body: values.body,
-      };
-
-      // Отправляем запрос
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Ошибка при отправке отчета: ${response.status} ${response.statusText}\n${errorText}`,
-        );
-      }
-
-      toast.success('Отчет успешно отправлен на почту');
-      setIsSendDialogOpen(false);
-      form.reset();
-    } catch (error) {
-      console.error('Ошибка при отправке отчета:', error);
-      toast.error(
-        `Ошибка при отправке отчета: ${
-          error instanceof Error ? error.message : 'Неизвестная ошибка'
-        }`,
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Проверка, можно ли сгенерировать/скачать/отправить PDF отчет
-  const isPdfActionDisabled =
-    selectedReport === 'pdf' && (!fromDate || !toDate || isLoading);
-
-  // Отображение ошибки, если она есть
-  const renderError = () => {
-    if (!error) return null;
-
-    return (
-      <div className="p-4 border border-red-300 bg-red-50 rounded-md mt-2">
-        <h3 className="text-red-700 font-semibold mb-1">Детали ошибки:</h3>
-        <p className="text-red-600 whitespace-pre-wrap break-words">
-          {error.message}
-        </p>
-      </div>
+  const removeCreditProgram = (creditProgramId: string) => {
+    setSelectedCreditProgramIds((prev) =>
+      prev.filter((id) => id !== creditProgramId),
     );
   };
 
-  return (
-    <div className="w-full">
-      <div className="text-lg font-semibold mb-4">
-        {getReportTitle(selectedReport)}
+  if (!selectedCategory) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-2">Выберите тип отчета</h2>
+          <p className="text-muted-foreground">
+            Выберите категорию отчета в боковой панели для начала работы
+          </p>
+        </div>
       </div>
+    );
+  }
 
-      {/* Кнопки действий */}
-      <div className="flex gap-4 mb-4">
-        {/* Кнопка "Сгенерировать" только для PDF с выбранными датами */}
-        {selectedReport === 'pdf' && (
-          <Button onClick={handleGenerate} disabled={isPdfActionDisabled}>
-            {isLoading ? 'Загрузка...' : 'Сгенерировать'}
-          </Button>
-        )}
+  if (selectedCategory === 'pdf') {
+    return (
+      <div className="flex-1 flex flex-col">
+        {/* Панель управления PDF */}
+        <div className="border-b p-4 bg-background">
+          <h2 className="text-xl font-semibold mb-4">
+            PDF Отчет по валютам и периодам
+          </h2>
 
-        {/* Кнопки "Скачать" и "Отправить" только когда выбран тип отчета */}
-        {selectedReport && (
-          <>
-            <Button
-              onClick={handleDownload}
-              disabled={isPdfActionDisabled || isLoading}
-            >
-              {isLoading ? 'Загрузка...' : 'Скачать'}
-            </Button>
+          {/* Выбор дат */}
+          <div className="flex gap-4 mb-4">
+            <div className="flex-1">
+              <Label>Дата начала</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      'w-full pl-3 text-left font-normal',
+                      !fromDate && 'text-muted-foreground',
+                    )}
+                  >
+                    {fromDate ? (
+                      format(fromDate, 'PPP', { locale: ru })
+                    ) : (
+                      <span>Выберите дату</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={fromDate}
+                    onSelect={setFromDate}
+                    locale={ru}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-            <Button
-              onClick={() => setIsSendDialogOpen(true)}
-              disabled={isPdfActionDisabled || isLoading}
-            >
-              Отправить
-            </Button>
-          </>
-        )}
-      </div>
-
-      {/* Календари для выбора периода для PDF отчета */}
-      {selectedReport === 'pdf' && (
-        <div className="flex gap-4 mb-4">
-          <div className="grid gap-2">
-            <Label htmlFor="fromDate">От даты</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={'outline'}
-                  className={cn(
-                    'w-[240px] justify-start text-left font-normal',
-                    !fromDate && 'text-muted-foreground',
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {fromDate ? (
-                    format(fromDate, 'PPP')
-                  ) : (
-                    <span>Выберите дату</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={fromDate}
-                  onSelect={setFromDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <div className="flex-1">
+              <Label>Дата окончания</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      'w-full pl-3 text-left font-normal',
+                      !toDate && 'text-muted-foreground',
+                    )}
+                  >
+                    {toDate ? (
+                      format(toDate, 'PPP', { locale: ru })
+                    ) : (
+                      <span>Выберите дату</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={toDate}
+                    onSelect={setToDate}
+                    locale={ru}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="toDate">До даты</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={'outline'}
-                  className={cn(
-                    'w-[240px] justify-start text-left font-normal',
-                    !toDate && 'text-muted-foreground',
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {toDate ? format(toDate, 'PPP') : <span>Выберите дату</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={toDate}
-                  onSelect={setToDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+
+          {/* Кнопки действий */}
+          <div className="flex gap-2">
+            <Button
+              onClick={() =>
+                isPdfDatesValid && onGeneratePdf(fromDate!, toDate!)
+              }
+              disabled={!isPdfDatesValid}
+            >
+              Сгенерировать на странице
+            </Button>
+            <Button
+              onClick={() =>
+                isPdfDatesValid && onDownloadPdf(fromDate!, toDate!)
+              }
+              disabled={!isPdfDatesValid}
+              variant="outline"
+            >
+              Скачать
+            </Button>
+            <Button
+              onClick={() =>
+                isPdfDatesValid && onSendPdfEmail(fromDate!, toDate!)
+              }
+              disabled={!isPdfDatesValid}
+              variant="outline"
+            >
+              Отправить на почту
+            </Button>
           </div>
         </div>
-      )}
 
-      {/* Форма отправки отчета на почту */}
-      <DialogForm
-        title="Отправка отчета"
-        description="Введите данные для отправки отчета"
-        isOpen={isSendDialogOpen}
-        onClose={() => setIsSendDialogOpen(false)}
-        onSubmit={form.handleSubmit(handleSendFormSubmit)}
-      >
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSendFormSubmit)}
-            className="space-y-4"
-          >
-            <FormField
-              control={form.control}
-              name="toEmail"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email получателя</FormLabel>
-                  <FormControl>
-                    <Input placeholder="example@mail.ru" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="subject"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Тема письма</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="body"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Текст сообщения</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit">Отправить</Button>
-          </form>
-        </Form>
-      </DialogForm>
-
-      <div className="mt-4">
-        {isLoading && <div className="p-4">Загрузка документа...</div>}
-
-        {renderError()}
-
-        {!selectedReport && !isLoading && !error && (
-          <div className="p-4">Выберите тип отчета из боковой панели</div>
-        )}
-
-        {selectedReport && !report && !isLoading && !error && (
-          <div className="p-4">
-            {selectedReport === 'pdf'
-              ? 'Выберите даты и нажмите "Сгенерировать"'
-              : 'Нажмите "Скачать" для загрузки отчета'}
-          </div>
-        )}
-
-        {selectedReport === 'pdf' && report && <PdfViewer report={report} />}
+        {/* Область просмотра PDF */}
+        <div className="flex-1 overflow-auto">
+          {pdfReport ? (
+            <PdfViewer report={pdfReport} />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-muted-foreground">
+                Выберите даты и нажмите "Сгенерировать на странице" для
+                просмотра отчета
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (selectedCategory === 'word-excel') {
+    return (
+      <div className="flex-1 p-6">
+        <h2 className="text-xl font-semibold mb-6">
+          Word/Excel Отчет по кредитным программам
+        </h2>
+
+        {/* Выбор формата файла */}
+        <div className="mb-6">
+          <Label className="text-base font-medium mb-3 block">
+            Формат файла
+          </Label>
+          <RadioGroup
+            value={fileFormat}
+            onValueChange={(value) => setFileFormat(value as FileFormat)}
+            className="flex gap-6"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="doc" id="doc" />
+              <Label
+                htmlFor="doc"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <FileText className="h-4 w-4" />
+                Microsoft Word
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="xls" id="xls" />
+              <Label
+                htmlFor="xls"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <FileSpreadsheet className="h-4 w-4" />
+                Microsoft Excel
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Выбор кредитных программ */}
+        <div className="mb-6">
+          <Label className="text-base font-medium mb-3 block">
+            Кредитные программы
+          </Label>
+          <Select
+            onValueChange={(value) => {
+              if (!selectedCreditProgramIds.includes(value)) {
+                handleCreditProgramSelect(value);
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Выберите кредитные программы" />
+            </SelectTrigger>
+            <SelectContent>
+              {creditPrograms?.map((program) => (
+                <SelectItem
+                  key={program.id}
+                  value={program.id || ''}
+                  className={cn(
+                    selectedCreditProgramIds.includes(program.id || '') &&
+                      'bg-muted',
+                  )}
+                >
+                  {program.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Отображение выбранных программ */}
+          <div className="flex flex-wrap gap-2 mt-3">
+            {selectedCreditProgramIds.map((programId) => {
+              const program = creditPrograms?.find((p) => p.id === programId);
+              return (
+                <div
+                  key={programId}
+                  className="bg-muted px-3 py-1 rounded-md flex items-center gap-2"
+                >
+                  <span>{program?.name || programId}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 rounded-full"
+                    onClick={() => removeCreditProgram(programId)}
+                  >
+                    ×
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Кнопки действий */}
+        <div className="flex gap-2">
+          <Button
+            onClick={() =>
+              isWordExcelDataValid &&
+              onDownloadWordExcel(fileFormat, selectedCreditProgramIds)
+            }
+            disabled={!isWordExcelDataValid}
+          >
+            Скачать
+          </Button>
+          <Button
+            onClick={() =>
+              isWordExcelDataValid &&
+              onSendWordExcelEmail(fileFormat, selectedCreditProgramIds)
+            }
+            disabled={!isWordExcelDataValid}
+            variant="outline"
+          >
+            Отправить на почту
+          </Button>
+        </div>
+
+        {!isWordExcelDataValid && (
+          <p className="text-sm text-muted-foreground mt-4">
+            Выберите хотя бы одну кредитную программу для активации кнопок
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return <div></div>;
 };

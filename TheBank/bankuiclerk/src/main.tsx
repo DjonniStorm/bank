@@ -15,6 +15,7 @@ import { Clerks } from './components/pages/Clerks.tsx';
 import { Clients } from './components/pages/Clients.tsx';
 import { Deposits } from './components/pages/Deposits.tsx';
 import { Replenishments } from './components/pages/Replenishments.tsx';
+import { Reports } from './components/pages/Reports.tsx';
 
 const routes = createBrowserRouter([
   {
@@ -40,6 +41,10 @@ const routes = createBrowserRouter([
       {
         path: '/replenishments',
         element: <Replenishments />,
+      },
+      {
+        path: '/reports',
+        element: <Reports />,
       },
     ],
     errorElement: <p>бля пизда рулям</p>,

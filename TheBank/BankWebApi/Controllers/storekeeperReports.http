@@ -1,0 +1,76 @@
+```
+### Отчет Word КЛАДОВЩИКА: Вклады по кредитным программам
+GET /api/Report/LoadDepositByCreditProgram?creditProgramIds={{creditProgramIds}} HTTP/1.1
+Host: localhost
+Content-Type: application/octet-stream
+Authorization: Bearer {{token}}
+# Поля: CreditProgramName, DepositRate, DepositCost, DepositPeriod
+# Примечание: Скачивает Word-отчет о вкладах по кредитным программам. Добавить фильтрацию по currencyIds в GetDataDepositByCreditProgramAsync.
+
+### Отчет Excel КЛАДОВЩИКА: Вклады по кредитным программам
+GET /api/Report/LoadExcelDepositByCreditProgram?creditProgramIds={{creditProgramIds}} HTTP/1.1
+Host: localhost
+Content-Type: application/octet-stream
+Authorization: Bearer {{token}}
+# Поля: CreditProgramName, DepositRate, DepositCost, DepositPeriod
+# Примечание: Скачивает Excel-отчет о вкладах по кредитным программам. Добавить фильтрацию по currencyIds в GetDataDepositByCreditProgramAsync.
+
+### Отчет PDF КЛАДОВЩИКА: Вклады и кредитные программы по валютам
+GET /api/Report/LoadDepositAndCreditProgramByCurrency?fromDate={{fromDate}}&toDate={{toDate}} HTTP/1.1
+Host: localhost
+Content-Type: application/octet-stream
+Authorization: Bearer {{token}}
+# Поля: CurrencyName, CreditProgramName, CreditProgramMaxCost, DepositRate, DepositPeriod, FromPeriod, ToPeriod
+# Примечание: Скачивает PDF-отчет о вкладах и кредитных программах по валютам за период. Добавить фильтрацию по currencyIds в GetDataDepositAndCreditProgramByCurrencyAsync.
+
+### Получение данных КЛАДОВЩИКА: Вклады по кредитным программам (JSON)
+GET /api/Report/GetDepositByCreditProgram?creditProgramIds={{creditProgramIds}} HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Authorization: Bearer {{token}}
+# Поля: CreditProgramName, DepositRate, DepositCost, DepositPeriod
+# Примечание: Возвращает данные для отображения на странице. Добавить фильтрацию по currencyIds в GetDataDepositByCreditProgramAsync.
+
+### Получение данных КЛАДОВЩИКА: Вклады и кредитные программы по валютам (JSON)
+GET /api/Report/GetDepositAndCreditProgramByCurrency?fromDate={{fromDate}}&toDate={{toDate}} HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Authorization: Bearer {{token}}
+# Поля: CurrencyName, CreditProgramName, CreditProgramMaxCost, DepositRate, DepositPeriod, FromPeriod, ToPeriod
+# Примечание: Возвращает данные для отображения на странице. Добавить фильтрацию по currencyIds в GetDataDepositAndCreditProgramByCurrencyAsync.
+
+### Отправка Word КЛАДОВЩИКА по email: Вклады по кредитным программам
+POST /api/Report/SendReportDepositByCreditProgram HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Authorization: Bearer {{token}}
+{
+  "email": "{{email}}",
+  "creditProgramIds": {{creditProgramIds}}
+}
+# Поля: CreditProgramName, DepositRate, DepositCost, DepositPeriod
+# Примечание: Отправляет Word-отчет по email. Добавить фильтрацию по currencyIds в GetDataDepositByCreditProgramAsync.
+
+### Отправка Excel КЛАДОВЩИКА по email: Вклады по кредитным программам
+POST /api/Report/SendExcelReportDepositByCreditProgram HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Authorization: Bearer {{token}}
+{
+  "email": "{{email}}",
+  "creditProgramIds": {{creditProgramIds}}
+}
+# Поля: CreditProgramName, DepositRate, DepositCost, DepositPeriod
+# Примечание: Отправляет Excel-отчет по email. Добавить фильтрацию по currencyIds в GetDataDepositByCreditProgramAsync.
+
+### Отправка PDF КЛАДОВЩИКА по email: Вклады и кредитные программы по валютам
+POST /api/Report/SendReportByCurrency?fromDate={{fromDate}}&toDate={{toDate}} HTTP/1.1
+Host: localhost
+Content-Type: application/json
+Authorization: Bearer {{token}}
+{
+  "email": "{{email}}"
+}
+# Поля: CurrencyName, CreditProgramName, CreditProgramMaxCost, DepositRate, DepositPeriod, FromPeriod, ToPeriod
+# Примечание: Отправляет PDF-отчет по email. Добавить фильтрацию по currencyIds в GetDataDepositAndCreditProgramByCurrencyAsync.
+```
